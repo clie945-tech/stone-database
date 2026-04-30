@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ReStone 循環石材服務平台</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --blue:       #2563EB;
+      --blue-dark:  #1D4ED8;
+      --blue-light: #EFF6FF;
+      --blue-mid:   #BFDBFE;
+      --text:       #0F172A;
+      --text-muted: #64748B;
+      --text-light: #94A3B8;
+      --border:     #E2E8F0;
+      --bg:         #F8FAFC;
+      --white:      #FFFFFF;
+    }
+    body {
+      font-family: 'Inter', 'Noto Sans TC', sans-serif;
+      background: var(--bg); color: var(--text); min-height: 100vh;
+    }
+
+    /* ── Header ── */
+    header {
+      background: rgba(255,255,255,0.85);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      padding: 0 2rem;
+      position: sticky; top: 0; z-index: 100;
+    }
+    .header-inner {
+      max-width: 1280px; margin: 0 auto;
+      display: flex; align-items: center; justify-content: space-between;
+      height: 60px;
+    }
+    .logo { display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--text); }
+    .logo-icon {
+      width: 32px; height: 32px;
+      background: var(--blue); border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      color: white; font-size: 15px; font-weight: 700;
+      letter-spacing: -1px;
+    }
+    .logo-text { font-size: 0.92rem; font-weight: 700; }
+    .logo-sub  { font-size: 0.6rem; color: var(--text-light); letter-spacing: 0.08em; }
+    .header-right { display: flex; align-items: center; gap: 0.75rem; }
+    .header-admin {
+      font-size: 0.8rem; color: var(--text-muted); text-decoration: none;
+      padding: 0.42rem 1rem; border-radius: 8px; border: 1px solid var(--border);
+      transition: all 0.15s; font-weight: 500;
+    }
+    .header-admin:hover { color: var(--blue); border-color: var(--blue-mid); background: var(--blue-light); }
+
+    /* ── Hero ── */
+    .hero {
+      background: var(--white);
+      border-bottom: 1px solid var(--border);
+      padding: 5rem 2rem 4rem;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    /* 背景格線裝飾 */
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background-image:
+        linear-gradient(var(--border) 1px, transparent 1px),
+        linear-gradient(90deg, var(--border) 1px, transparent 1px);
+      background-size: 40px 40px;
+      opacity: 0.45;
+    }
+    /* 中央光暈 */
+    .hero::after {
+      content: '';
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      width: 600px; height: 400px;
+      background: radial-gradient(ellipse, rgba(37,99,235,0.08) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .hero-inner { position: relative; z-index: 1; }
+
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: 7px;
+      background: var(--white); color: var(--blue);
+      border: 1px solid var(--blue-mid);
+      border-radius: 50px; padding: 0.32rem 1rem;
+      font-size: 0.7rem; font-weight: 600; letter-spacing: 0.08em;
+      margin-bottom: 2rem;
+      box-shadow: 0 1px 4px rgba(37,99,235,0.1);
+    }
+    .badge-dot { width: 6px; height: 6px; background: var(--blue); border-radius: 50%; animation: pulse 2s infinite; }
+    @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.4;transform:scale(0.8)} }
+
+    .hero h1 {
+      font-size: clamp(2.4rem, 5vw, 3.8rem);
+      font-weight: 900; letter-spacing: -0.04em; line-height: 1.1;
+      margin-bottom: 1.2rem; color: var(--text);
+    }
+    .hero h1 .accent { color: var(--blue); }
+    .hero-desc {
+      font-size: 1rem; color: var(--text-muted);
+      max-width: 440px; margin: 0 auto 3rem; line-height: 1.75;
+    }
+
+    .hero-stats {
+      display: inline-flex; gap: 0;
+      background: var(--white);
+      border: 1px solid var(--border); border-radius: 14px;
+      box-shadow: 0 2px 16px rgba(0,0,0,0.06);
+      overflow: hidden;
+    }
+    .hero-stat { padding: 1rem 2.5rem; border-right: 1px solid var(--border); }
+    .hero-stat:last-child { border-right: none; }
+    .stat-num { display: block; font-size: 1.8rem; font-weight: 800; color: var(--blue); line-height: 1; }
+    .stat-lbl { display: block; font-size: 0.65rem; color: var(--text-muted); margin-top: 5px; letter-spacing: 0.06em; text-transform: uppercase; }
+
+    /* ── Search ── */
+    .search-bar {
+      background: var(--white);
+      border-bottom: 1px solid var(--border);
+      padding: 1rem 2rem;
+    }
+    .search-inner {
+      max-width: 1280px; margin: 0 auto;
+      display: flex; gap: 0.7rem; align-items: center; flex-wrap: wrap;
+    }
+    .search-field {
+      flex: 1; min-width: 220px;
+      display: flex; align-items: center; gap: 9px;
+      background: var(--bg); border: 1.5px solid var(--border);
+      border-radius: 10px; padding: 0 1rem;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .search-field:focus-within { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(37,99,235,0.1); background: white; }
+    .search-field svg { color: var(--text-light); flex-shrink: 0; }
+    .search-field input { border: none; background: transparent; padding: 0.72rem 0; flex: 1; font-size: 0.88rem; outline: none; color: var(--text); font-family: inherit; }
+    .search-field input::placeholder { color: var(--text-light); }
+
+    .filter-sel {
+      padding: 0.72rem 1rem; border: 1.5px solid var(--border); border-radius: 10px;
+      background: var(--bg); font-size: 0.88rem; color: var(--text);
+      cursor: pointer; outline: none; min-width: 150px; font-family: inherit;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .filter-sel:focus { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(37,99,235,0.1); }
+
+    .btn-search {
+      padding: 0.72rem 1.5rem; background: var(--blue); color: white;
+      border: none; border-radius: 10px; font-size: 0.88rem; font-weight: 600;
+      cursor: pointer; transition: all 0.15s; white-space: nowrap; font-family: inherit;
+    }
+    .btn-search:hover { background: var(--blue-dark); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(37,99,235,0.25); }
+    .btn-clear {
+      padding: 0.72rem 1rem; background: transparent; color: var(--text-muted);
+      border: 1.5px solid var(--border); border-radius: 10px;
+      font-size: 0.85rem; cursor: pointer; text-decoration: none;
+      transition: all 0.15s; white-space: nowrap; font-family: inherit;
+    }
+    .btn-clear:hover { color: var(--text); border-color: #CBD5E1; }
+
+    /* ── Main ── */
+    .main { max-width: 1280px; margin: 0 auto; padding: 2rem; }
+    .results-bar {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 1.5rem;
+    }
+    .results-count { font-size: 0.83rem; color: var(--text-muted); }
+    .results-count strong { color: var(--text); font-weight: 600; }
+
+    /* ── Cards ── */
+    .stone-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 1.25rem;
+    }
+    .stone-card {
+      background: var(--white); border-radius: 16px; overflow: hidden;
+      border: 1px solid var(--border);
+      transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease;
+      text-decoration: none; color: inherit; display: block;
+      cursor: pointer;
+    }
+    .stone-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 16px 48px rgba(0,0,0,0.1);
+      border-color: var(--blue-mid);
+    }
+
+    /* 圖片區 */
+    .card-img-wrap { position: relative; width: 100%; height: 220px; overflow: hidden; }
+    .card-img {
+      width: 100%; height: 100%; object-fit: cover; display: block;
+      transition: transform 0.35s ease;
+    }
+    .stone-card:hover .card-img { transform: scale(1.04); }
+    .card-img-placeholder {
+      width: 100%; height: 100%;
+      background: linear-gradient(135deg, #F1F5F9 0%, #E8EEF5 100%);
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      color: #C8D5E8;
+    }
+    .card-img-placeholder .ph-icon { font-size: 2.8rem; margin-bottom: 6px; }
+    .card-img-placeholder span { font-size: 0.7rem; color: var(--text-light); }
+
+    /* 卡片標籤覆蓋在圖片上 */
+    .card-type-badge {
+      position: absolute; top: 12px; left: 12px;
+      background: rgba(255,255,255,0.92);
+      backdrop-filter: blur(6px);
+      color: var(--blue); font-size: 0.68rem; font-weight: 700;
+      letter-spacing: 0.06em; text-transform: uppercase;
+      padding: 3px 10px; border-radius: 6px;
+      border: 1px solid rgba(37,99,235,0.15);
+    }
+
+    /* 卡片內文 */
+    .card-body { padding: 1.2rem 1.3rem 1.3rem; }
+    .card-title { font-size: 1.05rem; font-weight: 700; color: var(--text); margin-bottom: 0.25rem; }
+    .card-vendor {
+      font-size: 0.78rem; color: var(--text-muted); margin-bottom: 0.9rem;
+      display: flex; align-items: center; gap: 4px;
+    }
+    .card-specs {
+      display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 1rem;
+    }
+    .spec-tag {
+      font-size: 0.73rem; background: var(--bg); color: var(--text-muted);
+      padding: 3px 9px; border-radius: 6px; border: 1px solid var(--border);
+    }
+    .card-footer {
+      display: flex; align-items: center; justify-content: space-between;
+      padding-top: 1rem; border-top: 1px solid var(--border);
+    }
+    .card-price { font-size: 1.05rem; font-weight: 700; color: var(--blue); }
+    .card-price small { font-size: 0.68rem; font-weight: 400; color: var(--text-muted); }
+    .card-stock { text-align: right; }
+    .stock-num { font-size: 1rem; font-weight: 700; color: var(--text); }
+    .stock-label { font-size: 0.68rem; color: var(--text-muted); display: block; margin-top: 1px; }
+
+    /* ── Empty ── */
+    .empty {
+      text-align: center; padding: 5rem 2rem; color: var(--text-muted);
+    }
+    .empty-icon { font-size: 3.5rem; margin-bottom: 1rem; opacity: 0.15; }
+    .empty h3 { font-size: 1.05rem; font-weight: 600; color: var(--text); margin-bottom: 0.5rem; }
+    .empty p { font-size: 0.85rem; }
+
+    /* ── Footer ── */
+    footer {
+      margin-top: 4rem; padding: 2rem; text-align: center;
+      font-size: 0.75rem; color: var(--text-light);
+      border-top: 1px solid var(--border); background: var(--white);
+    }
+    footer .footer-logo { font-weight: 700; color: var(--text-muted); margin-bottom: 4px; }
+
+    /* ── Fade-in animation ── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .stone-card { animation: fadeUp 0.35s ease both; }
+    {% for i in range(1, 20) %}
+    .stone-card:nth-child({{ i }}) { animation-delay: {{ (i - 1) * 0.05 }}s; }
+    {% endfor %}
+
+    @media (max-width: 640px) {
+      .hero { padding: 3.5rem 1.5rem 2.5rem; }
+      .hero h1 { font-size: 2.2rem; }
+      .stone-grid { grid-template-columns: 1fr; }
+      .search-inner { flex-direction: column; }
+      .search-field, .filter-sel { width: 100%; }
+      .hero-stat { padding: 0.8rem 1.4rem; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <a href="/" class="logo">
+      <div class="logo-icon">◈</div>
+      <div>
+        <div class="logo-text">ReStone</div>
+        <div class="logo-sub">循環石材服務平台</div>
+      </div>
+    </a>
+    <div class="header-right">
+      <a href="/admin/login" class="header-admin">管理員登入 →</a>
+    </div>
+  </div>
+</header>
+
+<!-- Hero -->
+<section class="hero">
+  <div class="hero-inner">
+    <div class="hero-badge">
+      <div class="badge-dot"></div>
+      即時庫存系統 · LIVE INVENTORY
+    </div>
+    <h1><span class="accent">ReStone</span><br>循環石材服務平台</h1>
+    <p class="hero-desc">探索可再利用的優質石材，連結設計師與供應商，<br>共同支持循環經濟與永續設計</p>
+    <div class="hero-stats">
+      <div class="hero-stat">
+        <span class="stat-num">{{ total }}</span>
+        <span class="stat-lbl">石材項目</span>
+      </div>
+      <div class="hero-stat">
+        <span class="stat-num">{{ types|length }}</span>
+        <span class="stat-lbl">石材種類</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Search -->
+<div class="search-bar">
+  <form class="search-inner" method="get" action="/">
+    <div class="search-field">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      <input type="text" name="search" placeholder="搜尋石材種類、廠商名稱..." value="{{ search }}" />
+    </div>
+    <select class="filter-sel" name="type">
+      <option value="">全部種類</option>
+      {% for t in types %}
+        <option value="{{ t.stone_type }}" {% if t.stone_type == selected_type %}selected{% endif %}>{{ t.stone_type }}</option>
+      {% endfor %}
+    </select>
+    <button type="submit" class="btn-search">搜尋</button>
+    {% if search or selected_type %}
+      <a href="/" class="btn-clear">× 清除篩選</a>
+    {% endif %}
+  </form>
+</div>
+
+<!-- Main -->
+<main class="main">
+  <div class="results-bar">
+    <div class="results-count">
+      {% if search or selected_type %}
+        搜尋「{% if search %}{{ search }}{% endif %}{% if selected_type %} · {{ selected_type }}{% endif %}」：<strong>{{ stones|length }} 筆結果</strong>
+      {% else %}
+        顯示全部 <strong>{{ stones|length }}</strong> 筆石材
+      {% endif %}
+    </div>
+  </div>
+
+  {% if stones %}
+    <div class="stone-grid">
+      {% for s in stones %}
+        <a href="/stone/{{ s.id }}" class="stone-card">
+          <div class="card-img-wrap">
+            {% if s.photo %}
+              <img class="card-img" src="/static/uploads/{{ s.photo }}" alt="{{ s.stone_type }}" loading="lazy" />
+            {% else %}
+              <div class="card-img-placeholder">
+                <div class="ph-icon">◈</div>
+                <span>暫無照片</span>
+              </div>
+            {% endif %}
+            <div class="card-type-badge">{{ s.stone_type }}</div>
+          </div>
+          <div class="card-body">
+            <div class="card-title">{{ s.stone_type }}</div>
+            {% if s.vendor %}
+              <div class="card-vendor">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                {{ s.vendor }}
+              </div>
+            {% endif %}
+            <div class="card-specs">
+              {% if s.width and s.height %}
+                <span class="spec-tag">
+                  {{ s.width|int }}×{{ s.height|int }}{% if s.thickness %}×{{ s.thickness }}{% endif %} cm
+                </span>
+              {% endif %}
+              {% if s.description %}
+                <span class="spec-tag">{{ s.description[:28] }}{% if s.description|length > 28 %}…{% endif %}</span>
+              {% endif %}
+            </div>
+            <div class="card-footer">
+              <div class="card-price">
+                {% if s.price %}
+                  NT${{ "{:,.0f}".format(s.price) }}<small> / {{ s.unit or '片' }}</small>
+                {% else %}
+                  <span style="font-size:0.8rem;color:var(--text-muted);font-weight:500">價格洽詢</span>
+                {% endif %}
+              </div>
+              <div class="card-stock">
+                <span class="stock-num">{{ s.quantity or '—' }}</span>
+                <span class="stock-label">{{ s.unit or '片' }} 庫存</span>
+              </div>
+            </div>
+          </div>
+        </a>
+      {% endfor %}
+    </div>
+
+  {% else %}
+    <div class="empty">
+      <div class="empty-icon">◈</div>
+      <h3>{% if search or selected_type %}找不到符合的石材{% else %}尚無石材資料{% endif %}</h3>
+      <p>{% if search or selected_type %}請嘗試其他搜尋條件{% else %}請等待管理員新增庫存{% endif %}</p>
+    </div>
+  {% endif %}
+</main>
+
+<footer>
+  <div class="footer-logo">ReStone 循環石材服務平台</div>
+  支持循環經濟 · 讓石材物盡其用
+</footer>
+
+</body>
+</html>

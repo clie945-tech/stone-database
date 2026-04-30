@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>管理員登入 — ReStone 循環石材服務平台</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --blue: #2563EB; --blue-dark: #1D4ED8;
+      --blue-light: #EFF6FF; --blue-mid: #BFDBFE;
+      --text: #0F172A; --text-muted: #64748B; --text-light: #94A3B8;
+      --border: #E2E8F0; --bg: #F8FAFC; --white: #FFFFFF;
+    }
+    body {
+      font-family: 'Inter', 'Noto Sans TC', sans-serif;
+      min-height: 100vh; display: flex;
+      background: var(--bg);
+      /* 背景格線 */
+      background-image:
+        linear-gradient(var(--border) 1px, transparent 1px),
+        linear-gradient(90deg, var(--border) 1px, transparent 1px);
+      background-size: 40px 40px;
+    }
+
+    /* 左側裝飾欄 */
+    .login-left {
+      width: 420px; flex-shrink: 0;
+      background: var(--blue);
+      display: flex; flex-direction: column; justify-content: space-between;
+      padding: 3rem;
+      position: relative; overflow: hidden;
+    }
+    .login-left::before {
+      content: '◈';
+      position: absolute; right: -60px; bottom: -60px;
+      font-size: 18rem; color: rgba(255,255,255,0.06);
+      line-height: 1; pointer-events: none; user-select: none;
+    }
+    .left-logo { display: flex; align-items: center; gap: 12px; }
+    .left-logo-icon { width: 38px; height: 38px; background: rgba(255,255,255,0.2); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: white; font-size: 18px; }
+    .left-logo-text { color: white; font-size: 0.9rem; font-weight: 700; }
+    .left-logo-sub { color: rgba(255,255,255,0.55); font-size: 0.6rem; letter-spacing: 0.08em; }
+    .left-main { position: relative; z-index: 1; }
+    .left-title { font-size: 2.2rem; font-weight: 900; color: white; letter-spacing: -0.04em; line-height: 1.2; margin-bottom: 1rem; }
+    .left-desc { font-size: 0.88rem; color: rgba(255,255,255,0.65); line-height: 1.75; }
+    .left-footer { color: rgba(255,255,255,0.4); font-size: 0.72rem; position: relative; z-index: 1; }
+
+    /* 右側表單 */
+    .login-right {
+      flex: 1; display: flex; align-items: center; justify-content: center;
+      padding: 3rem 2rem;
+    }
+    .login-box { width: 100%; max-width: 380px; }
+
+    .login-card {
+      background: var(--white); border-radius: 18px; padding: 2.5rem;
+      border: 1px solid var(--border);
+      box-shadow: 0 8px 40px rgba(0,0,0,0.08);
+    }
+    .login-card-title { font-size: 1.3rem; font-weight: 800; color: var(--text); margin-bottom: 0.3rem; }
+    .login-card-sub { font-size: 0.82rem; color: var(--text-muted); margin-bottom: 2rem; }
+
+    .alert {
+      background: #FEF2F2; border: 1px solid #FECACA; color: #B91C1C;
+      border-radius: 10px; padding: 0.75rem 1rem;
+      font-size: 0.82rem; margin-bottom: 1.5rem;
+      display: flex; align-items: center; gap: 8px;
+    }
+
+    .form-group { margin-bottom: 1.2rem; }
+    label { display: block; font-size: 0.8rem; font-weight: 600; color: var(--text); margin-bottom: 0.45rem; }
+    input[type="text"], input[type="password"] {
+      width: 100%; padding: 0.78rem 1rem;
+      border: 1.5px solid var(--border); border-radius: 10px;
+      font-size: 0.9rem; color: var(--text); background: var(--bg);
+      outline: none; transition: border-color 0.2s, box-shadow 0.2s; font-family: inherit;
+    }
+    input:focus { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(37,99,235,0.1); background: white; }
+    input::placeholder { color: var(--text-light); }
+
+    .btn-login {
+      width: 100%; padding: 0.9rem; background: var(--blue); color: white;
+      border: none; border-radius: 10px; font-size: 0.92rem; font-weight: 700;
+      cursor: pointer; transition: all 0.15s; margin-top: 0.5rem; font-family: inherit;
+      letter-spacing: 0.02em;
+    }
+    .btn-login:hover { background: var(--blue-dark); transform: translateY(-1px); box-shadow: 0 6px 20px rgba(37,99,235,0.3); }
+    .btn-login:active { transform: translateY(0); }
+
+    .divider { text-align: center; margin: 1.5rem 0; position: relative; }
+    .divider::before { content: ''; position: absolute; top: 50%; left: 0; right: 0; height: 1px; background: var(--border); }
+    .divider span { background: white; padding: 0 0.75rem; font-size: 0.72rem; color: var(--text-light); position: relative; }
+
+    .back-link {
+      display: block; text-align: center; font-size: 0.82rem; color: var(--text-muted);
+      text-decoration: none; transition: color 0.15s; font-weight: 500;
+    }
+    .back-link:hover { color: var(--blue); }
+
+    @media (max-width: 700px) {
+      .login-left { display: none; }
+      body { background-image: none; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- 左側 -->
+<div class="login-left">
+  <div class="left-logo">
+    <div class="left-logo-icon">◈</div>
+    <div>
+      <div class="left-logo-text">ReStone 循環石材服務平台</div>
+      <div class="left-logo-sub">ADMIN PORTAL</div>
+    </div>
+  </div>
+  <div class="left-main">
+    <div class="left-title">管理員<br>後台</div>
+    <div class="left-desc">透過後台管理石材庫存、新增與編輯石材資料，讓設計師隨時掌握最新庫存現況。</div>
+  </div>
+  <div class="left-footer">© ReStone 循環石材服務平台</div>
+</div>
+
+<!-- 右側 -->
+<div class="login-right">
+  <div class="login-box">
+    <div class="login-card">
+      <div class="login-card-title">登入後台</div>
+      <div class="login-card-sub">請輸入您的管理員帳號與密碼</div>
+
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% for category, message in messages %}
+          <div class="alert">⚠ {{ message }}</div>
+        {% endfor %}
+      {% endwith %}
+
+      <form method="post" action="/admin/login">
+        <div class="form-group">
+          <label for="username">帳號</label>
+          <input type="text" id="username" name="username" placeholder="輸入管理員帳號" required autofocus />
+        </div>
+        <div class="form-group">
+          <label for="password">密碼</label>
+          <input type="password" id="password" name="password" placeholder="輸入密碼" required />
+        </div>
+        <button type="submit" class="btn-login">登入</button>
+      </form>
+
+      <div class="divider"><span>或</span></div>
+      <a href="/" class="back-link">← 返回前台瀏覽</a>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

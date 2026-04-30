@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{{ title }} — ReStone 循環石材服務平台</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --blue: #2563EB; --blue-light: #EFF6FF; --blue-mid: #BFDBFE;
+      --text: #0F172A; --text-muted: #64748B; --text-light: #94A3B8;
+      --border: #E2E8F0; --bg: #F8FAFC; --white: #FFFFFF;
+      --sidebar-w: 224px;
+    }
+    body { font-family: 'Inter', 'Noto Sans TC', sans-serif; background: var(--bg); color: var(--text); }
+
+    .sidebar { position: fixed; top: 0; left: 0; bottom: 0; width: var(--sidebar-w); background: var(--white); border-right: 1px solid var(--border); display: flex; flex-direction: column; z-index: 200; }
+    .sidebar-logo { padding: 1.4rem 1.2rem; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 10px; }
+    .sidebar-logo-icon { width: 34px; height: 34px; background: var(--blue); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white; font-size: 16px; flex-shrink: 0; }
+    .sidebar-logo-text { font-size: 0.85rem; font-weight: 700; line-height: 1.3; }
+    .sidebar-logo-sub  { font-size: 0.65rem; color: var(--text-muted); }
+    .sidebar-section { padding: 1.2rem 1rem 0.3rem; font-size: 0.68rem; font-weight: 600; color: var(--text-light); letter-spacing: 0.08em; text-transform: uppercase; }
+    .sidebar-nav { flex: 1; padding: 0.4rem 0.6rem; }
+    .nav-item { display: flex; align-items: center; gap: 9px; padding: 0.6rem 0.8rem; font-size: 0.85rem; color: var(--text-muted); text-decoration: none; transition: all 0.15s; border-radius: 8px; margin: 2px 0; }
+    .nav-item:hover { color: var(--text); background: var(--bg); }
+    .nav-item.active { color: var(--blue); background: var(--blue-light); font-weight: 600; }
+    .nav-item .icon { font-size: 0.95rem; width: 18px; text-align: center; flex-shrink: 0; }
+    .sidebar-footer { padding: 1rem 1.2rem; border-top: 1px solid var(--border); font-size: 0.75rem; }
+    .sidebar-footer .admin-name { color: var(--text); font-weight: 600; margin-bottom: 3px; font-size: 0.82rem; }
+    .sidebar-footer a { color: var(--text-muted); text-decoration: none; transition: color 0.15s; }
+    .sidebar-footer a:hover { color: var(--blue); }
+
+    .main-wrap { margin-left: var(--sidebar-w); min-height: 100vh; }
+    .topbar { background: var(--white); border-bottom: 1px solid var(--border); padding: 0 2rem; height: 56px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; box-shadow: 0 1px 4px rgba(0,0,0,0.04); }
+    .topbar-title { font-size: 0.95rem; font-weight: 700; }
+
+    .btn { display: inline-flex; align-items: center; gap: 6px; padding: 0.5rem 1rem; border-radius: 8px; font-size: 0.85rem; font-weight: 600; cursor: pointer; text-decoration: none; border: none; transition: all 0.15s; font-family: inherit; }
+    .btn-primary { background: var(--blue); color: white; }
+    .btn-primary:hover { background: #1D4ED8; }
+    .btn-secondary { background: var(--bg); color: var(--text-muted); border: 1px solid var(--border); }
+    .btn-secondary:hover { color: var(--text); }
+
+    .content { padding: 2rem; }
+    .flash { padding: 0.75rem 1.2rem; border-radius: 8px; margin-bottom: 1.5rem; font-size: 0.85rem; }
+    .flash-error { background: #FEF2F2; border: 1px solid #FECACA; color: #B91C1C; }
+
+    .form-card { background: var(--white); border-radius: 12px; border: 1px solid var(--border); max-width: 760px; }
+    .form-card-header { padding: 1.2rem 1.5rem; border-bottom: 1px solid var(--border); font-size: 0.92rem; font-weight: 700; }
+    .form-body { padding: 1.5rem; }
+
+    .section-title { font-size: 0.75rem; font-weight: 600; letter-spacing: 0.06em; color: var(--text-muted); text-transform: uppercase; margin-bottom: 1rem; margin-top: 1.8rem; padding-bottom: 0.5rem; border-bottom: 1px solid var(--border); }
+    .section-title:first-child { margin-top: 0; }
+
+    .form-grid   { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    .form-grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; }
+    .form-full   { grid-column: 1 / -1; }
+    .form-group  { display: flex; flex-direction: column; gap: 0.4rem; }
+
+    label { font-size: 0.82rem; font-weight: 600; color: var(--text); }
+    label .required { color: #EF4444; margin-left: 3px; }
+    label .hint { font-weight: 400; color: var(--text-muted); margin-left: 4px; }
+
+    input[type="text"], input[type="number"], select, textarea {
+      width: 100%; padding: 0.7rem 0.9rem;
+      border: 1.5px solid var(--border); border-radius: 8px;
+      font-size: 0.88rem; color: var(--text); background: var(--bg);
+      outline: none; transition: border-color 0.2s, box-shadow 0.2s; font-family: inherit;
+    }
+    input:focus, select:focus, textarea:focus { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(37,99,235,0.1); background: white; }
+    input::placeholder, textarea::placeholder { color: var(--text-light); }
+    textarea { resize: vertical; min-height: 80px; }
+
+    .upload-area {
+      border: 2px dashed var(--border); border-radius: 10px; padding: 2rem;
+      text-align: center; cursor: pointer; transition: all 0.2s;
+      background: var(--bg); position: relative;
+    }
+    .upload-area:hover { border-color: var(--blue); background: var(--blue-light); }
+    .upload-area input[type="file"] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; padding: 0; border: none; background: transparent; }
+    .upload-icon { font-size: 2rem; margin-bottom: 0.5rem; opacity: 0.4; }
+    .upload-text { font-size: 0.85rem; color: var(--text-muted); }
+    .upload-text strong { color: var(--blue); }
+    .upload-hint { font-size: 0.75rem; color: var(--text-light); margin-top: 4px; }
+
+    .current-photo { margin-bottom: 1rem; }
+    .current-photo img { width: 120px; height: 120px; object-fit: cover; border-radius: 8px; border: 1px solid var(--border); }
+    .current-photo p { font-size: 0.75rem; color: var(--text-muted); margin-top: 5px; }
+
+    #previewWrap { display: none; margin-top: 1rem; }
+    #previewWrap img { width: 120px; height: 120px; object-fit: cover; border-radius: 8px; border: 2px solid var(--blue); }
+    #previewWrap p { font-size: 0.75rem; color: var(--blue); margin-top: 4px; }
+
+    .form-footer { padding: 1.2rem 1.5rem; border-top: 1px solid var(--border); display: flex; gap: 0.8rem; justify-content: flex-end; }
+
+    @media (max-width: 600px) {
+      .form-grid, .form-grid-3 { grid-template-columns: 1fr; }
+      .main-wrap { margin-left: 0; }
+    }
+  </style>
+</head>
+<body>
+
+<nav class="sidebar">
+  <div class="sidebar-logo">
+    <div class="sidebar-logo-icon">◈</div>
+    <div>
+      <div class="sidebar-logo-text">ReStone 循環石材服務平台</div>
+      <div class="sidebar-logo-sub">管理後台</div>
+    </div>
+  </div>
+  <div class="sidebar-nav">
+    <div class="sidebar-section">管理</div>
+    <a href="/admin" class="nav-item"><span class="icon">▦</span> 石材管理</a>
+    <a href="/admin/add" class="nav-item {% if not stone %}active{% endif %}"><span class="icon">＋</span> 新增石材</a>
+    <div class="sidebar-section">系統</div>
+    <a href="/admin/change-password" class="nav-item"><span class="icon">🔑</span> 修改密碼</a>
+    <a href="/" class="nav-item" target="_blank"><span class="icon">↗</span> 前台預覽</a>
+  </div>
+  <div class="sidebar-footer">
+    <div class="admin-name">👤 管理員</div>
+    <a href="/admin/logout">登出 →</a>
+  </div>
+</nav>
+
+<div class="main-wrap">
+  <div class="topbar">
+    <div class="topbar-title">{{ title }}</div>
+    <a href="/admin" class="btn btn-secondary">← 返回列表</a>
+  </div>
+
+  <div class="content">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% for category, message in messages %}
+        <div class="flash flash-{{ category }}">⚠ {{ message }}</div>
+      {% endfor %}
+    {% endwith %}
+
+    <div class="form-card">
+      <div class="form-card-header">{{ title }}</div>
+      <form method="post" enctype="multipart/form-data">
+        <div class="form-body">
+
+          <div class="section-title">基本資訊</div>
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="stone_type">石材種類 <span class="required">*</span></label>
+              <input type="text" id="stone_type" name="stone_type" value="{{ stone.stone_type if stone else '' }}" placeholder="例：花崗岩、大理石、石英岩..." required />
+            </div>
+            <div class="form-group">
+              <label for="vendor">廠商名稱</label>
+              <input type="text" id="vendor" name="vendor" value="{{ stone.vendor if stone else '' }}" placeholder="例：台灣石材有限公司" />
+            </div>
+          </div>
+
+          <div class="section-title">尺寸規格</div>
+          <div class="form-grid-3">
+            <div class="form-group">
+              <label for="width">寬度 <span class="hint">(cm)</span></label>
+              <input type="number" id="width" name="width" step="0.1" min="0" value="{{ stone.width if stone and stone.width else '' }}" placeholder="例：60" />
+            </div>
+            <div class="form-group">
+              <label for="height">高度／長度 <span class="hint">(cm)</span></label>
+              <input type="number" id="height" name="height" step="0.1" min="0" value="{{ stone.height if stone and stone.height else '' }}" placeholder="例：120" />
+            </div>
+            <div class="form-group">
+              <label for="thickness">厚度 <span class="hint">(cm)</span></label>
+              <input type="number" id="thickness" name="thickness" step="0.1" min="0" value="{{ stone.thickness if stone and stone.thickness else '' }}" placeholder="例：2" />
+            </div>
+          </div>
+
+          <div class="section-title">庫存與價格</div>
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="quantity">庫存數量</label>
+              <input type="number" id="quantity" name="quantity" min="0" value="{{ stone.quantity if stone and stone.quantity else '' }}" placeholder="例：50" />
+            </div>
+            <div class="form-group">
+              <label for="unit">單位</label>
+              <select id="unit" name="unit">
+                <option value="片"  {% if not stone or stone.unit == '片'  %}selected{% endif %}>片</option>
+                <option value="塊"  {% if stone and stone.unit == '塊'  %}selected{% endif %}>塊</option>
+                <option value="坪"  {% if stone and stone.unit == '坪'  %}selected{% endif %}>坪</option>
+                <option value="m²" {% if stone and stone.unit == 'm²' %}selected{% endif %}>m²</option>
+                <option value="kg"  {% if stone and stone.unit == 'kg'  %}selected{% endif %}>kg</option>
+                <option value="噸"  {% if stone and stone.unit == '噸'  %}selected{% endif %}>噸</option>
+                <option value="件"  {% if stone and stone.unit == '件'  %}selected{% endif %}>件</option>
+              </select>
+            </div>
+            <div class="form-group form-full">
+              <label for="price">單價 <span class="hint">(NT$，留空表示洽詢)</span></label>
+              <input type="number" id="price" name="price" step="1" min="0" value="{{ stone.price if stone and stone.price else '' }}" placeholder="例：1200" />
+            </div>
+          </div>
+
+          <div class="section-title">備註說明</div>
+          <div class="form-group">
+            <label for="description">備註</label>
+            <textarea id="description" name="description" placeholder="石材的特色、狀況說明、注意事項...">{{ stone.description if stone and stone.description else '' }}</textarea>
+          </div>
+
+          <div class="section-title">石材照片</div>
+          {% if stone and stone.photo %}
+            <div class="current-photo">
+              <img src="/static/uploads/{{ stone.photo }}" alt="目前照片" />
+              <p>目前照片（上傳新照片將取代此圖）</p>
+            </div>
+          {% endif %}
+          <div class="upload-area">
+            <input type="file" name="photo" id="photoInput" accept="image/png,image/jpg,image/jpeg,image/gif,image/webp" onchange="previewPhoto(this)" />
+            <div class="upload-icon">📷</div>
+            <div class="upload-text"><strong>點擊選擇照片</strong>，或拖曳圖片到此處</div>
+            <div class="upload-hint">支援 JPG、PNG、GIF、WEBP，最大 32MB</div>
+          </div>
+          <div id="previewWrap">
+            <img id="previewImg" src="" alt="預覽" />
+            <p id="previewName"></p>
+          </div>
+        </div>
+
+        <div class="form-footer">
+          <a href="/admin" class="btn btn-secondary">取消</a>
+          <button type="submit" class="btn btn-primary">{% if stone %}儲存變更{% else %}新增石材{% endif %}</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+  function previewPhoto(input) {
+    if (input.files && input.files[0]) {
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        document.getElementById('previewImg').src = e.target.result;
+        document.getElementById('previewName').textContent = '已選擇：' + input.files[0].name;
+        document.getElementById('previewWrap').style.display = 'block';
+      };
+      reader.readAsDataURL(input.files[0]);
+    }
+  }
+</script>
+</body>
+</html>
