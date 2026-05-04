@@ -200,23 +200,29 @@
             <textarea id="description" name="description" placeholder="石材的特色、狀況說明、注意事項...">{{ stone.description if stone and stone.description else '' }}</textarea>
           </div>
 
-          <div class="section-title">石材照片</div>
-          {% if stone and stone.photo %}
-            <div class="current-photo">
-              <img src="/static/uploads/{{ stone.photo }}" alt="目前照片" />
-              <p>目前照片（上傳新照片將取代此圖）</p>
+          <div class="section-title">石材照片（最多 3 張）</div>
+          {% for i in range(1, 4) %}
+            {% set field = 'photo' if i == 1 else 'photo' ~ i %}
+            {% set label = '主要照片' if i == 1 else '照片 ' ~ i %}
+            <div style="margin-bottom:1.2rem">
+              <p style="font-size:0.8rem;font-weight:600;color:var(--text);margin-bottom:0.5rem">{{ label }}{% if i == 1 %} <span style="color:#EF4444">（建議上傳）</span>{% else %} <span style="color:var(--text-light)">（選填）</span>{% endif %}</p>
+              {% if stone and stone[field] %}
+                <div class="current-photo">
+                  <img src="/static/uploads/{{ stone[field] }}" alt="目前照片{{ i }}" />
+                  <p>目前照片（上傳新照片將取代此圖）</p>
+                </div>
+              {% endif %}
+              <div class="upload-area">
+                <input type="file" name="{{ field }}" accept="image/png,image/jpg,image/jpeg,image/gif,image/webp" onchange="previewPhoto(this, 'preview{{ i }}')" />
+                <div class="upload-icon">📷</div>
+                <div class="upload-text"><strong>點擊選擇{{ label }}</strong></div>
+                <div class="upload-hint">支援 JPG、PNG、GIF、WEBP，最大 32MB</div>
+              </div>
+              <div id="preview{{ i }}" style="display:none;margin-top:0.75rem">
+                <img style="width:120px;height:120px;object-fit:cover;border-radius:8px;border:2px solid var(--blue)" src="" alt="" />
+              </div>
             </div>
-          {% endif %}
-          <div class="upload-area">
-            <input type="file" name="photo" id="photoInput" accept="image/png,image/jpg,image/jpeg,image/gif,image/webp" onchange="previewPhoto(this)" />
-            <div class="upload-icon">📷</div>
-            <div class="upload-text"><strong>點擊選擇照片</strong>，或拖曳圖片到此處</div>
-            <div class="upload-hint">支援 JPG、PNG、GIF、WEBP，最大 32MB</div>
-          </div>
-          <div id="previewWrap">
-            <img id="previewImg" src="" alt="預覽" />
-            <p id="previewName"></p>
-          </div>
+          {% endfor %}
         </div>
 
         <div class="form-footer">
@@ -229,13 +235,13 @@
 </div>
 
 <script>
-  function previewPhoto(input) {
+  function previewPhoto(input, previewId) {
     if (input.files && input.files[0]) {
       const reader = new FileReader();
       reader.onload = function(e) {
-        document.getElementById('previewImg').src = e.target.result;
-        document.getElementById('previewName').textContent = '已選擇：' + input.files[0].name;
-        document.getElementById('previewWrap').style.display = 'block';
+        const wrap = document.getElementById(previewId);
+        wrap.querySelector('img').src = e.target.result;
+        wrap.style.display = 'block';
       };
       reader.readAsDataURL(input.files[0]);
     }

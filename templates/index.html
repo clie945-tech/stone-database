@@ -294,7 +294,13 @@
       </div>
     </a>
     <div class="header-right">
-      <a href="/admin/login" class="header-admin">管理員登入 →</a>
+      {% if session.customer_id %}
+        <a href="/my-account" class="header-admin">{{ session.customer_name }} 的帳號</a>
+        <a href="/customer/logout" class="header-admin">登出</a>
+      {% else %}
+        <a href="/customer/login" class="header-admin">登入</a>
+        <a href="/register" class="header-admin" style="background:var(--blue);color:white;border-color:var(--blue)">免費註冊</a>
+      {% endif %}
     </div>
   </div>
 </header>

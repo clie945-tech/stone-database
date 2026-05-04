@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>我的帳號 — ReStone</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --blue: #2563EB; --blue-light: #EFF6FF; --blue-mid: #BFDBFE;
+      --text: #0F172A; --text-muted: #64748B; --text-light: #94A3B8;
+      --border: #E2E8F0; --bg: #F8FAFC; --white: #FFFFFF;
+    }
+    body { font-family: 'Inter','Noto Sans TC',sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+    header { background: rgba(255,255,255,0.85); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); padding: 0 2rem; position: sticky; top: 0; z-index: 100; }
+    .header-inner { max-width: 1000px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; height: 60px; }
+    .logo { display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--text); }
+    .logo-icon { width: 32px; height: 32px; background: var(--blue); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white; font-size: 15px; }
+    .logo-text { font-size: 0.92rem; font-weight: 700; }
+    .header-right { display: flex; align-items: center; gap: 0.75rem; }
+    .btn-link { font-size: 0.8rem; color: var(--text-muted); text-decoration: none; padding: 0.4rem 1rem; border-radius: 8px; border: 1px solid var(--border); transition: all 0.15s; font-weight: 500; }
+    .btn-link:hover { color: var(--blue); border-color: var(--blue-mid); background: var(--blue-light); }
+
+    .container { max-width: 1000px; margin: 2.5rem auto; padding: 0 2rem; }
+
+    .page-header { margin-bottom: 2rem; }
+    .page-title { font-size: 1.6rem; font-weight: 800; letter-spacing: -0.03em; }
+    .page-sub { font-size: 0.85rem; color: var(--text-muted); margin-top: 0.3rem; }
+
+    /* 詢問卡片 */
+    .inquiry-list { display: flex; flex-direction: column; gap: 1rem; }
+    .inquiry-card { background: var(--white); border-radius: 14px; border: 1px solid var(--border); padding: 1.4rem; display: flex; gap: 1.5rem; align-items: flex-start; transition: box-shadow 0.2s; }
+    .inquiry-card:hover { box-shadow: 0 4px 20px rgba(0,0,0,0.07); }
+
+    .inquiry-img { width: 72px; height: 72px; border-radius: 10px; object-fit: cover; flex-shrink: 0; border: 1px solid var(--border); }
+    .inquiry-img-placeholder { width: 72px; height: 72px; border-radius: 10px; background: var(--bg); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; color: var(--text-light); font-size: 1.5rem; flex-shrink: 0; }
+
+    .inquiry-body { flex: 1; }
+    .inquiry-top { display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; margin-bottom: 0.5rem; }
+    .inquiry-stone { font-size: 1rem; font-weight: 700; }
+    .status-badge { font-size: 0.68rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; padding: 3px 10px; border-radius: 6px; }
+    .status-pending  { background: #FEF9C3; color: #854D0E; }
+    .status-replied  { background: #DCFCE7; color: #166534; }
+    .status-closed   { background: var(--bg); color: var(--text-muted); }
+
+    .inquiry-meta { font-size: 0.78rem; color: var(--text-muted); margin-bottom: 0.5rem; }
+    .inquiry-message { font-size: 0.85rem; color: var(--text-muted); line-height: 1.65; }
+
+    .empty { text-align: center; padding: 5rem 2rem; color: var(--text-muted); }
+    .empty-icon { font-size: 3rem; opacity: 0.15; margin-bottom: 1rem; }
+    .empty h3 { font-size: 1rem; font-weight: 600; color: var(--text); margin-bottom: 0.4rem; }
+    .empty a { color: var(--blue); text-decoration: none; font-weight: 600; }
+
+    footer { margin-top: 4rem; padding: 1.5rem; text-align: center; font-size: 0.75rem; color: var(--text-light); border-top: 1px solid var(--border); background: var(--white); }
+  </style>
+</head>
+<body>
+<header>
+  <div class="header-inner">
+    <a href="/" class="logo">
+      <div class="logo-icon">◈</div>
+      <div class="logo-text">ReStone 循環石材服務平台</div>
+    </a>
+    <div class="header-right">
+      <a href="/" class="btn-link">← 返回石材列表</a>
+      <a href="/customer/logout" class="btn-link">登出</a>
+    </div>
+  </div>
+</header>
+
+<div class="container">
+  <div class="page-header">
+    <div class="page-title">我的帳號</div>
+    <div class="page-sub">{{ session.customer_name }} · {{ session.customer_email }}</div>
+  </div>
+
+  <h2 style="font-size:1rem;font-weight:700;margin-bottom:1rem;">詢問紀錄 <span style="color:var(--text-muted);font-weight:400;font-size:0.85rem">共 {{ inquiries|length }} 筆</span></h2>
+
+  {% if inquiries %}
+    <div class="inquiry-list">
+      {% for inq in inquiries %}
+        <div class="inquiry-card">
+          <div class="inquiry-img-placeholder">◈</div>
+          <div class="inquiry-body">
+            <div class="inquiry-top">
+              <div class="inquiry-stone">{{ inq.stone_name or inq.stone_type or '石材' }}</div>
+              <span class="status-badge status-{{ inq.status }}">
+                {% if inq.status == 'pending' %}待回覆
+                {% elif inq.status == 'replied' %}已回覆
+                {% else %}已結案{% endif %}
+              </span>
+            </div>
+            <div class="inquiry-meta">
+              詢問數量：{{ inq.quantity or '未填寫' }} ·
+              送出時間：{{ inq.created_at[:10] }}
+            </div>
+            {% if inq.message %}
+              <div class="inquiry-message">{{ inq.message }}</div>
+            {% endif %}
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="empty">
+      <div class="empty-icon">◈</div>
+      <h3>尚無詢問紀錄</h3>
+      <p><a href="/">瀏覽石材</a>並送出詢問後，紀錄會顯示在這裡</p>
+    </div>
+  {% endif %}
+</div>
+
+<footer>ReStone 循環石材服務平台 — 支持循環經濟，讓石材物盡其用</footer>
+</body>
+</html>

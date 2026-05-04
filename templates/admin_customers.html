@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>會員管理 — ReStone</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --blue: #2563EB; --blue-light: #EFF6FF; --blue-mid: #BFDBFE;
+      --text: #0F172A; --text-muted: #64748B; --text-light: #94A3B8;
+      --border: #E2E8F0; --bg: #F8FAFC; --white: #FFFFFF; --sidebar-w: 224px;
+    }
+    body { font-family: 'Inter','Noto Sans TC',sans-serif; background: var(--bg); color: var(--text); }
+    .sidebar { position: fixed; top: 0; left: 0; bottom: 0; width: var(--sidebar-w); background: var(--white); border-right: 1px solid var(--border); display: flex; flex-direction: column; z-index: 200; }
+    .sidebar-logo { padding: 1.4rem 1.2rem; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 10px; }
+    .sidebar-logo-icon { width: 34px; height: 34px; background: var(--blue); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white; font-size: 16px; flex-shrink: 0; }
+    .sidebar-logo-text { font-size: 0.85rem; font-weight: 700; }
+    .sidebar-logo-sub { font-size: 0.65rem; color: var(--text-muted); }
+    .sidebar-section { padding: 1.2rem 1rem 0.3rem; font-size: 0.68rem; font-weight: 600; color: var(--text-light); letter-spacing: 0.08em; text-transform: uppercase; }
+    .sidebar-nav { flex: 1; padding: 0.4rem 0.6rem; }
+    .nav-item { display: flex; align-items: center; gap: 9px; padding: 0.6rem 0.8rem; font-size: 0.85rem; color: var(--text-muted); text-decoration: none; transition: all 0.15s; border-radius: 8px; margin: 2px 0; }
+    .nav-item:hover { color: var(--text); background: var(--bg); }
+    .nav-item.active { color: var(--blue); background: var(--blue-light); font-weight: 600; }
+    .nav-item .icon { font-size: 0.95rem; width: 18px; text-align: center; }
+    .sidebar-footer { padding: 1rem 1.2rem; border-top: 1px solid var(--border); font-size: 0.75rem; }
+    .sidebar-footer .admin-name { color: var(--text); font-weight: 600; margin-bottom: 3px; font-size: 0.82rem; }
+    .sidebar-footer a { color: var(--text-muted); text-decoration: none; }
+    .sidebar-footer a:hover { color: var(--blue); }
+    .main-wrap { margin-left: var(--sidebar-w); min-height: 100vh; }
+    .topbar { background: var(--white); border-bottom: 1px solid var(--border); padding: 0 2rem; height: 56px; display: flex; align-items: center; position: sticky; top: 0; z-index: 100; box-shadow: 0 1px 4px rgba(0,0,0,0.04); }
+    .topbar-title { font-size: 0.95rem; font-weight: 700; }
+    .content { padding: 2rem; }
+    .table-card { background: var(--white); border-radius: 12px; border: 1px solid var(--border); overflow: hidden; }
+    .table-header { padding: 1rem 1.5rem; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+    .table-header h3 { font-size: 0.92rem; font-weight: 700; }
+    .table-header span { font-size: 0.8rem; color: var(--text-muted); }
+    table { width: 100%; border-collapse: collapse; }
+    th { padding: 0.7rem 1rem; text-align: left; font-size: 0.72rem; font-weight: 600; color: var(--text-muted); letter-spacing: 0.06em; text-transform: uppercase; background: var(--bg); border-bottom: 1px solid var(--border); }
+    td { padding: 0.9rem 1rem; border-bottom: 1px solid var(--border); font-size: 0.85rem; vertical-align: middle; }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: #FAFBFC; }
+    .name-strong { font-weight: 600; }
+    .sub { font-size: 0.75rem; color: var(--text-muted); margin-top: 2px; }
+    .empty-row td { text-align: center; padding: 3rem; color: var(--text-muted); }
+  </style>
+</head>
+<body>
+<nav class="sidebar">
+  <div class="sidebar-logo">
+    <div class="sidebar-logo-icon">◈</div>
+    <div><div class="sidebar-logo-text">ReStone 循環石材服務平台</div><div class="sidebar-logo-sub">管理後台</div></div>
+  </div>
+  <div class="sidebar-nav">
+    <div class="sidebar-section">管理</div>
+    <a href="/admin" class="nav-item"><span class="icon">▦</span> 石材管理</a>
+    <a href="/admin/add" class="nav-item"><span class="icon">＋</span> 新增石材</a>
+    <a href="/admin/inquiries" class="nav-item"><span class="icon">✉</span> 詢問管理</a>
+    <a href="/admin/customers" class="nav-item active"><span class="icon">👥</span> 會員管理</a>
+    <div class="sidebar-section">系統</div>
+    <a href="/admin/change-password" class="nav-item"><span class="icon">🔑</span> 修改密碼</a>
+    <a href="/" class="nav-item" target="_blank"><span class="icon">↗</span> 前台預覽</a>
+  </div>
+  <div class="sidebar-footer">
+    <div class="admin-name">👤 {{ session.admin_name }}</div>
+    <a href="/admin/logout">登出 →</a>
+  </div>
+</nav>
+<div class="main-wrap">
+  <div class="topbar"><div class="topbar-title">會員管理</div></div>
+  <div class="content">
+    <div class="table-card">
+      <div class="table-header">
+        <h3>所有會員</h3>
+        <span>共 {{ customers|length }} 位</span>
+      </div>
+      <table>
+        <thead>
+          <tr><th>姓名</th><th>Email</th><th>電話</th><th>註冊時間</th></tr>
+        </thead>
+        <tbody>
+          {% if customers %}
+            {% for c in customers %}
+              <tr>
+                <td><div class="name-strong">{{ c.name }}</div></td>
+                <td>{{ c.email }}</td>
+                <td>{{ c.phone or '—' }}</td>
+                <td style="color:var(--text-muted);font-size:0.8rem">{{ c.created_at[:10] }}</td>
+              </tr>
+            {% endfor %}
+          {% else %}
+            <tr class="empty-row"><td colspan="4">尚無會員資料</td></tr>
+          {% endif %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+</body>
+</html>

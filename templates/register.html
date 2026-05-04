@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>會員註冊 — ReStone</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --blue: #2563EB; --blue-dark: #1D4ED8; --blue-light: #EFF6FF; --blue-mid: #BFDBFE;
+      --text: #0F172A; --text-muted: #64748B; --text-light: #94A3B8;
+      --border: #E2E8F0; --bg: #F8FAFC; --white: #FFFFFF;
+    }
+    body {
+      font-family: 'Inter','Noto Sans TC',sans-serif; min-height: 100vh;
+      background: var(--bg);
+      background-image: linear-gradient(var(--border) 1px,transparent 1px),linear-gradient(90deg,var(--border) 1px,transparent 1px);
+      background-size: 40px 40px;
+      display: flex; align-items: center; justify-content: center; padding: 2rem;
+    }
+    .wrap { width: 100%; max-width: 440px; }
+    .logo { text-align: center; margin-bottom: 1.5rem; }
+    .logo a { text-decoration: none; color: var(--text); display: inline-flex; align-items: center; gap: 8px; }
+    .logo-icon { width: 32px; height: 32px; background: var(--blue); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white; font-size: 15px; }
+    .logo-text { font-size: 0.95rem; font-weight: 700; }
+
+    .card { background: var(--white); border-radius: 18px; padding: 2rem; border: 1px solid var(--border); box-shadow: 0 8px 40px rgba(0,0,0,0.08); }
+    .card-title { font-size: 1.3rem; font-weight: 800; color: var(--text); margin-bottom: 0.3rem; }
+    .card-sub { font-size: 0.82rem; color: var(--text-muted); margin-bottom: 1.8rem; }
+
+    .alert { background: #FEF2F2; border: 1px solid #FECACA; color: #B91C1C; border-radius: 10px; padding: 0.75rem 1rem; font-size: 0.82rem; margin-bottom: 1.2rem; }
+    .alert-success { background: #F0FDF4; border-color: #BBF7D0; color: #166534; }
+
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    .form-group { margin-bottom: 1rem; }
+    label { display: block; font-size: 0.8rem; font-weight: 600; color: var(--text); margin-bottom: 0.4rem; }
+    .required { color: #EF4444; }
+    input { width: 100%; padding: 0.75rem 1rem; border: 1.5px solid var(--border); border-radius: 10px; font-size: 0.88rem; color: var(--text); background: var(--bg); outline: none; transition: all 0.2s; font-family: inherit; }
+    input:focus { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(37,99,235,0.1); background: white; }
+    input::placeholder { color: var(--text-light); }
+
+    .btn { width: 100%; padding: 0.88rem; background: var(--blue); color: white; border: none; border-radius: 10px; font-size: 0.92rem; font-weight: 700; cursor: pointer; transition: all 0.15s; font-family: inherit; margin-top: 0.5rem; }
+    .btn:hover { background: var(--blue-dark); transform: translateY(-1px); box-shadow: 0 6px 20px rgba(37,99,235,0.3); }
+
+    .divider { text-align: center; margin: 1.2rem 0; position: relative; }
+    .divider::before { content: ''; position: absolute; top: 50%; left: 0; right: 0; height: 1px; background: var(--border); }
+    .divider span { background: white; padding: 0 0.75rem; font-size: 0.72rem; color: var(--text-light); position: relative; }
+
+    .link { display: block; text-align: center; font-size: 0.82rem; color: var(--text-muted); text-decoration: none; font-weight: 500; transition: color 0.15s; }
+    .link:hover { color: var(--blue); }
+    .link span { color: var(--blue); }
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <div class="logo">
+    <a href="/"><div class="logo-icon">◈</div><div class="logo-text">ReStone 循環石材服務平台</div></a>
+  </div>
+  <div class="card">
+    <div class="card-title">會員註冊</div>
+    <div class="card-sub">建立帳號以追蹤您的詢問紀錄</div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% for category, message in messages %}
+        <div class="alert {% if category == 'success' %}alert-success{% endif %}">{{ message }}</div>
+      {% endfor %}
+    {% endwith %}
+
+    <form method="post">
+      <div class="form-row">
+        <div class="form-group">
+          <label>姓名 <span class="required">*</span></label>
+          <input type="text" name="name" placeholder="您的姓名" required />
+        </div>
+        <div class="form-group">
+          <label>電話</label>
+          <input type="tel" name="phone" placeholder="選填" />
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Email <span class="required">*</span></label>
+        <input type="email" name="email" placeholder="your@email.com" required />
+      </div>
+      <div class="form-group">
+        <label>密碼 <span class="required">*</span></label>
+        <input type="password" name="password" placeholder="至少 6 個字元" required minlength="6" />
+      </div>
+      <div class="form-group">
+        <label>確認密碼 <span class="required">*</span></label>
+        <input type="password" name="confirm_password" placeholder="再次輸入密碼" required />
+      </div>
+      <button type="submit" class="btn">建立帳號</button>
+    </form>
+
+    <div class="divider"><span>已有帳號？</span></div>
+    <a href="/customer/login" class="link">登入會員 →</a>
+  </div>
+</div>
+</body>
+</html>

@@ -15,97 +15,94 @@
     }
     body { font-family: 'Inter','Noto Sans TC',sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
 
-    header {
-      background: rgba(255,255,255,0.85); backdrop-filter: blur(12px);
-      border-bottom: 1px solid var(--border); padding: 0 2rem;
-      position: sticky; top: 0; z-index: 100;
-    }
+    header { background: rgba(255,255,255,0.85); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); padding: 0 2rem; position: sticky; top: 0; z-index: 100; }
     .header-inner { max-width: 1100px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; height: 60px; }
     .logo { display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--text); }
     .logo-icon { width: 32px; height: 32px; background: var(--blue); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white; font-size: 15px; }
     .logo-text { font-size: 0.92rem; font-weight: 700; }
-    .back-btn {
-      display: flex; align-items: center; gap: 6px;
-      font-size: 0.82rem; color: var(--text-muted); text-decoration: none;
-      padding: 0.42rem 1rem; border-radius: 8px; border: 1px solid var(--border);
-      transition: all 0.15s; font-weight: 500;
-    }
-    .back-btn:hover { color: var(--blue); border-color: var(--blue-mid); background: var(--blue-light); }
+    .header-right { display: flex; align-items: center; gap: 0.6rem; }
+    .hbtn { font-size: 0.8rem; color: var(--text-muted); text-decoration: none; padding: 0.4rem 0.9rem; border-radius: 8px; border: 1px solid var(--border); transition: all 0.15s; font-weight: 500; }
+    .hbtn:hover { color: var(--blue); border-color: var(--blue-mid); background: var(--blue-light); }
+    .hbtn-primary { background: var(--blue); color: white; border-color: var(--blue); }
+    .hbtn-primary:hover { background: var(--blue-dark); color: white; border-color: var(--blue-dark); }
 
     .container { max-width: 1100px; margin: 2.5rem auto; padding: 0 2rem; }
-
     .breadcrumb { font-size: 0.78rem; color: var(--text-muted); margin-bottom: 2rem; display: flex; align-items: center; gap: 6px; }
     .breadcrumb a { color: var(--blue); text-decoration: none; }
-    .breadcrumb a:hover { text-decoration: underline; }
     .breadcrumb-sep { color: var(--text-light); }
 
-    /* ── Two-col layout ── */
+    /* ── 主體版面 ── */
     .detail-grid { display: grid; grid-template-columns: 1fr 420px; gap: 2.5rem; align-items: start; }
     @media (max-width: 820px) { .detail-grid { grid-template-columns: 1fr; } }
 
-    /* Image */
-    .img-col { position: sticky; top: 80px; }
-    .img-wrap {
-      border-radius: 18px; overflow: hidden;
-      border: 1px solid var(--border);
-      box-shadow: 0 8px 40px rgba(0,0,0,0.08);
-    }
-    .detail-img { width: 100%; max-height: 520px; object-fit: cover; display: block; }
-    .img-placeholder {
-      width: 100%; height: 400px;
-      background: linear-gradient(135deg, #F1F5F9, #E2E8F0);
-      display: flex; flex-direction: column; align-items: center; justify-content: center;
-      color: #C8D5E8;
-    }
-    .img-placeholder .ph { font-size: 5rem; margin-bottom: 10px; }
+    /* ── 照片畫廊 ── */
+    .gallery { position: sticky; top: 80px; }
+    .main-img-wrap { border-radius: 16px; overflow: hidden; border: 1px solid var(--border); box-shadow: 0 8px 40px rgba(0,0,0,0.08); background: var(--white); margin-bottom: 0.75rem; aspect-ratio: 4/3; }
+    .main-img { width: 100%; height: 100%; object-fit: cover; display: block; transition: opacity 0.25s; cursor: zoom-in; }
+    .img-placeholder { width: 100%; height: 100%; background: linear-gradient(135deg,#F1F5F9,#E2E8F0); display: flex; flex-direction: column; align-items: center; justify-content: center; color: #C8D5E8; }
+    .img-placeholder .ph { font-size: 5rem; margin-bottom: 8px; }
     .img-placeholder span { font-size: 0.78rem; color: var(--text-light); }
 
-    /* Info col */
+    .thumbnails { display: flex; gap: 0.6rem; }
+    .thumb-item { width: 80px; height: 60px; border-radius: 8px; overflow: hidden; border: 2px solid transparent; cursor: pointer; transition: border-color 0.15s, opacity 0.15s; flex-shrink: 0; }
+    .thumb-item:hover { border-color: var(--blue-mid); }
+    .thumb-item.active { border-color: var(--blue); }
+    .thumb-item img { width: 100%; height: 100%; object-fit: cover; }
+
+    /* ── 資訊欄 ── */
     .info-col { display: flex; flex-direction: column; gap: 1.25rem; }
+    .stone-badge { display: inline-block; background: var(--blue-light); color: var(--blue); font-size: 0.68rem; font-weight: 700; letter-spacing: 0.09em; text-transform: uppercase; padding: 4px 12px; border-radius: 7px; }
+    .stone-title { font-size: 2.2rem; font-weight: 900; letter-spacing: -0.03em; line-height: 1.15; color: var(--text); margin-top: 0.6rem; }
+    .stone-vendor { display: flex; align-items: center; gap: 6px; font-size: 0.88rem; color: var(--text-muted); margin-top: 0.2rem; }
 
-    .stone-badge {
-      display: inline-block; background: var(--blue-light); color: var(--blue);
-      font-size: 0.68rem; font-weight: 700; letter-spacing: 0.09em; text-transform: uppercase;
-      padding: 4px 12px; border-radius: 7px; width: fit-content;
-    }
-    .stone-title { font-size: 2.4rem; font-weight: 900; letter-spacing: -0.03em; line-height: 1.15; color: var(--text); }
-    .stone-vendor {
-      display: flex; align-items: center; gap: 6px;
-      font-size: 0.88rem; color: var(--text-muted); margin-top: 0.2rem;
-    }
-
-    /* 規格卡片 */
     .spec-card { background: var(--white); border-radius: 12px; border: 1px solid var(--border); overflow: hidden; }
-    .spec-card-title {
-      background: var(--bg); padding: 0.6rem 1.2rem;
-      font-size: 0.68rem; font-weight: 700; letter-spacing: 0.08em; color: var(--text-muted); text-transform: uppercase;
-      border-bottom: 1px solid var(--border);
-    }
-    .spec-row {
-      display: flex; justify-content: space-between; align-items: center;
-      padding: 0.75rem 1.2rem; border-bottom: 1px solid var(--border);
-    }
+    .spec-card-title { background: var(--bg); padding: 0.6rem 1.2rem; font-size: 0.68rem; font-weight: 700; letter-spacing: 0.08em; color: var(--text-muted); text-transform: uppercase; border-bottom: 1px solid var(--border); }
+    .spec-row { display: flex; justify-content: space-between; align-items: center; padding: 0.75rem 1.2rem; border-bottom: 1px solid var(--border); }
     .spec-row:last-child { border-bottom: none; }
     .spec-label { font-size: 0.82rem; color: var(--text-muted); }
-    .spec-value { font-size: 0.88rem; font-weight: 600; color: var(--text); font-variant-numeric: tabular-nums; }
+    .spec-value { font-size: 0.88rem; font-weight: 600; color: var(--text); }
 
-    /* 價格區塊 */
-    .price-card {
-      background: var(--blue); border-radius: 14px; padding: 1.6rem;
-      box-shadow: 0 6px 24px rgba(37,99,235,0.25);
-    }
+    .price-card { background: var(--blue); border-radius: 14px; padding: 1.6rem; box-shadow: 0 6px 24px rgba(37,99,235,0.25); }
     .price-label { font-size: 0.68rem; color: rgba(255,255,255,0.65); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 0.5rem; }
-    .price-main { font-size: 2.6rem; font-weight: 900; color: white; line-height: 1; letter-spacing: -0.04em; }
+    .price-main { font-size: 2.4rem; font-weight: 900; color: white; line-height: 1; letter-spacing: -0.04em; }
     .price-unit { font-size: 0.9rem; color: rgba(255,255,255,0.65); margin-left: 4px; }
     .price-divider { height: 1px; background: rgba(255,255,255,0.15); margin: 1.2rem 0; }
     .price-stock { display: flex; align-items: center; justify-content: space-between; }
     .price-stock-label { font-size: 0.78rem; color: rgba(255,255,255,0.65); }
     .price-stock-value { font-size: 1.2rem; font-weight: 800; color: white; }
 
-    /* 備註 */
     .desc-card { background: var(--white); border-radius: 12px; border: 1px solid var(--border); padding: 1.2rem; }
     .desc-title { font-size: 0.68rem; font-weight: 700; letter-spacing: 0.08em; color: var(--text-muted); text-transform: uppercase; margin-bottom: 0.75rem; }
     .desc-text { font-size: 0.88rem; line-height: 1.8; color: var(--text-muted); }
+
+    /* ── 詢問表單 ── */
+    .inquiry-section { margin-top: 3rem; }
+    .section-title { font-size: 1.2rem; font-weight: 800; letter-spacing: -0.02em; margin-bottom: 1.2rem; }
+    .inquiry-card { background: var(--white); border-radius: 14px; border: 1px solid var(--border); padding: 2rem; }
+
+    .flash-msg { padding: 0.75rem 1rem; border-radius: 10px; font-size: 0.85rem; margin-bottom: 1.5rem; }
+    .flash-success { background: #F0FDF4; border: 1px solid #BBF7D0; color: #166534; }
+    .flash-error   { background: #FEF2F2; border: 1px solid #FECACA; color: #B91C1C; }
+
+    .form-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    .form-group { display: flex; flex-direction: column; gap: 0.4rem; margin-bottom: 1rem; }
+    .form-group:last-of-type { margin-bottom: 0; }
+    .form-label { font-size: 0.8rem; font-weight: 600; color: var(--text); }
+    .required { color: #EF4444; }
+    .form-input, .form-textarea {
+      padding: 0.75rem 1rem; border: 1.5px solid var(--border); border-radius: 10px;
+      font-size: 0.88rem; color: var(--text); background: var(--bg);
+      outline: none; transition: all 0.2s; font-family: inherit; width: 100%;
+    }
+    .form-input:focus, .form-textarea:focus { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(37,99,235,0.1); background: white; }
+    .form-input::placeholder, .form-textarea::placeholder { color: var(--text-light); }
+    .form-textarea { min-height: 100px; resize: vertical; }
+
+    .btn-submit { padding: 0.88rem 2rem; background: var(--blue); color: white; border: none; border-radius: 10px; font-size: 0.92rem; font-weight: 700; cursor: pointer; transition: all 0.15s; font-family: inherit; margin-top: 1.2rem; }
+    .btn-submit:hover { background: var(--blue-dark); transform: translateY(-1px); box-shadow: 0 6px 20px rgba(37,99,235,0.3); }
+
+    .login-hint { font-size: 0.78rem; color: var(--text-muted); margin-top: 0.75rem; }
+    .login-hint a { color: var(--blue); text-decoration: none; }
 
     footer { margin-top: 5rem; padding: 1.5rem; text-align: center; font-size: 0.75rem; color: var(--text-light); border-top: 1px solid var(--border); background: var(--white); }
   </style>
@@ -118,10 +115,16 @@
       <div class="logo-icon">◈</div>
       <div class="logo-text">ReStone 循環石材服務平台</div>
     </a>
-    <a href="/" class="back-btn">
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
-      返回列表
-    </a>
+    <div class="header-right">
+      {% if session.customer_id %}
+        <a href="/my-account" class="hbtn">{{ session.customer_name }}</a>
+        <a href="/customer/logout" class="hbtn">登出</a>
+      {% else %}
+        <a href="/customer/login" class="hbtn">登入</a>
+        <a href="/register" class="hbtn hbtn-primary">免費註冊</a>
+      {% endif %}
+      <a href="/" class="hbtn">← 返回列表</a>
+    </div>
   </div>
 </header>
 
@@ -135,25 +138,37 @@
   </div>
 
   <div class="detail-grid">
-    <!-- 左：圖片 -->
-    <div class="img-col">
-      <div class="img-wrap">
-        {% if stone.photo %}
-          <img class="detail-img" src="/static/uploads/{{ stone.photo }}" alt="{{ stone.stone_type }}" />
+    <!-- 左：照片畫廊 -->
+    <div class="gallery">
+      {% set photos = [] %}
+      {% if stone.photo  %}{% set _ = photos.append(stone.photo)  %}{% endif %}
+      {% if stone.photo2 %}{% set _ = photos.append(stone.photo2) %}{% endif %}
+      {% if stone.photo3 %}{% set _ = photos.append(stone.photo3) %}{% endif %}
+
+      <div class="main-img-wrap">
+        {% if photos %}
+          <img class="main-img" id="mainImg" src="/static/uploads/{{ photos[0] }}" alt="{{ stone.stone_type }}" />
         {% else %}
-          <div class="img-placeholder">
-            <div class="ph">◈</div>
-            <span>暫無照片</span>
-          </div>
+          <div class="img-placeholder"><div class="ph">◈</div><span>暫無照片</span></div>
         {% endif %}
       </div>
+
+      {% if photos|length > 1 %}
+        <div class="thumbnails">
+          {% for p in photos %}
+            <div class="thumb-item {% if loop.first %}active{% endif %}" onclick="switchImg(this, '/static/uploads/{{ p }}')">
+              <img src="/static/uploads/{{ p }}" alt="照片{{ loop.index }}" />
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
     </div>
 
     <!-- 右：資訊 -->
     <div class="info-col">
       <div>
         <div class="stone-badge">{{ stone.stone_type }}</div>
-        <div class="stone-title" style="margin-top:0.6rem">{{ stone.stone_type }}</div>
+        <div class="stone-title">{{ stone.stone_type }}</div>
         {% if stone.vendor %}
           <div class="stone-vendor">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
@@ -162,50 +177,26 @@
         {% endif %}
       </div>
 
-      <!-- 尺寸規格 -->
       {% if stone.width or stone.height or stone.thickness %}
         <div class="spec-card">
           <div class="spec-card-title">尺寸規格</div>
-          {% if stone.width %}
-            <div class="spec-row">
-              <span class="spec-label">寬度</span>
-              <span class="spec-value">{{ stone.width }} cm</span>
-            </div>
-          {% endif %}
-          {% if stone.height %}
-            <div class="spec-row">
-              <span class="spec-label">高度 / 長度</span>
-              <span class="spec-value">{{ stone.height }} cm</span>
-            </div>
-          {% endif %}
-          {% if stone.thickness %}
-            <div class="spec-row">
-              <span class="spec-label">厚度</span>
-              <span class="spec-value">{{ stone.thickness }} cm</span>
-            </div>
-          {% endif %}
+          {% if stone.width %}<div class="spec-row"><span class="spec-label">寬度</span><span class="spec-value">{{ stone.width }} cm</span></div>{% endif %}
+          {% if stone.height %}<div class="spec-row"><span class="spec-label">高度 / 長度</span><span class="spec-value">{{ stone.height }} cm</span></div>{% endif %}
+          {% if stone.thickness %}<div class="spec-row"><span class="spec-label">厚度</span><span class="spec-value">{{ stone.thickness }} cm</span></div>{% endif %}
         </div>
       {% endif %}
 
-      <!-- 廠商 -->
       {% if stone.vendor %}
         <div class="spec-card">
           <div class="spec-card-title">廠商資訊</div>
-          <div class="spec-row">
-            <span class="spec-label">廠商名稱</span>
-            <span class="spec-value">{{ stone.vendor }}</span>
-          </div>
+          <div class="spec-row"><span class="spec-label">廠商名稱</span><span class="spec-value">{{ stone.vendor }}</span></div>
         </div>
       {% endif %}
 
-      <!-- 價格 & 庫存 -->
       <div class="price-card">
         <div class="price-label">單價</div>
         {% if stone.price %}
-          <div>
-            <span class="price-main">NT${{ "{:,.0f}".format(stone.price) }}</span>
-            <span class="price-unit">/ {{ stone.unit or '片' }}</span>
-          </div>
+          <div><span class="price-main">NT${{ "{:,.0f}".format(stone.price) }}</span><span class="price-unit">/ {{ stone.unit or '片' }}</span></div>
         {% else %}
           <div class="price-main" style="font-size:1.5rem;opacity:0.8">價格洽詢</div>
         {% endif %}
@@ -216,7 +207,6 @@
         </div>
       </div>
 
-      <!-- 備註 -->
       {% if stone.description %}
         <div class="desc-card">
           <div class="desc-title">備註說明</div>
@@ -225,8 +215,65 @@
       {% endif %}
     </div>
   </div>
+
+  <!-- 詢問表單 -->
+  <div class="inquiry-section">
+    <div class="section-title">聯繫廠商 / 詢問訂購</div>
+    <div class="inquiry-card">
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% for category, message in messages %}
+          <div class="flash-msg flash-{{ category }}">{{ message }}</div>
+        {% endfor %}
+      {% endwith %}
+
+      <form method="post" action="/stone/{{ stone.id }}/inquiry">
+        <div class="form-grid-2">
+          <div class="form-group">
+            <label class="form-label">姓名 <span class="required">*</span></label>
+            <input class="form-input" type="text" name="name"
+              value="{{ session.customer_name if session.customer_id else '' }}"
+              placeholder="您的姓名" required />
+          </div>
+          <div class="form-group">
+            <label class="form-label">電話</label>
+            <input class="form-input" type="tel" name="phone" placeholder="選填" />
+          </div>
+        </div>
+        <div class="form-grid-2">
+          <div class="form-group">
+            <label class="form-label">Email <span class="required">*</span></label>
+            <input class="form-input" type="email" name="email"
+              value="{{ session.customer_email if session.customer_id else '' }}"
+              placeholder="your@email.com" required />
+          </div>
+          <div class="form-group">
+            <label class="form-label">詢問數量</label>
+            <input class="form-input" type="number" name="quantity" min="1" placeholder="例：10" />
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">訊息內容</label>
+          <textarea class="form-textarea" name="message" placeholder="請描述您的需求、使用場景或其他問題..."></textarea>
+        </div>
+        <button type="submit" class="btn-submit">送出詢問</button>
+        {% if not session.customer_id %}
+          <div class="login-hint">
+            <a href="/register">註冊會員</a> 或 <a href="/customer/login">登入</a> 即可追蹤詢問狀態
+          </div>
+        {% endif %}
+      </form>
+    </div>
+  </div>
 </div>
 
 <footer>ReStone 循環石材服務平台 — 支持循環經濟，讓石材物盡其用</footer>
+
+<script>
+  function switchImg(thumb, src) {
+    document.getElementById('mainImg').src = src;
+    document.querySelectorAll('.thumb-item').forEach(t => t.classList.remove('active'));
+    thumb.classList.add('active');
+  }
+</script>
 </body>
 </html>
