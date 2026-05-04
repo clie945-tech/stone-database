@@ -290,8 +290,10 @@ def change_password():
     return render_template('change_password.html')
 
 
+# 不論是本機或雲端，啟動時都初始化資料庫
+init_db()
+
 if __name__ == '__main__':
-    init_db()
     print("\n" + "="*50)
     print("  ReStone 循環石材服務平台 已啟動！")
     print("="*50)
