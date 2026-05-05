@@ -109,6 +109,34 @@
     .waste-btn.active { border-color: var(--blue); color: var(--blue); background: var(--blue-light); }
 
     footer { margin-top: 5rem; padding: 1.5rem; text-align: center; font-size: 0.75rem; color: var(--text-light); border-top: 1px solid var(--border); background: var(--white); }
+
+    /* ── Lightbox ── */
+    .lightbox {
+      display: none; position: fixed; inset: 0; z-index: 9999;
+      background: rgba(0,0,0,0.92); align-items: center; justify-content: center;
+      cursor: zoom-out;
+    }
+    .lightbox.open { display: flex; }
+    .lightbox img {
+      max-width: 92vw; max-height: 90vh;
+      border-radius: 10px; box-shadow: 0 24px 80px rgba(0,0,0,0.5);
+      object-fit: contain; cursor: default;
+      animation: lbIn 0.2s ease;
+    }
+    @keyframes lbIn { from { opacity:0; transform:scale(0.93); } to { opacity:1; transform:scale(1); } }
+    .lightbox-close {
+      position: fixed; top: 1.2rem; right: 1.5rem;
+      color: white; font-size: 2rem; cursor: pointer; line-height: 1;
+      opacity: 0.7; transition: opacity 0.15s; z-index: 10000;
+      background: rgba(255,255,255,0.1); width: 42px; height: 42px;
+      border-radius: 50%; display: flex; align-items: center; justify-content: center;
+      border: 1px solid rgba(255,255,255,0.2);
+    }
+    .lightbox-close:hover { opacity: 1; background: rgba(255,255,255,0.2); }
+    .lightbox-hint {
+      position: fixed; bottom: 1.5rem; left: 50%; transform: translateX(-50%);
+      color: rgba(255,255,255,0.5); font-size: 0.75rem; pointer-events: none;
+    }
   </style>
 </head>
 <body>
@@ -152,7 +180,7 @@
 
       <div class="main-img-wrap">
         {% if photos %}
-          <img class="main-img" id="mainImg" src="/static/uploads/{{ photos[0] }}" alt="{{ stone.stone_type }}" />
+          <img class="main-img" id="mainImg" src="/static/uploads/{{ photos[0] }}" alt="{{ stone.stone_type }}" onclick="openLightbox(this.src)" title="點擊放大" />
         {% else %}
           <div class="img-placeholder"><div class="ph">◈</div><span>暫無照片</span></div>
         {% endif %}
@@ -359,12 +387,33 @@
 
 <footer>ReStone 循環石材服務平台 — 支持循環經濟，讓石材物盡其用</footer>
 
+<!-- Lightbox -->
+<div class="lightbox" id="lightbox" onclick="closeLightbox()">
+  <div class="lightbox-close" onclick="closeLightbox()">✕</div>
+  <img id="lightboxImg" src="" alt="" onclick="event.stopPropagation()" />
+  <div class="lightbox-hint">點擊任意處關閉 · 按 ESC 離開</div>
+</div>
+
 <script>
   function switchImg(thumb, src) {
     document.getElementById('mainImg').src = src;
     document.querySelectorAll('.thumb-item').forEach(t => t.classList.remove('active'));
     thumb.classList.add('active');
   }
+
+  // ── Lightbox ──
+  function openLightbox(src) {
+    document.getElementById('lightboxImg').src = src;
+    document.getElementById('lightbox').classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+  function closeLightbox() {
+    document.getElementById('lightbox').classList.remove('open');
+    document.body.style.overflow = '';
+  }
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') closeLightbox();
+  });
 
   // ── 用量計算機 ──
   let wasteRate = 0.10;

@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ReStone 配色方案預覽</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Inter', 'Noto Sans TC', sans-serif; background: #F1F5F9; color: #0F172A; }
+
+    .page-title {
+      text-align: center; padding: 3rem 2rem 1rem;
+      font-size: 1.5rem; font-weight: 800; color: #0F172A;
+    }
+    .page-sub { text-align: center; color: #64748B; font-size: 0.9rem; margin-bottom: 3rem; }
+
+    .themes { display: flex; flex-direction: column; gap: 4rem; padding: 0 2rem 4rem; max-width: 1100px; margin: 0 auto; }
+
+    .theme-block { background: white; border-radius: 20px; overflow: hidden; box-shadow: 0 4px 32px rgba(0,0,0,0.08); }
+    .theme-label {
+      padding: 1rem 1.5rem; font-size: 0.8rem; font-weight: 700;
+      letter-spacing: 0.08em; text-transform: uppercase;
+      background: #F8FAFC; border-bottom: 1px solid #E2E8F0;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .theme-label .num {
+      width: 26px; height: 26px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.75rem; font-weight: 800; color: white;
+    }
+
+    /* ───── Mock UI ───── */
+    .mock { padding: 0; overflow: hidden; }
+
+    /* Header */
+    .m-header {
+      padding: 0 1.5rem; height: 52px;
+      display: flex; align-items: center; justify-content: space-between;
+      border-bottom: 1px solid;
+    }
+    .m-logo { display: flex; align-items: center; gap: 8px; font-size: 0.85rem; font-weight: 800; }
+    .m-logo-icon { width: 28px; height: 28px; border-radius: 7px; display: flex; align-items: center; justify-content: center; font-size: 13px; color: white; font-weight: 700; }
+    .m-nav { display: flex; gap: 0.5rem; }
+    .m-nav-btn { padding: 5px 12px; border-radius: 7px; font-size: 0.75rem; font-weight: 600; border: 1.5px solid; cursor: pointer; }
+
+    /* Hero */
+    .m-hero { padding: 2.5rem 1.5rem; text-align: center; position: relative; overflow: hidden; }
+    .m-hero::before {
+      content: ''; position: absolute; inset: 0;
+      background-image: linear-gradient(currentColor 1px, transparent 1px), linear-gradient(90deg, currentColor 1px, transparent 1px);
+      background-size: 32px 32px; opacity: 0.06;
+    }
+    .m-hero-badge { display: inline-flex; align-items: center; gap: 6px; padding: 3px 12px; border-radius: 50px; font-size: 0.65rem; font-weight: 700; letter-spacing: 0.08em; margin-bottom: 1rem; border: 1px solid; }
+    .m-hero-dot { width: 5px; height: 5px; border-radius: 50%; }
+    .m-hero-title { font-size: 1.8rem; font-weight: 900; letter-spacing: -0.03em; margin-bottom: 0.5rem; position: relative; }
+    .m-hero-sub { font-size: 0.8rem; opacity: 0.6; position: relative; }
+
+    /* Cards row */
+    .m-cards { display: flex; gap: 1rem; padding: 1.5rem; }
+    .m-card { flex: 1; border-radius: 14px; overflow: hidden; border: 1px solid; }
+    .m-card-img { height: 110px; display: flex; align-items: center; justify-content: center; font-size: 2.2rem; }
+    .m-card-body { padding: 0.9rem; }
+    .m-card-badge { display: inline-block; font-size: 0.6rem; font-weight: 700; letter-spacing: 0.06em; padding: 2px 8px; border-radius: 5px; margin-bottom: 0.4rem; text-transform: uppercase; }
+    .m-card-title { font-size: 0.88rem; font-weight: 700; margin-bottom: 0.25rem; }
+    .m-card-price { font-size: 0.92rem; font-weight: 800; }
+
+    /* ═══════════════════════════════════════════
+       方案 A — 現在的方案：純淨藍白
+       ═══════════════════════════════════════════ */
+    .a .m-header { background: white; border-color: #E2E8F0; color: #0F172A; }
+    .a .m-logo-icon { background: #2563EB; }
+    .a .m-nav-btn { border-color: #E2E8F0; color: #64748B; background: white; }
+    .a .m-nav-btn.primary { background: #2563EB; color: white; border-color: #2563EB; }
+    .a .m-hero { background: white; color: #2563EB; }
+    .a .m-hero-badge { background: #EFF6FF; color: #2563EB; border-color: #BFDBFE; }
+    .a .m-hero-dot { background: #2563EB; }
+    .a .m-hero-title { color: #0F172A; }
+    .a .m-hero-title span { color: #2563EB; }
+    .a .m-cards { background: #F8FAFC; }
+    .a .m-card { background: white; border-color: #E2E8F0; }
+    .a .m-card-img { background: linear-gradient(135deg, #EFF6FF, #DBEAFE); }
+    .a .m-card-badge { background: #EFF6FF; color: #2563EB; }
+    .a .m-card-title { color: #0F172A; }
+    .a .m-card-price { color: #2563EB; }
+
+    /* ═══════════════════════════════════════════
+       方案 B — 深夜石墨：深色現代感
+       ═══════════════════════════════════════════ */
+    .b .m-header { background: #0F172A; border-color: #1E293B; color: #F1F5F9; }
+    .b .m-logo-icon { background: #38BDF8; }
+    .b .m-logo { color: #F1F5F9; }
+    .b .m-nav-btn { border-color: #334155; color: #94A3B8; background: transparent; }
+    .b .m-nav-btn.primary { background: #38BDF8; color: #0F172A; border-color: #38BDF8; }
+    .b .m-hero { background: #0F172A; color: #38BDF8; }
+    .b .m-hero-badge { background: rgba(56,189,248,0.1); color: #38BDF8; border-color: rgba(56,189,248,0.3); }
+    .b .m-hero-dot { background: #38BDF8; }
+    .b .m-hero-title { color: #F1F5F9; }
+    .b .m-hero-title span { color: #38BDF8; }
+    .b .m-hero-sub { color: #94A3B8; opacity: 1; }
+    .b .m-cards { background: #1E293B; }
+    .b .m-card { background: #0F172A; border-color: #334155; }
+    .b .m-card-img { background: linear-gradient(135deg, #1E293B, #0F172A); }
+    .b .m-card-badge { background: rgba(56,189,248,0.15); color: #38BDF8; }
+    .b .m-card-title { color: #F1F5F9; }
+    .b .m-card-price { color: #38BDF8; }
+
+    /* ═══════════════════════════════════════════
+       方案 C — 暖沙石：大地土系溫潤感
+       ═══════════════════════════════════════════ */
+    .c .m-header { background: #FEFCE8; border-color: #FDE68A; color: #78350F; }
+    .c .m-logo-icon { background: #B45309; }
+    .c .m-logo { color: #78350F; }
+    .c .m-nav-btn { border-color: #FDE68A; color: #92400E; background: white; }
+    .c .m-nav-btn.primary { background: #B45309; color: white; border-color: #B45309; }
+    .c .m-hero { background: #FFFBEB; color: #B45309; }
+    .c .m-hero-badge { background: #FEF3C7; color: #92400E; border-color: #FDE68A; }
+    .c .m-hero-dot { background: #B45309; }
+    .c .m-hero-title { color: #451A03; }
+    .c .m-hero-title span { color: #B45309; }
+    .c .m-hero-sub { color: #92400E; opacity: 1; }
+    .c .m-cards { background: #FEF9EE; }
+    .c .m-card { background: white; border-color: #FDE68A; }
+    .c .m-card-img { background: linear-gradient(135deg, #FEF3C7, #FDE68A); }
+    .c .m-card-badge { background: #FEF3C7; color: #92400E; }
+    .c .m-card-title { color: #451A03; }
+    .c .m-card-price { color: #B45309; }
+
+    /* ═══════════════════════════════════════════
+       方案 D — 翡翠循環：永續綠環保感
+       ═══════════════════════════════════════════ */
+    .d .m-header { background: white; border-color: #D1FAE5; color: #064E3B; }
+    .d .m-logo-icon { background: #059669; }
+    .d .m-logo { color: #064E3B; }
+    .d .m-nav-btn { border-color: #A7F3D0; color: #065F46; background: white; }
+    .d .m-nav-btn.primary { background: #059669; color: white; border-color: #059669; }
+    .d .m-hero { background: white; color: #059669; }
+    .d .m-hero-badge { background: #ECFDF5; color: #059669; border-color: #A7F3D0; }
+    .d .m-hero-dot { background: #059669; }
+    .d .m-hero-title { color: #064E3B; }
+    .d .m-hero-title span { color: #059669; }
+    .d .m-hero-sub { color: #065F46; opacity: 1; }
+    .d .m-cards { background: #F0FDF4; }
+    .d .m-card { background: white; border-color: #D1FAE5; }
+    .d .m-card-img { background: linear-gradient(135deg, #ECFDF5, #D1FAE5); }
+    .d .m-card-badge { background: #ECFDF5; color: #059669; }
+    .d .m-card-title { color: #064E3B; }
+    .d .m-card-price { color: #059669; }
+
+    /* ═══════════════════════════════════════════
+       方案 E — 鈦銀極簡：高端灰階精緻感
+       ═══════════════════════════════════════════ */
+    .e .m-header { background: white; border-color: #E2E8F0; color: #0F172A; }
+    .e .m-logo-icon { background: #0F172A; }
+    .e .m-logo { color: #0F172A; }
+    .e .m-nav-btn { border-color: #E2E8F0; color: #64748B; background: white; }
+    .e .m-nav-btn.primary { background: #0F172A; color: white; border-color: #0F172A; }
+    .e .m-hero { background: white; color: #475569; }
+    .e .m-hero-badge { background: #F1F5F9; color: #475569; border-color: #CBD5E1; }
+    .e .m-hero-dot { background: #475569; }
+    .e .m-hero-title { color: #0F172A; }
+    .e .m-hero-title span { color: #475569; }
+    .e .m-hero-sub { color: #64748B; opacity: 1; }
+    .e .m-cards { background: #F8FAFC; }
+    .e .m-card { background: white; border-color: #E2E8F0; }
+    .e .m-card-img { background: linear-gradient(135deg, #F1F5F9, #E2E8F0); }
+    .e .m-card-badge { background: #F1F5F9; color: #475569; }
+    .e .m-card-title { color: #0F172A; }
+    .e .m-card-price { color: #0F172A; font-weight: 900; }
+
+    @media (max-width: 600px) {
+      .m-cards { flex-direction: column; }
+      .themes { padding: 0 1rem 3rem; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="page-title">ReStone 配色方案預覽</div>
+<p class="page-sub">共 5 種風格，可告訴我喜歡哪一個，或想要混搭調整</p>
+
+<div class="themes">
+
+  <!-- ── A ── -->
+  <div class="theme-block">
+    <div class="theme-label">
+      <div class="num" style="background:#2563EB">A</div>
+      純淨藍白（現在的方案）— 科技感、清晰、專業
+    </div>
+    <div class="mock a">
+      <div class="m-header">
+        <div class="m-logo"><div class="m-logo-icon">◈</div>ReStone</div>
+        <div class="m-nav">
+          <div class="m-nav-btn">登入</div>
+          <div class="m-nav-btn primary">免費註冊</div>
+        </div>
+      </div>
+      <div class="m-hero">
+        <div class="m-hero-badge"><div class="m-hero-dot"></div>LIVE INVENTORY</div>
+        <div class="m-hero-title"><span>ReStone</span> 循環石材服務平台</div>
+        <div class="m-hero-sub">探索可再利用的優質石材，連結設計師與供應商</div>
+      </div>
+      <div class="m-cards">
+        <div class="m-card">
+          <div class="m-card-img">🪨</div>
+          <div class="m-card-body">
+            <div class="m-card-badge">大理石</div>
+            <div class="m-card-title">卡拉拉白大理石</div>
+            <div class="m-card-price">NT$2,400</div>
+          </div>
+        </div>
+        <div class="m-card">
+          <div class="m-card-img">🟫</div>
+          <div class="m-card-body">
+            <div class="m-card-badge">花崗岩</div>
+            <div class="m-card-title">黑色絕對花崗岩</div>
+            <div class="m-card-price">NT$1,800</div>
+          </div>
+        </div>
+        <div class="m-card">
+          <div class="m-card-img">🪨</div>
+          <div class="m-card-body">
+            <div class="m-card-badge">板岩</div>
+            <div class="m-card-title">灰色文化石板岩</div>
+            <div class="m-card-price">NT$980</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── B ── -->
+  <div class="theme-block">
+    <div class="theme-label">
+      <div class="num" style="background:#0F172A">B</div>
+      深夜石墨 — 深色、現代感、AI科技氛圍
+    </div>
+    <div class="mock b">
+      <div class="m-header">
+        <div class="m-logo"><div class="m-logo-icon">◈</div>ReStone</div>
+        <div class="m-nav">
+          <div class="m-nav-btn">登入</div>
+          <div class="m-nav-btn primary">免費註冊</div>
+        </div>
+      </div>
+      <div class="m-hero">
+        <div class="m-hero-badge"><div class="m-hero-dot"></div>LIVE INVENTORY</div>
+        <div class="m-hero-title"><span>ReStone</span> 循環石材服務平台</div>
+        <div class="m-hero-sub">探索可再利用的優質石材，連結設計師與供應商</div>
+      </div>
+      <div class="m-cards">
+        <div class="m-card">
+          <div class="m-card-img" style="color:#94A3B8">🪨</div>
+          <div class="m-card-body">
+            <div class="m-card-badge">大理石</div>
+            <div class="m-card-title">卡拉拉白大理石</div>
+            <div class="m-card-price">NT$2,400</div>
+          </div>
+        </div>
+        <div class="m-card">
+          <div class="m-card-img">🟫</div>
+          <div class="m-card-body">
+            <div class="m-card-badge">花崗岩</div>
+            <div class="m-card-title">黑色絕對花崗岩</div>
+            <div class="m-card-price">NT$1,800</div>
+          </div>
+        </div>
+        <div class="m-card">
+          <div class="m-card-img">🪨</div>
+          <div class="m-card-body">
+            <div class="m-card-badge">板岩</div>
+            <div class="m-card-title">灰色文化石板岩</div>
+            <div class="m-card-price">NT$980</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── C ── -->
+  <div class="theme-block">
+    <div class="theme-label">
+      <div class="num" style="background:#B45309">C</div>
+      暖沙石 — 大地土系、溫潤、貼近石材質感
+    </div>
+    <div class="mock c">
+      <div class="m-header">
+        <div class="m-logo"><div class="m-logo-icon">◈</div>ReStone</div>
+        <div class="m-nav">
+          <div class="m-nav-btn">登入</div>
+          <div class="m-nav-btn primary">免費註冊</div>
+        </div>
+      </div>
+      <div class="m-hero">
+        <div class="m-hero-badge"><div class="m-hero-dot"></div>LIVE INVENTORY</div>
+        <div class="m-hero-title"><span>ReStone</span> 循環石材服務平台</div>
+        <div class="m-hero-sub">探索可再利用的優質石材，連結設計師與供應商</div>
+      </div>
+      <div class="m-cards">
+        <div class="m-card">
+          <div class="m-card-img">🪨</div>
+          <div class="m-card-body">
+            <div class="m-card-badge">大理石</div>
+            <div class="m-card-title">卡拉拉白大理石</div>
+            <div class="m-card-price">NT$2,400</div>
+          </div>
+        </div>
+        <div class="m-card">
+          <div class="m-card-img">🟫</div>
+          <div class="m-card-body">
+            <div class="m-card-badge">花崗岩</div>
+            <div class="m-card-title">黑色絕對花崗岩</div>
+            <div class="m-card-price">NT$1,800</div>
+          </div>
+        </div>
+        <div class="m-card">
+          <div class="m-card-img">🪨</div>
+          <div class="m-card-body">
+            <div class="m-card-badge">板岩</div>
+            <div class="m-card-title">灰色文化石板岩</div>
+            <div class="m-card-price">NT$980</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── D ── -->
+  <div class="theme-block">
+    <div class="theme-label">
+      <div class="num" style="background:#059669">D</div>
+      翡翠循環 — 永續綠、環保、循環經濟品牌感
+    </div>
+    <div class="mock d">
+      <div class="m-header">
+        <div class="m-logo"><div class="m-logo-icon">◈</div>ReStone</div>
+        <div class="m-nav">
+          <div class="m-nav-btn">登入</div>
+          <div class="m-nav-btn primary">免費註冊</div>
+        </div>
+      </div>
+      <div class="m-hero">
+        <div class="m-hero-badge"><div class="m-hero-dot"></div>LIVE INVENTORY</div>
+        <div class="m-hero-title"><span>ReStone</span> 循環石材服務平台</div>
+        <div class="m-hero-sub">探索可再利用的優質石材，連結設計師與供應商</div>
+      </div>
+      <div class="m-cards">
+        <div class="m-card">
+          <div class="m-card-img">🪨</div>
+          <div class="m-card-body">
+            <div class="m-card-badge">大理石</div>
+            <div class="m-card-title">卡拉拉白大理石</div>
+            <div class="m-card-price">NT$2,400</div>
+          </div>
+        </div>
+        <div class="m-card">
+          <div class="m-card-img">🟫</div>
+          <div class="m-card-body">
+            <div class="m-card-badge">花崗岩</div>
+            <div class="m-card-title">黑色絕對花崗岩</div>
+            <div class="m-card-price">NT$1,800</div>
+          </div>
+        </div>
+        <div class="m-card">
+          <div class="m-card-img">🪨</div>
+          <div class="m-card-body">
+            <div class="m-card-badge">板岩</div>
+            <div class="m-card-title">灰色文化石板岩</div>
+            <div class="m-card-price">NT$980</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── E ── -->
+  <div class="theme-block">
+    <div class="theme-label">
+      <div class="num" style="background:#475569">E</div>
+      鈦銀極簡 — 黑白灰、高端奢華、建材品牌感
+    </div>
+    <div class="mock e">
+      <div class="m-header">
+        <div class="m-logo"><div class="m-logo-icon">◈</div>ReStone</div>
+        <div class="m-nav">
+          <div class="m-nav-btn">登入</div>
+          <div class="m-nav-btn primary">免費註冊</div>
+        </div>
+      </div>
+      <div class="m-hero">
+        <div class="m-hero-badge"><div class="m-hero-dot"></div>LIVE INVENTORY</div>
+        <div class="m-hero-title"><span>ReStone</span> 循環石材服務平台</div>
+        <div class="m-hero-sub">探索可再利用的優質石材，連結設計師與供應商</div>
+      </div>
+      <div class="m-cards">
+        <div class="m-card">
+          <div class="m-card-img">🪨</div>
+          <div class="m-card-body">
+            <div class="m-card-badge">大理石</div>
+            <div class="m-card-title">卡拉拉白大理石</div>
+            <div class="m-card-price">NT$2,400</div>
+          </div>
+        </div>
+        <div class="m-card">
+          <div class="m-card-img">🟫</div>
+          <div class="m-card-body">
+            <div class="m-card-badge">花崗岩</div>
+            <div class="m-card-title">黑色絕對花崗岩</div>
+            <div class="m-card-price">NT$1,800</div>
+          </div>
+        </div>
+        <div class="m-card">
+          <div class="m-card-img">🪨</div>
+          <div class="m-card-body">
+            <div class="m-card-badge">板岩</div>
+            <div class="m-card-title">灰色文化石板岩</div>
+            <div class="m-card-price">NT$980</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>
