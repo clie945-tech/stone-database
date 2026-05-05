@@ -104,6 +104,10 @@
     .login-hint { font-size: 0.78rem; color: var(--text-muted); margin-top: 0.75rem; }
     .login-hint a { color: var(--blue); text-decoration: none; }
 
+    .waste-btn { padding: 0.4rem 0.9rem; border: 1.5px solid var(--border); border-radius: 8px; background: var(--bg); color: var(--text-muted); font-size: 0.78rem; font-weight: 600; cursor: pointer; transition: all 0.15s; font-family: inherit; }
+    .waste-btn:hover { border-color: var(--blue-mid); color: var(--blue); background: var(--blue-light); }
+    .waste-btn.active { border-color: var(--blue); color: var(--blue); background: var(--blue-light); }
+
     footer { margin-top: 5rem; padding: 1.5rem; text-align: center; font-size: 0.75rem; color: var(--text-light); border-top: 1px solid var(--border); background: var(--white); }
   </style>
 </head>
@@ -124,6 +128,7 @@
         <a href="/register" class="hbtn hbtn-primary">免費註冊</a>
       {% endif %}
       <a href="/" class="hbtn">← 返回列表</a>
+      <a href="/admin/login" class="hbtn" style="color:var(--text-muted)">⚙ 系統管理</a>
     </div>
   </div>
 </header>
@@ -216,6 +221,80 @@
     </div>
   </div>
 
+  <!-- 用量計算機 -->
+  {% if stone.width and stone.height %}
+  <div class="inquiry-section">
+    <div class="section-title">📐 用量計算機</div>
+    <div class="inquiry-card">
+      <p style="font-size:0.85rem;color:var(--text-muted);margin-bottom:1.5rem">輸入您的空間尺寸，自動計算所需石材數量與預估費用</p>
+      <div class="form-grid-2">
+        <div class="form-group">
+          <label class="form-label">空間長度（公尺）</label>
+          <input class="form-input" type="number" id="roomL" step="0.1" min="0" placeholder="例：5.0" oninput="calcQty()" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">空間寬度（公尺）</label>
+          <input class="form-input" type="number" id="roomW" step="0.1" min="0" placeholder="例：4.0" oninput="calcQty()" />
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">損耗率（%）</label>
+        <div style="display:flex;gap:0.5rem;flex-wrap:wrap">
+          <button type="button" class="waste-btn active" onclick="setWaste(this,10)">10%（一般）</button>
+          <button type="button" class="waste-btn" onclick="setWaste(this,15)">15%（複雜空間）</button>
+          <button type="button" class="waste-btn" onclick="setWaste(this,20)">20%（異形切割）</button>
+        </div>
+      </div>
+
+      <div id="calcResult" style="display:none;margin-top:1.2rem;background:var(--blue-light);border:1px solid var(--blue-mid);border-radius:12px;padding:1.2rem">
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;text-align:center">
+          <div>
+            <div style="font-size:1.8rem;font-weight:800;color:var(--blue)" id="resArea">—</div>
+            <div style="font-size:0.7rem;color:var(--text-muted);margin-top:4px">需鋪面積（m²）</div>
+          </div>
+          <div>
+            <div style="font-size:1.8rem;font-weight:800;color:var(--blue)" id="resQty">—</div>
+            <div style="font-size:0.7rem;color:var(--text-muted);margin-top:4px">需要數量（{{ stone.unit or '片' }}）</div>
+          </div>
+          <div>
+            <div style="font-size:1.8rem;font-weight:800;color:var(--blue)" id="resPrice">—</div>
+            <div style="font-size:0.7rem;color:var(--text-muted);margin-top:4px">預估費用（NT$）</div>
+          </div>
+        </div>
+        <div id="resNote" style="font-size:0.75rem;color:var(--text-muted);margin-top:1rem;text-align:center"></div>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- 智慧推薦 -->
+  {% if recommendations %}
+  <div class="inquiry-section">
+    <div class="section-title">✨ 你可能也喜歡</div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:1rem">
+      {% for r in recommendations %}
+        <a href="/stone/{{ r.id }}" style="background:white;border-radius:14px;border:1px solid var(--border);overflow:hidden;text-decoration:none;color:inherit;transition:all 0.2s;display:block" onmouseover="this.style.transform='translateY(-3px)';this.style.boxShadow='0 8px 24px rgba(0,0,0,0.1)'" onmouseout="this.style.transform='';this.style.boxShadow=''">
+          {% if r.photo %}
+            <img src="/static/uploads/{{ r.photo }}" alt="{{ r.stone_type }}" style="width:100%;height:150px;object-fit:cover;display:block" />
+          {% else %}
+            <div style="width:100%;height:150px;background:linear-gradient(135deg,#F1F5F9,#E2E8F0);display:flex;align-items:center;justify-content:center;color:#C8D5E8;font-size:2.5rem">◈</div>
+          {% endif %}
+          <div style="padding:1rem">
+            <div style="font-size:0.68rem;font-weight:700;color:var(--blue);letter-spacing:0.06em;text-transform:uppercase;background:var(--blue-light);padding:2px 8px;border-radius:5px;display:inline-block;margin-bottom:0.5rem">{{ r.stone_type }}</div>
+            <div style="font-size:0.92rem;font-weight:700;margin-bottom:0.3rem">{{ r.stone_type }}</div>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-top:0.6rem;padding-top:0.6rem;border-top:1px solid var(--border)">
+              <span style="font-size:0.9rem;font-weight:700;color:var(--blue)">
+                {% if r.price %}NT${{ "{:,.0f}".format(r.price) }}{% else %}洽詢{% endif %}
+              </span>
+              <span style="font-size:0.75rem;color:var(--text-muted)">庫存 {{ r.quantity or '—' }}</span>
+            </div>
+          </div>
+        </a>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
   <!-- 詢問表單 -->
   <div class="inquiry-section">
     <div class="section-title">聯繫廠商 / 詢問訂購</div>
@@ -273,6 +352,39 @@
     document.getElementById('mainImg').src = src;
     document.querySelectorAll('.thumb-item').forEach(t => t.classList.remove('active'));
     thumb.classList.add('active');
+  }
+
+  // ── 用量計算機 ──
+  let wasteRate = 0.10;
+  const stoneW = {{ stone.width or 0 }} / 100;   // cm → m
+  const stoneH = {{ stone.height or 0 }} / 100;  // cm → m
+  const stonePrice = {{ stone.price or 0 }};
+
+  function setWaste(btn, pct) {
+    wasteRate = pct / 100;
+    document.querySelectorAll('.waste-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    calcQty();
+  }
+
+  function calcQty() {
+    const L = parseFloat(document.getElementById('roomL').value);
+    const W = parseFloat(document.getElementById('roomW').value);
+    if (!L || !W || L <= 0 || W <= 0) {
+      document.getElementById('calcResult').style.display = 'none';
+      return;
+    }
+    const area = L * W;
+    const tileArea = stoneW * stoneH;
+    const qty = tileArea > 0 ? Math.ceil((area / tileArea) * (1 + wasteRate)) : 0;
+    const totalPrice = stonePrice > 0 ? qty * stonePrice : 0;
+
+    document.getElementById('resArea').textContent = area.toFixed(1);
+    document.getElementById('resQty').textContent = qty.toLocaleString();
+    document.getElementById('resPrice').textContent = totalPrice > 0 ? totalPrice.toLocaleString() : '洽詢';
+    document.getElementById('resNote').textContent =
+      `石材尺寸 ${(stoneW*100).toFixed(0)}×${(stoneH*100).toFixed(0)} cm，含 ${Math.round(wasteRate*100)}% 損耗，共需 ${qty} {{ stone.unit or '片' }}`;
+    document.getElementById('calcResult').style.display = 'block';
   }
 </script>
 </body>

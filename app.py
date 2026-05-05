@@ -96,6 +96,40 @@ def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 
+# ─── 增強型搜尋：同義詞字典 ──────────────────────────────────
+SYNONYMS = {
+    '大理石': ['marble', '雲石', '大理岩', 'marmo'],
+    '花崗岩': ['granite', '花崗石', '麻石', 'granitе'],
+    '板岩':   ['slate', '石板', '頁岩'],
+    '石英岩': ['quartzite', '石英石', '水晶石'],
+    '石灰岩': ['limestone', '石灰石', '珊瑚石'],
+    '砂岩':   ['sandstone', '沙岩'],
+    '玄武岩': ['basalt', '火山岩', '玄武石'],
+    '洞石':   ['travertine', '石灰華'],
+    '白色':   ['米白', '象牙白', '珍珠白', '純白', 'white'],
+    '灰色':   ['深灰', '淺灰', '銀灰', '鐵灰', 'grey', 'gray'],
+    '黑色':   ['深黑', '烏黑', 'black', '黑'],
+    '米色':   ['米白', '杏色', '奶油色', 'beige'],
+    '棕色':   ['咖啡色', '褐色', '棕褐', 'brown'],
+    '綠色':   ['墨綠', '翠綠', 'green', '翠'],
+    '地板':   ['地面', '地坪', '鋪地', '地磚'],
+    '牆面':   ['牆壁', '立面', '壁面', '外牆', '內牆'],
+    '廚房':   ['廚衛', '流理台', '檯面', '廚具'],
+    '衛浴':   ['浴室', '廁所', '衛生間', '浴間'],
+    '戶外':   ['室外', '外部', '庭院', '廣場'],
+}
+
+def expand_query(query):
+    """將搜尋字串展開為包含同義詞的列表"""
+    q = query.strip().lower()
+    terms = {q}
+    for key, values in SYNONYMS.items():
+        all_terms = [key.lower()] + [v.lower() for v in values]
+        if any(t in q or q in t for t in all_terms):
+            terms.update(all_terms)
+    return list(terms)
+
+
 def save_photo(file_field):
     """儲存上傳照片，回傳檔名或 None"""
     if file_field and file_field.filename and allowed_file(file_field.filename):
@@ -141,19 +175,26 @@ def index():
     search = request.args.get('search', '')
     stone_type = request.args.get('type', '')
 
-    query = 'SELECT * FROM stones WHERE 1=1'
+    base_query = 'SELECT * FROM stones WHERE 1=1'
     params = []
 
     if search:
-        query += ' AND (stone_type LIKE ? OR vendor LIKE ? OR description LIKE ?)'
-        params.extend([f'%{search}%', f'%{search}%', f'%{search}%'])
+        # 展開同義詞進行增強搜尋
+        terms = expand_query(search)
+        conditions = []
+        for term in terms:
+            conditions.append(
+                '(stone_type LIKE ? OR vendor LIKE ? OR description LIKE ?)'
+            )
+            params.extend([f'%{term}%', f'%{term}%', f'%{term}%'])
+        base_query += ' AND (' + ' OR '.join(conditions) + ')'
 
     if stone_type:
-        query += ' AND stone_type = ?'
+        base_query += ' AND stone_type = ?'
         params.append(stone_type)
 
-    query += ' ORDER BY created_at DESC'
-    stones = conn.execute(query, params).fetchall()
+    base_query += ' ORDER BY created_at DESC'
+    stones = conn.execute(base_query, params).fetchall()
     types = conn.execute('SELECT DISTINCT stone_type FROM stones ORDER BY stone_type').fetchall()
     total = conn.execute('SELECT COUNT(*) FROM stones').fetchone()[0]
     conn.close()
@@ -166,10 +207,24 @@ def index():
 def stone_detail(id):
     conn = get_db()
     stone = conn.execute('SELECT * FROM stones WHERE id = ?', (id,)).fetchone()
-    conn.close()
     if not stone:
+        conn.close()
         return redirect(url_for('index'))
-    return render_template('stone_detail.html', stone=stone)
+
+    # 智慧推薦：同類型優先，其次相近價格，排除自己
+    price = stone['price'] or 0
+    recommendations = conn.execute('''
+        SELECT * FROM stones
+        WHERE id != ?
+        ORDER BY
+            CASE WHEN stone_type = ? THEN 0 ELSE 1 END,
+            CASE WHEN price IS NOT NULL AND ABS(COALESCE(price,0) - ?) < ? THEN 0 ELSE 1 END,
+            created_at DESC
+        LIMIT 4
+    ''', (id, stone['stone_type'], price, max(price * 0.6, 2000))).fetchall()
+
+    conn.close()
+    return render_template('stone_detail.html', stone=stone, recommendations=recommendations)
 
 
 @app.route('/stone/<int:id>/inquiry', methods=['POST'])
