@@ -157,7 +157,12 @@
           <div class="form-grid">
             <div class="form-group">
               <label for="stone_type">石材種類 <span class="required">*</span></label>
-              <input type="text" id="stone_type" name="stone_type" value="{{ stone.stone_type if stone else '' }}" placeholder="例：花崗岩、大理石、石英岩..." required />
+              <select id="stone_type" name="stone_type" required>
+                <option value="" disabled {% if not stone %}selected{% endif %}>請選擇石材種類</option>
+                {% for t in ['大理石', '蛇紋石', '化石', '花崗岩'] %}
+                  <option value="{{ t }}" {% if stone and stone.stone_type == t %}selected{% endif %}>{{ t }}</option>
+                {% endfor %}
+              </select>
             </div>
             <div class="form-group">
               <label for="vendor">廠商名稱</label>
