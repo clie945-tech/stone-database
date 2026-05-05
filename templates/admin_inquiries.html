@@ -96,6 +96,9 @@
 <div class="main-wrap">
   <div class="topbar">
     <div class="topbar-title">詢問管理</div>
+    <div>
+      <a href="/admin/export/inquiries" style="display:inline-flex;align-items:center;gap:6px;padding:0.5rem 1rem;border-radius:8px;font-size:0.85rem;font-weight:600;background:#F8FAFC;color:#64748B;border:1px solid #E2E8F0;text-decoration:none;transition:all 0.15s" onmouseover="this.style.color='#0F172A'" onmouseout="this.style.color='#64748B'">↓ 匯出 Excel</a>
+    </div>
   </div>
   <div class="content">
     {% with messages = get_flashed_messages(with_categories=true) %}

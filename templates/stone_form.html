@@ -94,6 +94,17 @@
 
     .form-footer { padding: 1.2rem 1.5rem; border-top: 1px solid var(--border); display: flex; gap: 0.8rem; justify-content: flex-end; }
 
+    /* ── 顏色選擇器 ── */
+    .color-picker { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.4rem; }
+    .color-opt input[type="radio"] { display: none; }
+    .color-swatch {
+      display: inline-block; padding: 5px 14px; border-radius: 99px;
+      font-size: 0.78rem; font-weight: 600; cursor: pointer;
+      border: 2px solid transparent; transition: all 0.15s;
+    }
+    .color-opt input:checked + .color-swatch { border-color: var(--blue); box-shadow: 0 0 0 2px rgba(37,99,235,0.25); }
+    .color-opt:hover .color-swatch { opacity: 0.85; transform: translateY(-1px); }
+
     @media (max-width: 600px) {
       .form-grid, .form-grid-3 { grid-template-columns: 1fr; }
       .main-wrap { margin-left: 0; }
@@ -198,6 +209,20 @@
           <div class="form-group">
             <label for="description">備註</label>
             <textarea id="description" name="description" placeholder="石材的特色、狀況說明、注意事項...">{{ stone.description if stone and stone.description else '' }}</textarea>
+          </div>
+
+          <div class="section-title">顏色標籤</div>
+          <div class="form-group">
+            <label>選擇顏色 <span class="hint">（方便買家篩選）</span></label>
+            <div class="color-picker">
+              {% for code, label, bg, fg in colors %}
+              <label class="color-opt">
+                <input type="radio" name="color" value="{{ code }}"
+                       {% if stone and stone['color'] == code %}checked{% endif %}>
+                <span class="color-swatch" style="background:{{ bg }};color:{{ fg }}">{{ label }}</span>
+              </label>
+              {% endfor %}
+            </div>
           </div>
 
           <div class="section-title">石材照片（最多 3 張）</div>

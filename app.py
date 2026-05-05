@@ -1,6 +1,8 @@
-from flask import Flask, render_template, request, redirect, url_for, session, flash
+from flask import Flask, render_template, request, redirect, url_for, session, flash, send_file
+from flask_mail import Mail, Message
 import sqlite3
 import os
+import io
 import secrets
 from werkzeug.utils import secure_filename
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -16,7 +18,42 @@ DB_PATH = 'stone_database.db'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['MAX_CONTENT_LENGTH'] = 32 * 1024 * 1024  # 32MB
 
+# ── Email 設定（從環境變數讀取，未設定則停用）──
+app.config['MAIL_SERVER']         = os.environ.get('MAIL_SERVER', 'smtp.gmail.com')
+app.config['MAIL_PORT']           = int(os.environ.get('MAIL_PORT', 587))
+app.config['MAIL_USE_TLS']        = True
+app.config['MAIL_USERNAME']       = os.environ.get('MAIL_USERNAME', '')
+app.config['MAIL_PASSWORD']       = os.environ.get('MAIL_PASSWORD', '')
+app.config['MAIL_DEFAULT_SENDER'] = os.environ.get('MAIL_USERNAME', '')
+ADMIN_EMAIL = os.environ.get('ADMIN_EMAIL', os.environ.get('MAIL_USERNAME', ''))
+mail = Mail(app)
+
+# ── 顏色標籤定義 ──
+COLORS = [
+    ('white',  '白色系', '#F8FAFC', '#64748B'),
+    ('gray',   '灰色系', '#E2E8F0', '#475569'),
+    ('black',  '黑色系', '#1E293B', '#F1F5F9'),
+    ('beige',  '米色系', '#FEF3C7', '#92400E'),
+    ('brown',  '棕色系', '#78350F', '#FEF3C7'),
+    ('green',  '綠色系', '#D1FAE5', '#065F46'),
+    ('blue',   '藍色系', '#DBEAFE', '#1E40AF'),
+    ('red',    '紅色系', '#FEE2E2', '#991B1B'),
+    ('multi',  '多彩',   '#F3E8FF', '#6D28D9'),
+]
+COLOR_MAP = {c[0]: c for c in COLORS}
+
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+
+
+def send_email_safe(subject, recipients, html_body):
+    """安全發送 Email，若未設定則略過"""
+    if not app.config.get('MAIL_USERNAME'):
+        return
+    try:
+        msg = Message(subject, recipients=recipients, html=html_body)
+        mail.send(msg)
+    except Exception as e:
+        print(f'[Email 發送失敗] {e}')
 
 
 def get_db():
@@ -82,6 +119,13 @@ def init_db():
             conn.commit()
         except Exception:
             pass
+
+    # 顏色標籤欄位遷移
+    try:
+        conn.execute("ALTER TABLE stones ADD COLUMN color TEXT DEFAULT ''")
+        conn.commit()
+    except Exception:
+        pass
 
     # 建立預設管理員帳號
     cursor = conn.execute('SELECT COUNT(*) FROM admin_users')
@@ -193,6 +237,11 @@ def index():
         base_query += ' AND stone_type = ?'
         params.append(stone_type)
 
+    color = request.args.get('color', '')
+    if color:
+        base_query += ' AND color = ?'
+        params.append(color)
+
     base_query += ' ORDER BY created_at DESC'
     stones = conn.execute(base_query, params).fetchall()
     types = conn.execute('SELECT DISTINCT stone_type FROM stones ORDER BY stone_type').fetchall()
@@ -200,7 +249,8 @@ def index():
     conn.close()
 
     return render_template('index.html', stones=stones, types=types,
-                           search=search, selected_type=stone_type, total=total)
+                           search=search, selected_type=stone_type, total=total,
+                           colors=COLORS, color_map=COLOR_MAP, selected_color=color)
 
 
 @app.route('/stone/<int:id>')
@@ -224,7 +274,8 @@ def stone_detail(id):
     ''', (id, stone['stone_type'], price, max(price * 0.6, 2000))).fetchall()
 
     conn.close()
-    return render_template('stone_detail.html', stone=stone, recommendations=recommendations)
+    return render_template('stone_detail.html', stone=stone, recommendations=recommendations,
+                           color_map=COLOR_MAP)
 
 
 @app.route('/stone/<int:id>/inquiry', methods=['POST'])
@@ -246,13 +297,61 @@ def submit_inquiry(id):
         conn.close()
         return redirect(url_for('stone_detail', id=id))
 
+    stone_name = stone['stone_type']
     conn.execute('''
         INSERT INTO inquiries (stone_id, stone_name, customer_name, customer_email,
                                customer_phone, quantity, message)
         VALUES (?, ?, ?, ?, ?, ?, ?)
-    ''', (id, stone['stone_type'], name, email, phone, qty, message))
+    ''', (id, stone_name, name, email, phone, qty, message))
     conn.commit()
     conn.close()
+
+    # 發送確認 Email 給客戶
+    send_email_safe(
+        subject='【ReStone】您的詢問已收到',
+        recipients=[email],
+        html_body=f'''
+        <div style="font-family:sans-serif;max-width:520px;margin:0 auto;padding:2rem">
+          <div style="background:#2563EB;border-radius:12px;padding:1.5rem;text-align:center;margin-bottom:1.5rem">
+            <h2 style="color:white;margin:0;font-size:1.3rem">◈ ReStone 循環石材服務平台</h2>
+          </div>
+          <h3 style="color:#0F172A">感謝您的詢問！</h3>
+          <p style="color:#64748B;line-height:1.8">您好 <strong>{name}</strong>，<br>
+          我們已收到您針對「<strong>{stone_name}</strong>」的詢問，將盡快與您聯繫。</p>
+          <div style="background:#EFF6FF;border-radius:10px;padding:1rem;margin-top:1.2rem;border:1px solid #BFDBFE">
+            <p style="margin:0;font-size:0.85rem;color:#1E40AF">詢問數量：{qty or "未填寫"}<br>留言：{message or "（無）"}</p>
+          </div>
+          <hr style="border:none;border-top:1px solid #E2E8F0;margin:1.5rem 0">
+          <p style="color:#94A3B8;font-size:0.78rem;text-align:center">ReStone 循環石材服務平台 · 支持循環經濟</p>
+        </div>'''
+    )
+    # 發送通知 Email 給管理員
+    if ADMIN_EMAIL:
+        send_email_safe(
+            subject=f'【ReStone】新詢問：{stone_name}',
+            recipients=[ADMIN_EMAIL],
+            html_body=f'''
+            <div style="font-family:sans-serif;max-width:520px;margin:0 auto;padding:2rem">
+              <h2 style="color:#2563EB">新詢問通知</h2>
+              <table style="width:100%;border-collapse:collapse;font-size:0.9rem;margin-top:1rem">
+                <tr><td style="padding:10px;background:#F8FAFC;color:#64748B;width:90px;border-bottom:1px solid #E2E8F0">石材</td>
+                    <td style="padding:10px;font-weight:600;border-bottom:1px solid #E2E8F0">{stone_name}</td></tr>
+                <tr><td style="padding:10px;background:#F8FAFC;color:#64748B;border-bottom:1px solid #E2E8F0">客戶姓名</td>
+                    <td style="padding:10px;border-bottom:1px solid #E2E8F0">{name}</td></tr>
+                <tr><td style="padding:10px;background:#F8FAFC;color:#64748B;border-bottom:1px solid #E2E8F0">Email</td>
+                    <td style="padding:10px;border-bottom:1px solid #E2E8F0">{email}</td></tr>
+                <tr><td style="padding:10px;background:#F8FAFC;color:#64748B;border-bottom:1px solid #E2E8F0">電話</td>
+                    <td style="padding:10px;border-bottom:1px solid #E2E8F0">{phone or "—"}</td></tr>
+                <tr><td style="padding:10px;background:#F8FAFC;color:#64748B;border-bottom:1px solid #E2E8F0">詢問數量</td>
+                    <td style="padding:10px;border-bottom:1px solid #E2E8F0">{qty or "—"}</td></tr>
+                <tr><td style="padding:10px;background:#F8FAFC;color:#64748B">留言</td>
+                    <td style="padding:10px">{message or "—"}</td></tr>
+              </table>
+              <div style="margin-top:1.5rem">
+                <a href="/admin/inquiries" style="background:#2563EB;color:white;padding:0.6rem 1.5rem;border-radius:8px;text-decoration:none;font-size:0.88rem;font-weight:600">查看詢問管理</a>
+              </div>
+            </div>'''
+        )
 
     flash('詢問已送出！廠商將盡快與您聯繫。', 'success')
     return redirect(url_for('stone_detail', id=id))
@@ -426,6 +525,7 @@ def add_stone():
         price       = request.form.get('price') or None
         vendor      = request.form.get('vendor', '').strip()
         description = request.form.get('description', '').strip()
+        color       = request.form.get('color', '')
 
         photo  = save_photo(request.files.get('photo'))
         photo2 = save_photo(request.files.get('photo2'))
@@ -434,17 +534,17 @@ def add_stone():
         conn = get_db()
         conn.execute('''
             INSERT INTO stones (stone_type, photo, photo2, photo3,
-                                width, height, thickness, quantity, unit, price, vendor, description)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                                width, height, thickness, quantity, unit, price, vendor, description, color)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ''', (stone_type, photo, photo2, photo3,
-              width, height, thickness, quantity, unit, price, vendor, description))
+              width, height, thickness, quantity, unit, price, vendor, description, color))
         conn.commit()
         conn.close()
 
         flash(f'「{stone_type}」已成功新增！', 'success')
         return redirect(url_for('admin_dashboard'))
 
-    return render_template('stone_form.html', stone=None, title='新增石材')
+    return render_template('stone_form.html', stone=None, title='新增石材', colors=COLORS)
 
 
 @app.route('/admin/edit/<int:id>', methods=['GET', 'POST'])
@@ -468,6 +568,7 @@ def edit_stone(id):
         price       = request.form.get('price') or None
         vendor      = request.form.get('vendor', '').strip()
         description = request.form.get('description', '').strip()
+        color       = request.form.get('color', '')
 
         # 處理三張照片（有新上傳才替換）
         photos = []
@@ -484,11 +585,11 @@ def edit_stone(id):
             UPDATE stones
             SET stone_type=?, photo=?, photo2=?, photo3=?,
                 width=?, height=?, thickness=?,
-                quantity=?, unit=?, price=?, vendor=?, description=?,
+                quantity=?, unit=?, price=?, vendor=?, description=?, color=?,
                 updated_at=CURRENT_TIMESTAMP
             WHERE id=?
         ''', (stone_type, photos[0], photos[1], photos[2],
-              width, height, thickness, quantity, unit, price, vendor, description, id))
+              width, height, thickness, quantity, unit, price, vendor, description, color, id))
         conn.commit()
         conn.close()
 
@@ -496,7 +597,7 @@ def edit_stone(id):
         return redirect(url_for('admin_dashboard'))
 
     conn.close()
-    return render_template('stone_form.html', stone=stone, title='編輯石材')
+    return render_template('stone_form.html', stone=stone, title='編輯石材', colors=COLORS)
 
 
 @app.route('/admin/delete/<int:id>', methods=['POST'])
@@ -525,6 +626,53 @@ def admin_customers():
     customers = conn.execute('SELECT * FROM customers ORDER BY created_at DESC').fetchall()
     conn.close()
     return render_template('admin_customers.html', customers=customers)
+
+
+@app.route('/admin/export/stones')
+@admin_required
+def export_stones():
+    import openpyxl
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.title = '石材庫存'
+    ws.append(['ID', '石材種類', '顏色', '寬(cm)', '高(cm)', '厚(cm)', '數量', '單位', '單價(NT$)', '廠商', '說明', '建立時間'])
+    conn = get_db()
+    stones = conn.execute('SELECT * FROM stones ORDER BY id').fetchall()
+    conn.close()
+    for s in stones:
+        color_label = COLOR_MAP.get(s['color'] or '', ('', '', '', ''))[1] if s['color'] else ''
+        ws.append([s['id'], s['stone_type'], color_label,
+                   s['width'], s['height'], s['thickness'],
+                   s['quantity'], s['unit'], s['price'],
+                   s['vendor'], s['description'], s['created_at']])
+    buf = io.BytesIO()
+    wb.save(buf)
+    buf.seek(0)
+    return send_file(buf, as_attachment=True, download_name='stones_export.xlsx',
+                     mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+
+
+@app.route('/admin/export/inquiries')
+@admin_required
+def export_inquiries():
+    import openpyxl
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.title = '詢問記錄'
+    ws.append(['ID', '石材', '客戶姓名', 'Email', '電話', '詢問數量', '留言', '狀態', '建立時間'])
+    conn = get_db()
+    rows = conn.execute('SELECT * FROM inquiries ORDER BY id DESC').fetchall()
+    conn.close()
+    status_map = {'pending': '待處理', 'replied': '已回覆', 'closed': '已結案'}
+    for r in rows:
+        ws.append([r['id'], r['stone_name'], r['customer_name'], r['customer_email'],
+                   r['customer_phone'], r['quantity'], r['message'],
+                   status_map.get(r['status'], r['status']), r['created_at']])
+    buf = io.BytesIO()
+    wb.save(buf)
+    buf.seek(0)
+    return send_file(buf, as_attachment=True, download_name='inquiries_export.xlsx',
+                     mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
 
 
 @app.route('/admin/change-password', methods=['GET', 'POST'])

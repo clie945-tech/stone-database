@@ -167,6 +167,26 @@
     }
     .btn-clear:hover { color: var(--text); border-color: #CBD5E1; }
 
+    /* ── 顏色篩選 ── */
+    .color-filter {
+      background: var(--white); border-bottom: 1px solid var(--border);
+      padding: 0.7rem 2rem;
+    }
+    .color-filter-inner {
+      max-width: 1280px; margin: 0 auto;
+      display: flex; gap: 0.4rem; align-items: center; flex-wrap: wrap;
+    }
+    .color-filter-label { font-size: 0.75rem; color: var(--text-muted); font-weight: 600; margin-right: 0.3rem; white-space: nowrap; }
+    .cpill {
+      display: inline-block; padding: 4px 13px; border-radius: 99px;
+      font-size: 0.75rem; font-weight: 600; text-decoration: none;
+      border: 1.5px solid transparent; transition: all 0.15s;
+    }
+    .cpill:hover { opacity: 0.8; transform: translateY(-1px); }
+    .cpill.active { border-color: var(--blue); box-shadow: 0 0 0 2px rgba(37,99,235,0.2); }
+    .cpill-all { background: var(--bg); color: var(--text-muted); border-color: var(--border); }
+    .cpill-all.active { background: var(--blue-light); color: var(--blue); border-color: var(--blue); }
+
     /* ── Main ── */
     .main { max-width: 1280px; margin: 0 auto; padding: 2rem; }
     .results-bar {
@@ -350,6 +370,22 @@
   </form>
 </div>
 
+<!-- 顏色篩選列 -->
+{% if colors %}
+<div class="color-filter">
+  <div class="color-filter-inner">
+    <span class="color-filter-label">顏色：</span>
+    <a href="/?{% if search %}search={{ search }}&{% endif %}{% if selected_type %}type={{ selected_type }}&{% endif %}"
+       class="cpill cpill-all {% if not selected_color %}active{% endif %}">全部</a>
+    {% for code, label, bg, fg in colors %}
+      <a href="/?{% if search %}search={{ search }}&{% endif %}{% if selected_type %}type={{ selected_type }}&{% endif %}color={{ code }}"
+         class="cpill {% if selected_color == code %}active{% endif %}"
+         style="background:{{ bg }};color:{{ fg }};{% if selected_color == code %}border-color:{{ fg }};{% endif %}">{{ label }}</a>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
+
 <!-- Main -->
 <main class="main">
   <div class="results-bar">
@@ -376,6 +412,9 @@
               </div>
             {% endif %}
             <div class="card-type-badge">{{ s.stone_type }}</div>
+            {% if s['color'] and s['color'] in color_map %}
+              <div style="position:absolute;top:12px;right:12px;background:{{ color_map[s['color']][2] }};color:{{ color_map[s['color']][3] }};font-size:0.65rem;font-weight:700;padding:3px 9px;border-radius:99px;border:1px solid rgba(0,0,0,0.1);">{{ color_map[s['color']][1] }}</div>
+            {% endif %}
           </div>
           <div class="card-body">
             <div class="card-title">{{ s.stone_type }}</div>

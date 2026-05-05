@@ -198,6 +198,18 @@
         </div>
       {% endif %}
 
+      {% if stone['color'] and stone['color'] in color_map %}
+        <div class="spec-card">
+          <div class="spec-card-title">顏色標籤</div>
+          <div class="spec-row">
+            <span class="spec-label">顏色</span>
+            <span class="spec-value">
+              <span style="background:{{ color_map[stone['color']][2] }};color:{{ color_map[stone['color']][3] }};padding:3px 14px;border-radius:99px;font-size:0.82rem;font-weight:700;display:inline-block">{{ color_map[stone['color']][1] }}</span>
+            </span>
+          </div>
+        </div>
+      {% endif %}
+
       <div class="price-card">
         <div class="price-label">單價</div>
         {% if stone.price %}
