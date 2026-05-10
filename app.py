@@ -45,6 +45,94 @@ COLOR_MAP = {c[0]: c for c in COLORS}
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 
+# ── 圖片 AI 分析工具 ──
+def classify_rgb(r, g, b):
+    """RGB → 9種顏色標籤代碼"""
+    import colorsys
+    h, s, v = colorsys.rgb_to_hsv(r / 255.0, g / 255.0, b / 255.0)
+    h_deg = h * 360.0
+
+    # 黑白灰系（依亮度與飽和度）
+    if v > 0.82 and s < 0.18:
+        return 'white'
+    if v < 0.22:
+        return 'black'
+    if s < 0.13:
+        return 'gray'
+
+    # 色相分類
+    if h_deg < 20 or h_deg >= 340:
+        return 'red'
+    if h_deg < 50:
+        return 'beige' if (v > 0.62 and s < 0.45) else 'brown'
+    if h_deg < 70:
+        return 'beige' if v > 0.65 else 'brown'
+    if h_deg < 195:  # 涵蓋翠綠、青綠、蛇紋綠
+        return 'green'
+    if h_deg < 260:
+        return 'blue'
+    return 'red'  # 紫紅範圍歸類為紅
+
+
+def analyze_image(filepath_or_fileobj):
+    """分析圖片，回傳 (color_code, perceptual_hash, dominant_rgb_str)"""
+    try:
+        from PIL import Image
+        import imagehash
+        if hasattr(filepath_or_fileobj, 'read'):
+            filepath_or_fileobj.seek(0)
+            img = Image.open(filepath_or_fileobj).convert('RGB')
+        else:
+            img = Image.open(filepath_or_fileobj).convert('RGB')
+
+        # 主色偵測（量化 5 色取最多）
+        thumb = img.copy()
+        thumb.thumbnail((150, 150))
+        try:
+            paletted = thumb.convert('P', palette=Image.Palette.ADAPTIVE, colors=5)
+        except AttributeError:
+            paletted = thumb.convert('P', palette=Image.ADAPTIVE, colors=5)
+        palette = paletted.getpalette() or []
+        color_counts = sorted(paletted.getcolors() or [], reverse=True)
+        if color_counts and palette:
+            idx = color_counts[0][1]
+            r = palette[idx * 3]
+            g = palette[idx * 3 + 1]
+            b = palette[idx * 3 + 2]
+            color_code = classify_rgb(r, g, b)
+            rgb_str = f'{r},{g},{b}'
+        else:
+            color_code, rgb_str = '', ''
+
+        # 感知雜湊（用於以圖搜圖）
+        phash = str(imagehash.phash(img))
+        return (color_code, phash, rgb_str)
+    except Exception as e:
+        print(f'[圖片分析失敗] {e}')
+        return ('', '', '')
+
+
+def hash_distance(h1, h2):
+    """兩個 phash 字串的差異（0-64，越小越相似）"""
+    if not h1 or not h2:
+        return 64
+    try:
+        import imagehash
+        return imagehash.hex_to_hash(h1) - imagehash.hex_to_hash(h2)
+    except Exception:
+        return 64
+
+
+def rgb_distance(rgb1_str, rgb2_str):
+    """兩個 RGB 字串的歐氏距離（0-441）"""
+    try:
+        r1, g1, b1 = map(int, rgb1_str.split(','))
+        r2, g2, b2 = map(int, rgb2_str.split(','))
+        return ((r1 - r2) ** 2 + (g1 - g2) ** 2 + (b1 - b2) ** 2) ** 0.5
+    except Exception:
+        return 441.0
+
+
 def send_email_safe(subject, recipients, html_body):
     """安全發送 Email，若未設定則略過"""
     if not app.config.get('MAIL_USERNAME'):
@@ -126,6 +214,14 @@ def init_db():
         conn.commit()
     except Exception:
         pass
+
+    # AI 圖片分析欄位遷移（image_hash 用於以圖搜圖、dominant_rgb 用於色彩比對）
+    for col in ['image_hash', 'dominant_rgb']:
+        try:
+            conn.execute(f"ALTER TABLE stones ADD COLUMN {col} TEXT DEFAULT ''")
+            conn.commit()
+        except Exception:
+            pass
 
     # 建立預設管理員帳號
     cursor = conn.execute('SELECT COUNT(*) FROM admin_users')
@@ -531,17 +627,31 @@ def add_stone():
         photo2 = save_photo(request.files.get('photo2'))
         photo3 = save_photo(request.files.get('photo3'))
 
+        # 主照片 AI 分析：自動偵測顏色 + 計算雜湊
+        image_hash, dominant_rgb = '', ''
+        if photo:
+            auto_color, image_hash, dominant_rgb = analyze_image(
+                os.path.join(app.config['UPLOAD_FOLDER'], photo))
+            if not color and auto_color:
+                color = auto_color  # 未選顏色則套用自動偵測
+
         conn = get_db()
         conn.execute('''
             INSERT INTO stones (stone_type, photo, photo2, photo3,
-                                width, height, thickness, quantity, unit, price, vendor, description, color)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                                width, height, thickness, quantity, unit, price, vendor, description, color,
+                                image_hash, dominant_rgb)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ''', (stone_type, photo, photo2, photo3,
-              width, height, thickness, quantity, unit, price, vendor, description, color))
+              width, height, thickness, quantity, unit, price, vendor, description, color,
+              image_hash, dominant_rgb))
         conn.commit()
         conn.close()
 
-        flash(f'「{stone_type}」已成功新增！', 'success')
+        msg = f'「{stone_type}」已成功新增！'
+        if photo and not request.form.get('color') and color:
+            color_label = COLOR_MAP.get(color, ('', color, '', ''))[1]
+            msg += f' 已自動偵測顏色為「{color_label}」'
+        flash(msg, 'success')
         return redirect(url_for('admin_dashboard'))
 
     return render_template('stone_form.html', stone=None, title='新增石材', colors=COLORS)
@@ -572,24 +682,38 @@ def edit_stone(id):
 
         # 處理三張照片（有新上傳才替換）
         photos = []
+        main_photo_changed = False
         for field, old_key in [('photo', 'photo'), ('photo2', 'photo2'), ('photo3', 'photo3')]:
             new_file = request.files.get(field)
             new_photo = save_photo(new_file)
             if new_photo:
                 delete_photo(stone[old_key])
                 photos.append(new_photo)
+                if field == 'photo':
+                    main_photo_changed = True
             else:
                 photos.append(stone[old_key])
+
+        # 主照片若有變更或缺少分析資料，則重新分析
+        image_hash = stone['image_hash'] if 'image_hash' in stone.keys() else ''
+        dominant_rgb = stone['dominant_rgb'] if 'dominant_rgb' in stone.keys() else ''
+        if photos[0] and (main_photo_changed or not image_hash):
+            auto_color, image_hash, dominant_rgb = analyze_image(
+                os.path.join(app.config['UPLOAD_FOLDER'], photos[0]))
+            if not color and auto_color:
+                color = auto_color
 
         conn.execute('''
             UPDATE stones
             SET stone_type=?, photo=?, photo2=?, photo3=?,
                 width=?, height=?, thickness=?,
                 quantity=?, unit=?, price=?, vendor=?, description=?, color=?,
+                image_hash=?, dominant_rgb=?,
                 updated_at=CURRENT_TIMESTAMP
             WHERE id=?
         ''', (stone_type, photos[0], photos[1], photos[2],
-              width, height, thickness, quantity, unit, price, vendor, description, color, id))
+              width, height, thickness, quantity, unit, price, vendor, description, color,
+              image_hash, dominant_rgb, id))
         conn.commit()
         conn.close()
 
@@ -626,6 +750,88 @@ def admin_customers():
     customers = conn.execute('SELECT * FROM customers ORDER BY created_at DESC').fetchall()
     conn.close()
     return render_template('admin_customers.html', customers=customers)
+
+
+# ─── AI 圖片功能：以圖搜圖 ────────────────────────────────────
+
+@app.route('/search/by-image', methods=['GET', 'POST'])
+def search_by_image():
+    if request.method == 'POST':
+        ref_file = request.files.get('reference')
+        if not ref_file or not ref_file.filename or not allowed_file(ref_file.filename):
+            flash('請上傳有效的圖片（JPG／PNG／GIF／WEBP）', 'error')
+            return redirect(url_for('search_by_image'))
+
+        # 讀取參考圖、分析、轉成 base64 顯示（不寫入磁碟）
+        import base64
+        ref_bytes = ref_file.read()
+        ref_b64 = base64.b64encode(ref_bytes).decode()
+        ref_data_url = f'data:image/jpeg;base64,{ref_b64}'
+
+        from io import BytesIO
+        ref_color, ref_hash, ref_rgb = analyze_image(BytesIO(ref_bytes))
+
+        if not ref_hash:
+            flash('無法分析此圖片，請改用其他圖', 'error')
+            return redirect(url_for('search_by_image'))
+
+        # 比對所有有索引的石材
+        conn = get_db()
+        stones = conn.execute('SELECT * FROM stones').fetchall()
+        conn.close()
+
+        results = []
+        for s in stones:
+            sh = s['image_hash'] if 'image_hash' in s.keys() else ''
+            sr = s['dominant_rgb'] if 'dominant_rgb' in s.keys() else ''
+            if not sh:
+                continue
+            h_dist = hash_distance(ref_hash, sh)            # 0-64
+            c_dist = rgb_distance(ref_rgb, sr) if sr else 220  # 0-441
+            # 綜合分數：紋理 50% + 色彩 50%（越小越相似）
+            norm = (h_dist / 64.0) * 0.5 + (c_dist / 441.0) * 0.5
+            similarity = round(max(0.0, (1.0 - norm)) * 100, 1)
+            results.append((s, similarity))
+
+        results.sort(key=lambda x: x[1], reverse=True)
+        results = results[:12]
+
+        return render_template('image_search.html',
+                               results=results,
+                               reference_url=ref_data_url,
+                               detected_color=COLOR_MAP.get(ref_color),
+                               color_map=COLOR_MAP,
+                               not_indexed_count=sum(1 for s in stones
+                                                     if not (s['image_hash'] if 'image_hash' in s.keys() else '')))
+
+    return render_template('image_search.html', results=None, reference_url=None)
+
+
+@app.route('/admin/reindex-images', methods=['POST'])
+@admin_required
+def reindex_images():
+    """為現有的石材重新計算照片雜湊與顏色（一次性遷移用）"""
+    conn = get_db()
+    stones = conn.execute('SELECT id, photo, color FROM stones WHERE photo IS NOT NULL AND photo != ""').fetchall()
+    updated = 0
+    color_filled = 0
+    for s in stones:
+        path = os.path.join(app.config['UPLOAD_FOLDER'], s['photo'])
+        if not os.path.exists(path):
+            continue
+        auto_color, phash, rgb = analyze_image(path)
+        if not phash:
+            continue
+        new_color = s['color'] if s['color'] else auto_color
+        if not s['color'] and auto_color:
+            color_filled += 1
+        conn.execute('UPDATE stones SET image_hash=?, dominant_rgb=?, color=? WHERE id=?',
+                     (phash, rgb, new_color, s['id']))
+        updated += 1
+    conn.commit()
+    conn.close()
+    flash(f'✅ 已重新索引 {updated} 筆石材，自動補上 {color_filled} 筆顏色標籤', 'success')
+    return redirect(url_for('admin_dashboard'))
 
 
 @app.route('/admin/export/stones')

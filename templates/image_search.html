@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>以圖搜圖 — ReStone</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --blue: #2563EB; --blue-dark: #1D4ED8; --blue-light: #EFF6FF; --blue-mid: #BFDBFE;
+      --text: #0F172A; --text-muted: #64748B; --text-light: #94A3B8;
+      --border: #E2E8F0; --bg: #F8FAFC; --white: #FFFFFF;
+    }
+    body { font-family: 'Inter','Noto Sans TC',sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+    header { background: rgba(255,255,255,0.85); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); padding: 0 2rem; position: sticky; top: 0; z-index: 100; }
+    .header-inner { max-width: 1200px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; height: 60px; }
+    .logo { display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--text); }
+    .logo-icon { width: 32px; height: 32px; background: var(--blue); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white; font-size: 15px; }
+    .logo-text { font-size: 0.92rem; font-weight: 700; }
+    .hbtn { font-size: 0.8rem; color: var(--text-muted); text-decoration: none; padding: 0.4rem 0.9rem; border-radius: 8px; border: 1px solid var(--border); transition: all 0.15s; font-weight: 500; }
+    .hbtn:hover { color: var(--blue); border-color: var(--blue-mid); background: var(--blue-light); }
+
+    .container { max-width: 1200px; margin: 2.5rem auto; padding: 0 2rem; }
+
+    /* ── Hero Title ── */
+    .page-hero {
+      background: linear-gradient(135deg, #EFF6FF 0%, #DBEAFE 100%);
+      border-radius: 20px; padding: 2.5rem 2rem; text-align: center;
+      border: 1px solid var(--blue-mid); margin-bottom: 2rem;
+      position: relative; overflow: hidden;
+    }
+    .page-hero::before {
+      content: ''; position: absolute; inset: 0;
+      background-image: linear-gradient(rgba(37,99,235,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(37,99,235,0.05) 1px, transparent 1px);
+      background-size: 30px 30px;
+    }
+    .page-hero-inner { position: relative; z-index: 1; }
+    .ai-tag {
+      display: inline-block; background: var(--blue); color: white;
+      font-size: 0.7rem; font-weight: 700; letter-spacing: 0.1em;
+      padding: 4px 12px; border-radius: 50px; margin-bottom: 1rem;
+    }
+    .page-hero h1 { font-size: 1.8rem; font-weight: 900; letter-spacing: -0.03em; color: var(--text); margin-bottom: 0.6rem; }
+    .page-hero p { font-size: 0.92rem; color: var(--text-muted); }
+
+    /* ── Upload Area ── */
+    .upload-card {
+      background: white; border-radius: 16px; padding: 2rem;
+      border: 1px solid var(--border); box-shadow: 0 4px 24px rgba(0,0,0,0.04);
+      margin-bottom: 2rem;
+    }
+    .upload-area {
+      border: 2.5px dashed var(--blue-mid); border-radius: 14px; padding: 3rem 1.5rem;
+      text-align: center; cursor: pointer; transition: all 0.25s;
+      background: var(--blue-light); position: relative;
+    }
+    .upload-area:hover { border-color: var(--blue); background: #DBEAFE; transform: translateY(-2px); }
+    .upload-area.has-file { padding: 1.5rem; background: white; border-style: solid; }
+    .upload-area input[type="file"] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+    .upload-icon { font-size: 3rem; margin-bottom: 0.6rem; }
+    .upload-title { font-size: 1.05rem; font-weight: 700; color: var(--text); margin-bottom: 0.3rem; }
+    .upload-hint { font-size: 0.8rem; color: var(--text-muted); }
+    .preview-row { display: flex; align-items: center; gap: 1rem; }
+    .preview-row img { width: 80px; height: 80px; object-fit: cover; border-radius: 10px; border: 1px solid var(--border); }
+    .preview-info { flex: 1; text-align: left; }
+    .preview-info .name { font-size: 0.88rem; font-weight: 600; color: var(--text); }
+    .preview-info .hint { font-size: 0.75rem; color: var(--text-muted); margin-top: 4px; }
+
+    .btn-search {
+      display: inline-block; padding: 0.85rem 2.5rem; margin-top: 1.2rem;
+      background: var(--blue); color: white; border: none; border-radius: 12px;
+      font-size: 0.92rem; font-weight: 700; cursor: pointer; transition: all 0.2s;
+      font-family: inherit;
+    }
+    .btn-search:hover:not(:disabled) { background: var(--blue-dark); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(37,99,235,0.3); }
+    .btn-search:disabled { background: #CBD5E1; cursor: not-allowed; }
+
+    /* ── Reference + Detection Card ── */
+    .reference-card {
+      background: white; border-radius: 16px; padding: 1.5rem;
+      border: 1px solid var(--border); margin-bottom: 1.5rem;
+      display: flex; gap: 1.5rem; align-items: center;
+    }
+    .reference-card img { width: 110px; height: 110px; object-fit: cover; border-radius: 12px; border: 2px solid var(--blue-mid); }
+    .reference-info { flex: 1; }
+    .reference-label { font-size: 0.7rem; font-weight: 700; color: var(--blue); letter-spacing: 0.08em; text-transform: uppercase; }
+    .reference-title { font-size: 1.1rem; font-weight: 800; margin: 0.3rem 0 0.5rem; }
+    .detected-color { display: inline-block; padding: 4px 14px; border-radius: 50px; font-size: 0.78rem; font-weight: 700; }
+
+    /* ── Results Grid ── */
+    .results-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.2rem; }
+    .results-title { font-size: 1.1rem; font-weight: 800; }
+    .results-count { font-size: 0.85rem; color: var(--text-muted); }
+
+    .results-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 1rem; }
+    .res-card {
+      background: white; border-radius: 14px; overflow: hidden;
+      border: 1px solid var(--border); text-decoration: none; color: inherit;
+      transition: all 0.2s; position: relative; display: block;
+    }
+    .res-card:hover { transform: translateY(-3px); box-shadow: 0 12px 32px rgba(0,0,0,0.1); border-color: var(--blue-mid); }
+    .res-img-wrap { position: relative; height: 180px; overflow: hidden; background: var(--bg); }
+    .res-img { width: 100%; height: 100%; object-fit: cover; }
+    .res-img-placeholder { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 2.5rem; color: #C8D5E8; background: linear-gradient(135deg, #F1F5F9, #E2E8F0); }
+    .similarity-badge {
+      position: absolute; top: 10px; right: 10px;
+      background: var(--blue); color: white;
+      font-size: 0.78rem; font-weight: 800;
+      padding: 3px 10px; border-radius: 50px;
+      box-shadow: 0 4px 12px rgba(37,99,235,0.4);
+    }
+    .similarity-high { background: #059669; box-shadow: 0 4px 12px rgba(5,150,105,0.4); }
+    .similarity-mid  { background: #D97706; box-shadow: 0 4px 12px rgba(217,119,6,0.4); }
+    .res-body { padding: 0.9rem 1rem; }
+    .res-title { font-size: 0.95rem; font-weight: 700; margin-bottom: 0.3rem; }
+    .res-meta { font-size: 0.78rem; color: var(--text-muted); display: flex; gap: 0.5rem; flex-wrap: wrap; }
+    .res-meta .price { color: var(--blue); font-weight: 700; }
+
+    /* ── Empty / Notice ── */
+    .notice {
+      background: #FEF9C3; border: 1px solid #FCD34D; border-radius: 12px;
+      padding: 1rem 1.3rem; margin-bottom: 1.5rem; font-size: 0.85rem; color: #854D0E;
+    }
+    .notice strong { font-weight: 700; }
+    .empty {
+      text-align: center; padding: 4rem 2rem; color: var(--text-muted);
+      background: white; border-radius: 14px; border: 1px solid var(--border);
+    }
+    .empty .ic { font-size: 3rem; opacity: 0.2; margin-bottom: 1rem; }
+
+    .flash { padding: 0.75rem 1.2rem; border-radius: 10px; margin-bottom: 1rem; font-size: 0.85rem; }
+    .flash-error { background: #FEF2F2; border: 1px solid #FECACA; color: #B91C1C; }
+
+    footer { margin-top: 4rem; padding: 1.5rem; text-align: center; font-size: 0.75rem; color: var(--text-light); border-top: 1px solid var(--border); background: var(--white); }
+
+    @media (max-width: 640px) {
+      .reference-card { flex-direction: column; text-align: center; }
+      .results-grid { grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <a href="/" class="logo">
+      <div class="logo-icon">◈</div>
+      <div class="logo-text">ReStone 循環石材服務平台</div>
+    </a>
+    <a href="/" class="hbtn">← 返回首頁</a>
+  </div>
+</header>
+
+<div class="container">
+
+  <div class="page-hero">
+    <div class="page-hero-inner">
+      <div class="ai-tag">✨ AI 視覺搜尋</div>
+      <h1>📷 以圖搜圖</h1>
+      <p>上傳一張參考圖片，AI 將為你在資料庫中找出紋理與色彩最相似的石材</p>
+    </div>
+  </div>
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% for category, message in messages %}
+      <div class="flash flash-{{ category }}">{{ message }}</div>
+    {% endfor %}
+  {% endwith %}
+
+  <!-- 上傳表單 -->
+  <div class="upload-card">
+    <form method="post" enctype="multipart/form-data" id="searchForm">
+      <div class="upload-area" id="uploadArea">
+        <input type="file" name="reference" id="refFile" accept="image/*" required onchange="previewRef(this)" />
+        <div id="placeholderUI">
+          <div class="upload-icon">🖼️</div>
+          <div class="upload-title">點擊或拖曳上傳參考圖片</div>
+          <div class="upload-hint">支援 JPG／PNG／GIF／WEBP，最大 32MB</div>
+        </div>
+        <div id="previewUI" style="display:none">
+          <div class="preview-row">
+            <img id="previewImg" src="" alt="預覽" />
+            <div class="preview-info">
+              <div class="name" id="previewName">已選擇檔案</div>
+              <div class="hint">準備好就點下方按鈕開始 AI 搜尋</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div style="text-align:center">
+        <button type="submit" class="btn-search" id="searchBtn" disabled>🔍 開始搜尋相似石材</button>
+      </div>
+    </form>
+  </div>
+
+  {% if results is not none %}
+    <!-- 參考資訊卡 -->
+    <div class="reference-card">
+      <img src="{{ reference_url }}" alt="參考圖" />
+      <div class="reference-info">
+        <div class="reference-label">YOUR REFERENCE</div>
+        <div class="reference-title">參考圖片分析結果</div>
+        {% if detected_color %}
+          <span>偵測到主要色系：</span>
+          <span class="detected-color" style="background:{{ detected_color[2] }};color:{{ detected_color[3] }}">{{ detected_color[1] }}</span>
+        {% else %}
+          <span style="font-size:0.85rem;color:var(--text-muted)">無法判定主色（可能為多彩石材）</span>
+        {% endif %}
+      </div>
+    </div>
+
+    {% if not_indexed_count and not_indexed_count > 0 %}
+      <div class="notice">
+        ⚠️ 有 <strong>{{ not_indexed_count }}</strong> 筆石材尚未建立 AI 索引（不會出現在搜尋結果中）。
+        管理員可至後台點擊「🔄 重新索引照片」一次性處理所有舊資料。
+      </div>
+    {% endif %}
+
+    <div class="results-header">
+      <div class="results-title">🎯 AI 推薦結果</div>
+      <div class="results-count">找到 {{ results|length }} 筆相似石材（依相似度排序）</div>
+    </div>
+
+    {% if results %}
+      <div class="results-grid">
+        {% for s, sim in results %}
+          <a href="/stone/{{ s.id }}" class="res-card">
+            <div class="res-img-wrap">
+              {% if s.photo %}
+                <img class="res-img" src="/static/uploads/{{ s.photo }}" alt="{{ s.stone_type }}" />
+              {% else %}
+                <div class="res-img-placeholder">◈</div>
+              {% endif %}
+              <div class="similarity-badge {% if sim >= 75 %}similarity-high{% elif sim >= 50 %}similarity-mid{% endif %}">
+                {{ sim }}%
+              </div>
+            </div>
+            <div class="res-body">
+              <div class="res-title">{{ s.stone_type }}</div>
+              <div class="res-meta">
+                {% if s['color'] and s['color'] in color_map %}
+                  <span style="background:{{ color_map[s['color']][2] }};color:{{ color_map[s['color']][3] }};padding:1px 7px;border-radius:50px;font-weight:700;font-size:0.7rem">{{ color_map[s['color']][1] }}</span>
+                {% endif %}
+                {% if s.price %}<span class="price">NT${{ "{:,.0f}".format(s.price) }}</span>{% endif %}
+                {% if s.vendor %}<span>· {{ s.vendor }}</span>{% endif %}
+              </div>
+            </div>
+          </a>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="empty">
+        <div class="ic">🔍</div>
+        <h3 style="font-size:1rem;font-weight:700;margin-bottom:0.5rem">沒有找到符合的石材</h3>
+        <p style="font-size:0.85rem">資料庫中可能尚未為現有石材建立 AI 索引，請通知管理員執行索引</p>
+      </div>
+    {% endif %}
+  {% endif %}
+
+</div>
+
+<footer>ReStone 循環石材服務平台 · ✨ Powered by AI Vision Search</footer>
+
+<script>
+  function previewRef(input) {
+    const file = input.files && input.files[0];
+    const btn = document.getElementById('searchBtn');
+    const area = document.getElementById('uploadArea');
+    if (!file) {
+      btn.disabled = true;
+      area.classList.remove('has-file');
+      document.getElementById('placeholderUI').style.display = '';
+      document.getElementById('previewUI').style.display = 'none';
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      document.getElementById('previewImg').src = e.target.result;
+      document.getElementById('previewName').textContent = file.name;
+      document.getElementById('placeholderUI').style.display = 'none';
+      document.getElementById('previewUI').style.display = 'block';
+      area.classList.add('has-file');
+      btn.disabled = false;
+    };
+    reader.readAsDataURL(file);
+  }
+
+  // 表單送出時改文字
+  document.getElementById('searchForm').addEventListener('submit', function() {
+    const btn = document.getElementById('searchBtn');
+    btn.textContent = '⏳ AI 分析中...';
+    btn.disabled = true;
+  });
+</script>
+</body>
+</html>

@@ -166,6 +166,23 @@
       transition: all 0.15s; white-space: nowrap; font-family: inherit;
     }
     .btn-clear:hover { color: var(--text); border-color: #CBD5E1; }
+    .btn-ai-search {
+      padding: 0.72rem 1.1rem;
+      background: linear-gradient(135deg, #EFF6FF, #DBEAFE);
+      color: var(--blue); border: 1.5px solid var(--blue-mid);
+      border-radius: 10px; font-size: 0.85rem; font-weight: 700;
+      text-decoration: none; transition: all 0.2s;
+      white-space: nowrap; display: inline-flex; align-items: center; gap: 6px;
+    }
+    .btn-ai-search:hover {
+      background: var(--blue); color: white; border-color: var(--blue);
+      transform: translateY(-1px); box-shadow: 0 6px 20px rgba(37,99,235,0.3);
+    }
+    .btn-ai-search .ai-tag {
+      background: var(--blue); color: white; font-size: 0.6rem; font-weight: 800;
+      padding: 1px 6px; border-radius: 4px; letter-spacing: 0.05em;
+    }
+    .btn-ai-search:hover .ai-tag { background: white; color: var(--blue); }
 
     /* ── 顏色篩選 ── */
     .color-filter {
@@ -364,6 +381,7 @@
       {% endfor %}
     </select>
     <button type="submit" class="btn-search">搜尋</button>
+    <a href="/search/by-image" class="btn-ai-search" title="上傳圖片找相似石材">📷 以圖搜圖<span class="ai-tag">AI</span></a>
     {% if search or selected_type %}
       <a href="/" class="btn-clear">× 清除篩選</a>
     {% endif %}

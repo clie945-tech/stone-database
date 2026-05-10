@@ -150,6 +150,9 @@
   <div class="topbar">
     <div class="topbar-title">石材庫存管理</div>
     <div class="topbar-actions">
+      <form method="post" action="/admin/reindex-images" style="display:inline" onsubmit="return confirm('將為所有現有石材重新計算 AI 圖片索引（顏色與相似度比對用），可能需要幾秒鐘。是否繼續？')">
+        <button type="submit" class="btn btn-secondary" title="為現有照片建立 AI 索引">🔄 重新索引照片</button>
+      </form>
       <a href="/admin/export/stones" class="btn btn-secondary">↓ 匯出 Excel</a>
       <a href="/admin/add" class="btn btn-primary">＋ 新增石材</a>
     </div>
