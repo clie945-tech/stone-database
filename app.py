@@ -1003,8 +1003,9 @@ def change_password():
     return render_template('change_password.html')
 
 
-# ─── AI 設計工具：套用石材到設計圖 ────────────────────────────
+# ─── AI 設計工具：套用石材到設計圖（僅限會員）────────────────────────
 @app.route('/design-tool')
+@customer_required
 def design_tool():
     """設計工具頁：上傳設計圖 + 圈選區域 + 選石材 → AI 合成"""
     conn = get_db()
@@ -1081,8 +1082,10 @@ def admin_reanalyze_prompts():
 
 @app.route('/api/apply-stone', methods=['POST'])
 def api_apply_stone():
-    """接收設計圖 + 遮罩 + stone_id，呼叫 Replicate AI 合成新圖"""
+    """接收設計圖 + 遮罩 + stone_id，呼叫 Replicate AI 合成新圖（僅限會員）"""
     from flask import jsonify
+    if not session.get('customer_id'):
+        return jsonify({'error': '請先登入會員才能使用 AI 設計工具'}), 401
     if not REPLICATE_API_TOKEN:
         return jsonify({'error': 'AI 功能尚未啟用（請設定 REPLICATE_API_TOKEN）'}), 503
 
