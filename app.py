@@ -36,9 +36,8 @@ COLORS = [
     ('beige',  '米色系', '#FEF3C7', '#92400E'),
     ('brown',  '棕色系', '#78350F', '#FEF3C7'),
     ('green',  '綠色系', '#D1FAE5', '#065F46'),
-    ('blue',   '藍色系', '#DBEAFE', '#1E40AF'),
     ('red',    '紅色系', '#FEE2E2', '#991B1B'),
-    ('multi',  '多彩',   '#F3E8FF', '#6D28D9'),
+    ('multi',  '其他',   '#F3E8FF', '#6D28D9'),
 ]
 COLOR_MAP = {c[0]: c for c in COLORS}
 
