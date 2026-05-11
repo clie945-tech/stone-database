@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI 設計工具 — 套用石材到設計圖 — ReStone</title>
+  <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --blue: #2563EB; --blue-dark: #1D4ED8; --blue-light: #EFF6FF; --blue-mid: #BFDBFE;
+      --text: #0F172A; --text-muted: #64748B; --text-light: #94A3B8;
+      --border: #E2E8F0; --bg: #F8FAFC; --white: #FFFFFF;
+      --purple: #7C3AED;
+    }
+    body { font-family: 'Inter','Noto Sans TC',sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+    header { background: rgba(255,255,255,0.85); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); padding: 0 2rem; position: sticky; top: 0; z-index: 100; }
+    .header-inner { max-width: 1200px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; height: 60px; }
+    .logo { display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--text); }
+    .logo-icon { width: 32px; height: 32px; flex-shrink: 0; }
+    .logo-text { font-size: 0.92rem; font-weight: 700; }
+    .hbtn { font-size: 0.8rem; color: var(--text-muted); text-decoration: none; padding: 0.4rem 0.9rem; border-radius: 8px; border: 1px solid var(--border); transition: all 0.15s; font-weight: 500; }
+    .hbtn:hover { color: var(--blue); border-color: var(--blue-mid); background: var(--blue-light); }
+
+    .container { max-width: 1200px; margin: 2rem auto; padding: 0 2rem 4rem; }
+
+    /* Hero */
+    .page-hero {
+      background: linear-gradient(135deg, #EFF6FF 0%, #E0E7FF 100%);
+      border-radius: 20px; padding: 2.2rem 2rem; text-align: center;
+      border: 1px solid var(--blue-mid); margin-bottom: 1.5rem;
+      position: relative; overflow: hidden;
+    }
+    .page-hero::before {
+      content: ''; position: absolute; inset: 0;
+      background-image: linear-gradient(rgba(37,99,235,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(37,99,235,0.05) 1px, transparent 1px);
+      background-size: 30px 30px;
+    }
+    .page-hero-inner { position: relative; z-index: 1; }
+    .ai-tag {
+      display: inline-block; background: var(--purple); color: white;
+      font-size: 0.7rem; font-weight: 700; letter-spacing: 0.1em;
+      padding: 4px 12px; border-radius: 50px; margin-bottom: 0.8rem;
+    }
+    .page-hero h1 { font-size: 1.7rem; font-weight: 900; letter-spacing: -0.03em; color: var(--text); margin-bottom: 0.5rem; }
+    .page-hero p { font-size: 0.88rem; color: var(--text-muted); }
+
+    .alert-warn {
+      background: #FEF3C7; border: 1px solid #FCD34D; color: #92400E;
+      border-radius: 12px; padding: 1rem 1.2rem; margin-bottom: 1.5rem;
+      font-size: 0.85rem; line-height: 1.6;
+    }
+    .alert-warn code { background: rgba(0,0,0,0.06); padding: 2px 6px; border-radius: 4px; font-size: 0.8rem; }
+
+    /* Step layout */
+    .steps { display: grid; grid-template-columns: 1fr; gap: 1.2rem; }
+    @media (min-width: 920px) { .steps { grid-template-columns: 1fr 320px; } }
+
+    .panel {
+      background: white; border-radius: 14px; border: 1px solid var(--border);
+      padding: 1.4rem; box-shadow: 0 4px 24px rgba(0,0,0,0.04);
+    }
+    .panel-title {
+      display: flex; align-items: center; gap: 8px;
+      font-size: 0.95rem; font-weight: 800; margin-bottom: 1rem;
+    }
+    .step-num {
+      background: var(--blue); color: white; width: 22px; height: 22px;
+      border-radius: 50%; display: inline-flex; align-items: center; justify-content: center;
+      font-size: 0.75rem; font-weight: 800;
+    }
+    .panel-hint { font-size: 0.78rem; color: var(--text-muted); margin-top: 4px; font-weight: 400; }
+
+    /* Upload */
+    .upload-zone {
+      border: 2.5px dashed var(--blue-mid); border-radius: 12px;
+      padding: 2.5rem 1.5rem; text-align: center; cursor: pointer;
+      transition: all 0.2s; background: var(--blue-light);
+    }
+    .upload-zone:hover { border-color: var(--blue); background: #DBEAFE; }
+    .upload-zone.has-image { padding: 0.6rem; background: white; }
+    .upload-zone input { display: none; }
+    .upload-icon { font-size: 2rem; margin-bottom: 0.5rem; }
+    .upload-text { font-size: 0.85rem; color: var(--text); font-weight: 600; }
+    .upload-sub { font-size: 0.75rem; color: var(--text-muted); margin-top: 4px; }
+
+    /* Canvas */
+    .canvas-wrap { position: relative; display: none; margin-top: 1rem; }
+    .canvas-wrap.active { display: block; }
+    #design-canvas, #mask-canvas {
+      max-width: 100%; height: auto; border-radius: 10px;
+      border: 1px solid var(--border); display: block;
+    }
+    #mask-canvas { position: absolute; top: 0; left: 0; cursor: crosshair; }
+
+    .canvas-tools {
+      display: flex; align-items: center; gap: 0.8rem; flex-wrap: wrap;
+      margin-top: 0.8rem; padding: 0.7rem; background: var(--bg); border-radius: 10px;
+    }
+    .canvas-tools label { font-size: 0.78rem; font-weight: 600; color: var(--text); }
+    .canvas-tools input[type=range] { flex: 1; max-width: 180px; }
+    .tool-btn {
+      padding: 0.45rem 0.9rem; background: white; border: 1px solid var(--border);
+      border-radius: 8px; font-size: 0.78rem; font-weight: 600; cursor: pointer;
+      color: var(--text); font-family: inherit; transition: all 0.15s;
+    }
+    .tool-btn:hover { border-color: var(--blue); color: var(--blue); }
+
+    /* Stone picker */
+    .stone-grid {
+      display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.6rem;
+      max-height: 460px; overflow-y: auto; padding: 4px;
+    }
+    .stone-card {
+      cursor: pointer; border-radius: 10px; overflow: hidden;
+      border: 2px solid transparent; transition: all 0.15s;
+      background: var(--bg); position: relative;
+    }
+    .stone-card:hover { border-color: var(--blue-mid); transform: translateY(-2px); }
+    .stone-card.selected { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(37,99,235,0.15); }
+    .stone-card img {
+      width: 100%; aspect-ratio: 1; object-fit: cover; display: block;
+    }
+    .stone-card .placeholder {
+      width: 100%; aspect-ratio: 1; background: linear-gradient(135deg, #E2E8F0, #CBD5E1);
+      display: flex; align-items: center; justify-content: center;
+      color: var(--text-muted); font-size: 1.8rem;
+    }
+    .stone-card-name {
+      padding: 6px 8px; font-size: 0.72rem; font-weight: 600;
+      color: var(--text); background: white;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .stone-card-check {
+      position: absolute; top: 6px; right: 6px;
+      width: 22px; height: 22px; border-radius: 50%;
+      background: var(--blue); color: white;
+      display: none; align-items: center; justify-content: center;
+      font-size: 0.7rem; font-weight: 800;
+    }
+    .stone-card.selected .stone-card-check { display: flex; }
+
+    /* Action */
+    .btn-apply {
+      width: 100%; padding: 0.95rem; margin-top: 1rem;
+      background: linear-gradient(135deg, var(--blue) 0%, var(--purple) 100%);
+      color: white; border: none; border-radius: 12px;
+      font-size: 0.92rem; font-weight: 800; cursor: pointer;
+      font-family: inherit; letter-spacing: 0.02em;
+      transition: all 0.2s; box-shadow: 0 6px 20px rgba(124,58,237,0.25);
+    }
+    .btn-apply:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(124,58,237,0.35); }
+    .btn-apply:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    /* Result */
+    .result-panel { margin-top: 1.5rem; display: none; }
+    .result-panel.active { display: block; }
+    .result-panel img { width: 100%; border-radius: 12px; border: 1px solid var(--border); }
+    .result-actions { display: flex; gap: 0.5rem; margin-top: 0.8rem; }
+    .result-actions a {
+      flex: 1; padding: 0.7rem; text-align: center; background: var(--bg);
+      border-radius: 10px; text-decoration: none; color: var(--text);
+      font-size: 0.82rem; font-weight: 600; border: 1px solid var(--border);
+      transition: all 0.15s;
+    }
+    .result-actions a:hover { background: white; border-color: var(--blue); color: var(--blue); }
+
+    .loading {
+      text-align: center; padding: 2rem; color: var(--text-muted); font-size: 0.85rem;
+    }
+    .spinner {
+      width: 36px; height: 36px; border: 3px solid var(--border);
+      border-top-color: var(--purple); border-radius: 50%;
+      animation: spin 0.8s linear infinite; margin: 0 auto 0.8rem;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .error-box {
+      background: #FEF2F2; border: 1px solid #FECACA; color: #B91C1C;
+      border-radius: 10px; padding: 0.9rem; margin-top: 1rem;
+      font-size: 0.82rem; display: none;
+    }
+    .error-box.active { display: block; }
+
+    /* Prompt preview */
+    .prompt-box {
+      margin-top: 0.8rem; padding: 0.7rem 0.9rem;
+      background: #F1F5F9; border-radius: 8px; font-size: 0.74rem;
+      color: var(--text-muted); line-height: 1.5; font-family: 'SF Mono', Consolas, monospace;
+      word-break: break-word;
+    }
+    .prompt-label { font-size: 0.7rem; font-weight: 700; color: var(--text); margin-bottom: 4px; letter-spacing: 0.04em; }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <a href="/" class="logo">
+      <span class="logo-icon">{% with size=32, sfx='dthdr' %}{% include '_logo.html' %}{% endwith %}</span>
+      <div class="logo-text">ReStone 循環石材服務平台</div>
+    </a>
+    <div style="display:flex;gap:0.5rem">
+      <a href="/" class="hbtn">← 返回首頁</a>
+      <a href="/search/by-image" class="hbtn">📷 以圖搜圖</a>
+    </div>
+  </div>
+</header>
+
+<div class="container">
+
+  <div class="page-hero">
+    <div class="page-hero-inner">
+      <span class="ai-tag">✨ AI DESIGN TOOL</span>
+      <h1>套用石材到你的設計</h1>
+      <p>上傳設計圖 → 圈選要替換的區域（牆面 / 桌面 / 地板）→ 從石材庫挑材料 → AI 一鍵合成</p>
+    </div>
+  </div>
+
+  {% if not replicate_enabled %}
+  <div class="alert-warn">
+    ⚠ <strong>AI 功能尚未啟用</strong>。請先在 Railway 設定環境變數
+    <code>REPLICATE_API_TOKEN</code>，平台會自動重啟並開通此功能。
+  </div>
+  {% endif %}
+
+  <div class="steps">
+
+    <!-- 左欄：設計圖 + 遮罩 -->
+    <div>
+      <div class="panel">
+        <div class="panel-title">
+          <span class="step-num">1</span> 上傳設計圖並圈選要替換的區域
+          <div class="panel-hint" style="margin-left:auto;">用筆刷塗選牆面、家具桌面或產品表面</div>
+        </div>
+
+        <label class="upload-zone" id="upload-zone" for="design-file">
+          <input type="file" id="design-file" accept="image/*">
+          <div class="upload-icon">🖼️</div>
+          <div class="upload-text">點此選擇 / 拖曳上傳設計圖</div>
+          <div class="upload-sub">支援 PNG / JPG，建議 1024×1024 以上</div>
+        </label>
+
+        <div class="canvas-wrap" id="canvas-wrap">
+          <canvas id="design-canvas"></canvas>
+          <canvas id="mask-canvas"></canvas>
+        </div>
+
+        <div class="canvas-tools" id="canvas-tools" style="display:none;">
+          <label>筆刷大小</label>
+          <input type="range" id="brush-size" min="10" max="120" value="40">
+          <span id="brush-val" style="font-size:0.78rem;color:var(--text-muted);min-width:30px">40</span>
+          <button type="button" class="tool-btn" id="clear-mask">🗑 清除筆跡</button>
+          <button type="button" class="tool-btn" id="reupload">↻ 重新上傳</button>
+        </div>
+      </div>
+
+      <div class="result-panel panel" id="result-panel">
+        <div class="panel-title"><span class="step-num">✓</span> AI 合成結果</div>
+        <div id="result-content"></div>
+      </div>
+    </div>
+
+    <!-- 右欄：石材選擇 + 套用 -->
+    <div>
+      <div class="panel">
+        <div class="panel-title">
+          <span class="step-num">2</span> 選擇要套用的石材
+        </div>
+        <div class="stone-grid">
+          {% for s in stones %}
+          <div class="stone-card {% if selected_id == s.id %}selected{% endif %}"
+               data-id="{{ s.id }}" data-name="{{ s.stone_type }}"
+               data-prompt="{{ s.ai_prompt or '' }}">
+            {% if s.photo %}
+              <img src="/static/uploads/{{ s.photo }}" alt="{{ s.stone_type }}">
+            {% else %}
+              <div class="placeholder">◈</div>
+            {% endif %}
+            <div class="stone-card-name">{{ s.stone_type }}</div>
+            <div class="stone-card-check">✓</div>
+          </div>
+          {% endfor %}
+        </div>
+
+        <div class="prompt-box" id="prompt-preview" style="display:none;">
+          <div class="prompt-label">AI PROMPT</div>
+          <div id="prompt-text"></div>
+        </div>
+
+        <button class="btn-apply" id="btn-apply" disabled>✨ 套用石材（AI 合成）</button>
+        <div class="error-box" id="error-box"></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const designFile  = document.getElementById('design-file');
+const uploadZone  = document.getElementById('upload-zone');
+const canvasWrap  = document.getElementById('canvas-wrap');
+const designCv    = document.getElementById('design-canvas');
+const maskCv      = document.getElementById('mask-canvas');
+const tools       = document.getElementById('canvas-tools');
+const brushSize   = document.getElementById('brush-size');
+const brushVal    = document.getElementById('brush-val');
+const clearBtn    = document.getElementById('clear-mask');
+const reuploadBtn = document.getElementById('reupload');
+const btnApply    = document.getElementById('btn-apply');
+const errorBox    = document.getElementById('error-box');
+const resultPanel = document.getElementById('result-panel');
+const resultBox   = document.getElementById('result-content');
+const promptBox   = document.getElementById('prompt-preview');
+const promptText  = document.getElementById('prompt-text');
+
+let designImage = null;
+let designBlob  = null;
+let selectedStoneId = {{ selected_id|tojson if selected_id else 'null' }};
+let painted = false;
+
+const dCtx = designCv.getContext('2d');
+const mCtx = maskCv.getContext('2d');
+
+// ── 上傳設計圖 ──
+designFile.addEventListener('change', e => {
+  const f = e.target.files[0];
+  if (!f) return;
+  designBlob = f;
+  const img = new Image();
+  img.onload = () => {
+    designImage = img;
+    // 限制最長邊 900px 顯示
+    let w = img.width, h = img.height;
+    const maxSide = 900;
+    if (Math.max(w, h) > maxSide) {
+      const r = maxSide / Math.max(w, h);
+      w = Math.round(w * r); h = Math.round(h * r);
+    }
+    designCv.width = maskCv.width = w;
+    designCv.height = maskCv.height = h;
+    dCtx.drawImage(img, 0, 0, w, h);
+    mCtx.clearRect(0, 0, w, h);
+    canvasWrap.classList.add('active');
+    tools.style.display = 'flex';
+    uploadZone.style.display = 'none';
+    painted = false;
+    refreshApplyState();
+  };
+  img.src = URL.createObjectURL(f);
+});
+
+// ── 筆刷大小 ──
+brushSize.addEventListener('input', () => brushVal.textContent = brushSize.value);
+
+// ── 繪製遮罩 ──
+let drawing = false;
+function getXY(e) {
+  const r = maskCv.getBoundingClientRect();
+  const sx = maskCv.width / r.width, sy = maskCv.height / r.height;
+  const cx = (e.touches ? e.touches[0].clientX : e.clientX) - r.left;
+  const cy = (e.touches ? e.touches[0].clientY : e.clientY) - r.top;
+  return { x: cx * sx, y: cy * sy };
+}
+function startDraw(e) {
+  e.preventDefault(); drawing = true;
+  const { x, y } = getXY(e);
+  mCtx.beginPath(); mCtx.moveTo(x, y);
+  drawPoint(x, y);
+}
+function moveDraw(e) {
+  if (!drawing) return; e.preventDefault();
+  const { x, y } = getXY(e);
+  drawPoint(x, y);
+}
+function drawPoint(x, y) {
+  mCtx.lineTo(x, y);
+  mCtx.strokeStyle = 'rgba(37, 99, 235, 0.55)';  // 半透明藍：可看到底圖
+  mCtx.lineWidth = parseInt(brushSize.value);
+  mCtx.lineCap = 'round'; mCtx.lineJoin = 'round';
+  mCtx.stroke();
+  painted = true; refreshApplyState();
+}
+function endDraw() { drawing = false; mCtx.beginPath(); }
+
+maskCv.addEventListener('mousedown', startDraw);
+maskCv.addEventListener('mousemove', moveDraw);
+window.addEventListener('mouseup', endDraw);
+maskCv.addEventListener('touchstart', startDraw, { passive: false });
+maskCv.addEventListener('touchmove', moveDraw, { passive: false });
+window.addEventListener('touchend', endDraw);
+
+clearBtn.addEventListener('click', () => {
+  mCtx.clearRect(0, 0, maskCv.width, maskCv.height);
+  painted = false; refreshApplyState();
+});
+reuploadBtn.addEventListener('click', () => {
+  canvasWrap.classList.remove('active');
+  tools.style.display = 'none';
+  uploadZone.style.display = '';
+  designFile.value = '';
+  designImage = null; designBlob = null; painted = false;
+  refreshApplyState();
+});
+
+// ── 石材卡片點擊 ──
+document.querySelectorAll('.stone-card').forEach(c => {
+  c.addEventListener('click', () => {
+    document.querySelectorAll('.stone-card').forEach(x => x.classList.remove('selected'));
+    c.classList.add('selected');
+    selectedStoneId = parseInt(c.dataset.id);
+    const p = c.dataset.prompt;
+    if (p) {
+      promptText.textContent = p;
+      promptBox.style.display = 'block';
+    } else {
+      promptBox.style.display = 'none';
+    }
+    refreshApplyState();
+  });
+});
+// 自動顯示預選石材的 prompt
+{% if selected_id %}
+(() => {
+  const c = document.querySelector('.stone-card.selected');
+  if (c && c.dataset.prompt) { promptText.textContent = c.dataset.prompt; promptBox.style.display = 'block'; }
+})();
+{% endif %}
+
+function refreshApplyState() {
+  btnApply.disabled = !(designBlob && painted && selectedStoneId);
+}
+
+// ── 產出純黑白遮罩 PNG（白=要替換，黑=保留）──
+function exportMask() {
+  return new Promise(resolve => {
+    const tmp = document.createElement('canvas');
+    tmp.width = maskCv.width; tmp.height = maskCv.height;
+    const tx = tmp.getContext('2d');
+    // 黑底
+    tx.fillStyle = '#000'; tx.fillRect(0, 0, tmp.width, tmp.height);
+    // 將彩色筆跡轉為白色
+    const src = mCtx.getImageData(0, 0, maskCv.width, maskCv.height);
+    const dst = tx.getImageData(0, 0, tmp.width, tmp.height);
+    for (let i = 0; i < src.data.length; i += 4) {
+      if (src.data[i + 3] > 10) {
+        dst.data[i] = dst.data[i + 1] = dst.data[i + 2] = 255;
+        dst.data[i + 3] = 255;
+      }
+    }
+    tx.putImageData(dst, 0, 0);
+    tmp.toBlob(b => resolve(b), 'image/png');
+  });
+}
+
+// ── 套用 ──
+btnApply.addEventListener('click', async () => {
+  errorBox.classList.remove('active'); errorBox.textContent = '';
+  btnApply.disabled = true;
+  resultPanel.classList.add('active');
+  resultBox.innerHTML = '<div class="loading"><div class="spinner"></div>AI 正在合成中… 通常需要 15–40 秒</div>';
+  resultPanel.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+  try {
+    const maskBlob = await exportMask();
+    const fd = new FormData();
+    fd.append('stone_id', selectedStoneId);
+    fd.append('design', designBlob, 'design.png');
+    fd.append('mask', maskBlob, 'mask.png');
+
+    const r = await fetch('/api/apply-stone', { method: 'POST', body: fd });
+    const data = await r.json();
+    if (!r.ok || !data.success) throw new Error(data.error || '合成失敗');
+
+    resultBox.innerHTML = `
+      <img src="${data.result_url}" alt="AI 合成結果">
+      <div class="result-actions">
+        <a href="${data.result_url}" target="_blank">🔍 開啟原圖</a>
+        <a href="${data.result_url}" download="restone-design.jpg">↓ 下載圖片</a>
+      </div>
+      <div class="prompt-box" style="margin-top:1rem;">
+        <div class="prompt-label">使用石材 · ${data.stone_name}</div>
+        <div>${data.prompt}</div>
+      </div>`;
+  } catch (e) {
+    resultPanel.classList.remove('active');
+    errorBox.textContent = '⚠ ' + e.message;
+    errorBox.classList.add('active');
+  } finally {
+    refreshApplyState();
+  }
+});
+
+// 拖放上傳
+['dragover','dragenter'].forEach(ev => uploadZone.addEventListener(ev, e => { e.preventDefault(); uploadZone.style.borderColor = 'var(--blue)'; }));
+['dragleave','drop'].forEach(ev => uploadZone.addEventListener(ev, e => { e.preventDefault(); uploadZone.style.borderColor = ''; }));
+uploadZone.addEventListener('drop', e => {
+  const f = e.dataTransfer.files[0]; if (!f) return;
+  designFile.files = e.dataTransfer.files;
+  designFile.dispatchEvent(new Event('change'));
+});
+</script>
+
+</body>
+</html>

@@ -262,6 +262,21 @@
     </div>
   </div>
 
+  <!-- AI 設計工具入口 -->
+  <div class="inquiry-section">
+    <div class="section-title">✨ 套用到我的設計</div>
+    <div class="inquiry-card" style="display:flex;align-items:center;gap:1.2rem;flex-wrap:wrap;background:linear-gradient(135deg,#EFF6FF,#E0E7FF);border-color:#BFDBFE">
+      <div style="flex:1;min-width:240px">
+        <div style="font-size:0.95rem;font-weight:700;margin-bottom:0.3rem">將「{{ stone.stone_type }}」套用到你的設計圖</div>
+        <div style="font-size:0.82rem;color:var(--text-muted);line-height:1.6">上傳室內 / 家具 / 產品設計圖，用筆刷圈選牆面、桌面或表面區域，AI 會用此石材紋理自動合成新圖。</div>
+      </div>
+      <a href="/design-tool?stone_id={{ stone.id }}"
+         style="padding:0.85rem 1.5rem;background:linear-gradient(135deg,#2563EB,#7C3AED);color:white;border-radius:12px;font-weight:700;font-size:0.9rem;text-decoration:none;box-shadow:0 6px 20px rgba(124,58,237,0.25);white-space:nowrap">
+        ✨ 開啟 AI 設計工具 →
+      </a>
+    </div>
+  </div>
+
   <!-- 用量計算機 -->
   {% if stone.width and stone.height %}
   <div class="inquiry-section">

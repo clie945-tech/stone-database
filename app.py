@@ -28,6 +28,11 @@ app.config['MAIL_DEFAULT_SENDER'] = os.environ.get('MAIL_USERNAME', '')
 ADMIN_EMAIL = os.environ.get('ADMIN_EMAIL', os.environ.get('MAIL_USERNAME', ''))
 mail = Mail(app)
 
+# ── Replicate AI 設定（從環境變數讀取）──
+REPLICATE_API_TOKEN = os.environ.get('REPLICATE_API_TOKEN', '')
+# 預設使用 flux-fill-pro（高品質 inpainting）
+REPLICATE_MODEL = os.environ.get('REPLICATE_MODEL', 'black-forest-labs/flux-fill-pro')
+
 # ── 顏色標籤定義 ──
 COLORS = [
     ('white',  '白色系', '#F8FAFC', '#64748B'),
@@ -143,6 +148,43 @@ def send_email_safe(subject, recipients, html_body):
         print(f'[Email 發送失敗] {e}')
 
 
+# ── AI Prompt 自動生成（給設計工具 inpainting 用）──
+STONE_PROMPT_EN = {
+    '大理石': 'natural marble',
+    '蛇紋石': 'serpentine stone with green veining',
+    '化石': 'fossil limestone with embedded patterns',
+    '花崗岩': 'natural granite with crystalline texture',
+}
+COLOR_PROMPT_EN = {
+    'white': 'white and ivory tones',
+    'gray':  'gray tones',
+    'black': 'deep black tones',
+    'beige': 'warm beige and cream tones',
+    'brown': 'rich brown and earthy tones',
+    'green': 'green and emerald tones',
+    'red':   'reddish and warm tones',
+    'multi': 'mixed natural color tones',
+}
+
+def generate_ai_prompt(stone_type, color, description=''):
+    """根據石材屬性自動產生 inpainting prompt"""
+    base = STONE_PROMPT_EN.get(stone_type, 'natural stone')
+    color_phrase = COLOR_PROMPT_EN.get(color, '')
+    parts = [
+        f'photorealistic {base}',
+        color_phrase,
+        'natural veining and patterns',
+        'polished surface',
+        'high resolution texture',
+        'seamless material',
+        'studio lighting',
+    ]
+    if description:
+        # 取描述前 40 字當輔助 hint
+        parts.insert(1, description[:40])
+    return ', '.join([p for p in parts if p])
+
+
 def get_db():
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
@@ -221,6 +263,13 @@ def init_db():
             conn.commit()
         except Exception:
             pass
+
+    # AI Prompt 欄位（用於設計工具的 inpainting prompt）
+    try:
+        conn.execute("ALTER TABLE stones ADD COLUMN ai_prompt TEXT DEFAULT ''")
+        conn.commit()
+    except Exception:
+        pass
 
     # 建立預設管理員帳號
     cursor = conn.execute('SELECT COUNT(*) FROM admin_users')
@@ -634,15 +683,17 @@ def add_stone():
             if not color and auto_color:
                 color = auto_color  # 未選顏色則套用自動偵測
 
+        ai_prompt = generate_ai_prompt(stone_type, color, description)
+
         conn = get_db()
         conn.execute('''
             INSERT INTO stones (stone_type, photo, photo2, photo3,
                                 width, height, thickness, quantity, unit, price, vendor, description, color,
-                                image_hash, dominant_rgb)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                                image_hash, dominant_rgb, ai_prompt)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ''', (stone_type, photo, photo2, photo3,
               width, height, thickness, quantity, unit, price, vendor, description, color,
-              image_hash, dominant_rgb))
+              image_hash, dominant_rgb, ai_prompt))
         conn.commit()
         conn.close()
 
@@ -702,17 +753,19 @@ def edit_stone(id):
             if not color and auto_color:
                 color = auto_color
 
+        ai_prompt = generate_ai_prompt(stone_type, color, description)
+
         conn.execute('''
             UPDATE stones
             SET stone_type=?, photo=?, photo2=?, photo3=?,
                 width=?, height=?, thickness=?,
                 quantity=?, unit=?, price=?, vendor=?, description=?, color=?,
-                image_hash=?, dominant_rgb=?,
+                image_hash=?, dominant_rgb=?, ai_prompt=?,
                 updated_at=CURRENT_TIMESTAMP
             WHERE id=?
         ''', (stone_type, photos[0], photos[1], photos[2],
               width, height, thickness, quantity, unit, price, vendor, description, color,
-              image_hash, dominant_rgb, id))
+              image_hash, dominant_rgb, ai_prompt, id))
         conn.commit()
         conn.close()
 
@@ -907,6 +960,77 @@ def change_password():
         conn.close()
 
     return render_template('change_password.html')
+
+
+# ─── AI 設計工具：套用石材到設計圖 ────────────────────────────
+@app.route('/design-tool')
+def design_tool():
+    """設計工具頁：上傳設計圖 + 圈選區域 + 選石材 → AI 合成"""
+    conn = get_db()
+    stones = conn.execute(
+        'SELECT id, stone_type, color, photo, ai_prompt FROM stones ORDER BY id DESC'
+    ).fetchall()
+    conn.close()
+    selected_id = request.args.get('stone_id', type=int)
+    return render_template('design_tool.html',
+                           stones=stones,
+                           selected_id=selected_id,
+                           color_map=COLOR_MAP,
+                           replicate_enabled=bool(REPLICATE_API_TOKEN))
+
+
+@app.route('/api/apply-stone', methods=['POST'])
+def api_apply_stone():
+    """接收設計圖 + 遮罩 + stone_id，呼叫 Replicate AI 合成新圖"""
+    from flask import jsonify
+    if not REPLICATE_API_TOKEN:
+        return jsonify({'error': 'AI 功能尚未啟用（請設定 REPLICATE_API_TOKEN）'}), 503
+
+    stone_id = request.form.get('stone_id', type=int)
+    design   = request.files.get('design')
+    mask     = request.files.get('mask')
+    custom_prompt = request.form.get('prompt', '').strip()
+
+    if not stone_id or not design or not mask:
+        return jsonify({'error': '缺少必要欄位（設計圖、遮罩、石材）'}), 400
+
+    conn = get_db()
+    stone = conn.execute('SELECT * FROM stones WHERE id = ?', (stone_id,)).fetchone()
+    conn.close()
+    if not stone:
+        return jsonify({'error': '找不到指定石材'}), 404
+
+    # 組合 prompt：使用者自訂 > 資料庫 ai_prompt > 即時生成
+    prompt = custom_prompt or (stone['ai_prompt'] if 'ai_prompt' in stone.keys() and stone['ai_prompt']
+                               else generate_ai_prompt(stone['stone_type'], stone['color'] or '', stone['description'] or ''))
+
+    try:
+        import replicate
+        client = replicate.Client(api_token=REPLICATE_API_TOKEN)
+        # 將檔案物件直接傳給 Replicate（會自動上傳）
+        design.stream.seek(0)
+        mask.stream.seek(0)
+        output = client.run(
+            REPLICATE_MODEL,
+            input={
+                'image': design.stream,
+                'mask': mask.stream,
+                'prompt': prompt,
+                'output_format': 'jpg',
+                'safety_tolerance': 5,
+            }
+        )
+        # Replicate 回傳通常是 URL 字串或 FileOutput 物件
+        result_url = str(output[0]) if isinstance(output, list) else str(output)
+        return jsonify({
+            'success': True,
+            'result_url': result_url,
+            'prompt': prompt,
+            'stone_name': stone['stone_type'],
+        })
+    except Exception as e:
+        print(f'[Replicate 錯誤] {e}')
+        return jsonify({'error': f'AI 合成失敗：{str(e)[:200]}'}), 500
 
 
 # 不論是本機或雲端，啟動時都初始化資料庫
