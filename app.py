@@ -1004,24 +1004,43 @@ def api_apply_stone():
     prompt = custom_prompt or (stone['ai_prompt'] if 'ai_prompt' in stone.keys() and stone['ai_prompt']
                                else generate_ai_prompt(stone['stone_type'], stone['color'] or '', stone['description'] or ''))
 
+    import tempfile, base64
+    design_path, mask_path = None, None
     try:
         import replicate
         client = replicate.Client(api_token=REPLICATE_API_TOKEN)
-        # 將檔案物件直接傳給 Replicate（會自動上傳）
-        design.stream.seek(0)
-        mask.stream.seek(0)
-        output = client.run(
-            REPLICATE_MODEL,
-            input={
-                'image': design.stream,
-                'mask': mask.stream,
-                'prompt': prompt,
-                'output_format': 'jpg',
-                'safety_tolerance': 5,
-            }
-        )
-        # Replicate 回傳通常是 URL 字串或 FileOutput 物件
-        result_url = str(output[0]) if isinstance(output, list) else str(output)
+
+        # 將上傳檔案存成有副檔名的暫存檔（Replicate SDK 需要 name 屬性）
+        with tempfile.NamedTemporaryFile(suffix='.png', delete=False) as df:
+            design.save(df.name)
+            design_path = df.name
+        with tempfile.NamedTemporaryFile(suffix='.png', delete=False) as mf:
+            mask.save(mf.name)
+            mask_path = mf.name
+
+        with open(design_path, 'rb') as dfh, open(mask_path, 'rb') as mfh:
+            output = client.run(
+                REPLICATE_MODEL,
+                input={
+                    'image': dfh,
+                    'mask': mfh,
+                    'prompt': prompt,
+                    'output_format': 'jpg',
+                    'safety_tolerance': 5,
+                }
+            )
+
+        # Replicate 回傳可能是：URL 字串、URL list、或 FileOutput 物件（具 .url 屬性）
+        def _to_url(o):
+            if hasattr(o, 'url'):
+                return o.url
+            return str(o)
+
+        if isinstance(output, list) and output:
+            result_url = _to_url(output[0])
+        else:
+            result_url = _to_url(output)
+
         return jsonify({
             'success': True,
             'result_url': result_url,
@@ -1029,8 +1048,17 @@ def api_apply_stone():
             'stone_name': stone['stone_type'],
         })
     except Exception as e:
+        import traceback
         print(f'[Replicate 錯誤] {e}')
-        return jsonify({'error': f'AI 合成失敗：{str(e)[:200]}'}), 500
+        traceback.print_exc()
+        return jsonify({'error': f'AI 合成失敗：{str(e)[:300]}'}), 500
+    finally:
+        for p in (design_path, mask_path):
+            try:
+                if p and os.path.exists(p):
+                    os.unlink(p)
+            except Exception:
+                pass
 
 
 # 不論是本機或雲端，啟動時都初始化資料庫
