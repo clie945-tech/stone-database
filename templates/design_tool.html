@@ -286,9 +286,13 @@
           {% endfor %}
         </div>
 
-        <div class="prompt-box" id="prompt-preview" style="display:none;">
-          <div class="prompt-label">AI PROMPT</div>
-          <div id="prompt-text"></div>
+        <div id="prompt-preview" style="display:none;margin-top:0.8rem">
+          <div class="prompt-label" style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+            <span>AI PROMPT <span style="font-weight:400;color:var(--text-muted);text-transform:none;letter-spacing:0">（可即時編輯）</span></span>
+            <button type="button" id="reset-prompt" style="background:none;border:none;color:var(--blue);font-size:0.7rem;font-weight:600;cursor:pointer;padding:0">↻ 還原</button>
+          </div>
+          <textarea id="prompt-text" rows="3"
+            style="width:100%;padding:0.7rem 0.9rem;background:#F1F5F9;border:1px solid var(--border);border-radius:8px;font-size:0.78rem;color:var(--text);line-height:1.5;font-family:'SF Mono',Consolas,monospace;resize:vertical;outline:none"></textarea>
         </div>
 
         <button class="btn-apply" id="btn-apply" disabled>✨ 套用石材（AI 合成）</button>
@@ -407,26 +411,34 @@ reuploadBtn.addEventListener('click', () => {
 });
 
 // ── 石材卡片點擊 ──
+let originalPrompt = '';
+function applyStonePrompt(card) {
+  const p = card.dataset.prompt || '';
+  originalPrompt = p;
+  if (p) {
+    promptText.value = p;
+    promptBox.style.display = 'block';
+  } else {
+    promptBox.style.display = 'none';
+  }
+}
 document.querySelectorAll('.stone-card').forEach(c => {
   c.addEventListener('click', () => {
     document.querySelectorAll('.stone-card').forEach(x => x.classList.remove('selected'));
     c.classList.add('selected');
     selectedStoneId = parseInt(c.dataset.id);
-    const p = c.dataset.prompt;
-    if (p) {
-      promptText.textContent = p;
-      promptBox.style.display = 'block';
-    } else {
-      promptBox.style.display = 'none';
-    }
+    applyStonePrompt(c);
     refreshApplyState();
   });
+});
+document.getElementById('reset-prompt').addEventListener('click', () => {
+  promptText.value = originalPrompt;
 });
 // 自動顯示預選石材的 prompt
 {% if selected_id %}
 (() => {
   const c = document.querySelector('.stone-card.selected');
-  if (c && c.dataset.prompt) { promptText.textContent = c.dataset.prompt; promptBox.style.display = 'block'; }
+  if (c) applyStonePrompt(c);
 })();
 {% endif %}
 
@@ -470,6 +482,11 @@ btnApply.addEventListener('click', async () => {
     fd.append('stone_id', selectedStoneId);
     fd.append('design', designBlob, 'design.png');
     fd.append('mask', maskBlob, 'mask.png');
+    // 如果使用者編輯過 prompt，就送自訂版本
+    const editedPrompt = promptText.value.trim();
+    if (editedPrompt && editedPrompt !== originalPrompt) {
+      fd.append('prompt', editedPrompt);
+    }
 
     const r = await fetch('/api/apply-stone', { method: 'POST', body: fd });
     const data = await r.json();

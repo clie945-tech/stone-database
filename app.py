@@ -150,39 +150,66 @@ def send_email_safe(subject, recipients, html_body):
 
 # ── AI Prompt 自動生成（給設計工具 inpainting 用）──
 STONE_PROMPT_EN = {
-    '大理石': 'natural marble',
-    '蛇紋石': 'serpentine stone with green veining',
-    '化石': 'fossil limestone with embedded patterns',
-    '花崗岩': 'natural granite with crystalline texture',
+    '大理石': 'marble',
+    '蛇紋石': 'serpentine stone',
+    '化石': 'fossil limestone',
+    '花崗岩': 'granite',
 }
-COLOR_PROMPT_EN = {
-    'white': 'white and ivory tones',
-    'gray':  'gray tones',
-    'black': 'deep black tones',
-    'beige': 'warm beige and cream tones',
-    'brown': 'rich brown and earthy tones',
-    'green': 'green and emerald tones',
-    'red':   'reddish and warm tones',
-    'multi': 'mixed natural color tones',
+COLOR_WORD_EN = {
+    'white': 'white',
+    'gray':  'gray',
+    'black': 'black',
+    'beige': 'beige',
+    'brown': 'brown',
+    'green': 'green',
+    'red':   'reddish',
+    'multi': 'natural colored',
 }
 
 def generate_ai_prompt(stone_type, color, description=''):
-    """根據石材屬性自動產生 inpainting prompt"""
+    """產生簡短的 inpainting prompt（後備用，當視覺 AI 無法呼叫時）"""
     base = STONE_PROMPT_EN.get(stone_type, 'natural stone')
-    color_phrase = COLOR_PROMPT_EN.get(color, '')
-    parts = [
-        f'photorealistic {base}',
-        color_phrase,
-        'natural veining and patterns',
-        'polished surface',
-        'high resolution texture',
-        'seamless material',
-        'studio lighting',
-    ]
-    if description:
-        # 取描述前 40 字當輔助 hint
-        parts.insert(1, description[:40])
-    return ', '.join([p for p in parts if p])
+    color_word = COLOR_WORD_EN.get(color, '')
+    parts = [color_word, base, 'polished surface']
+    return ' '.join([p for p in parts if p]).strip()
+
+
+def describe_stone_with_vision(image_path):
+    """用 LLaVA 視覺 AI 看石材照片，產生精準的 inpainting prompt"""
+    if not REPLICATE_API_TOKEN or not image_path or not os.path.exists(image_path):
+        return ''
+    try:
+        import replicate
+        client = replicate.Client(api_token=REPLICATE_API_TOKEN)
+        with open(image_path, 'rb') as f:
+            output = client.run(
+                'yorickvp/llava-v1.6-mistral-7b:19be067b589d0c46689ffa7cc3ff321447a441986a7694c01225973ccc1a9c0a',
+                input={
+                    'image': f,
+                    'prompt': (
+                        'Describe this stone material in 10-15 English words for AI image generation. '
+                        'Focus on: dominant color, pattern style, veining/specks, and surface finish. '
+                        'Example: "deep green serpentine with white veining, polished glossy surface". '
+                        'Output ONLY the description, no preamble, no quotes.'
+                    ),
+                    'temperature': 0.2,
+                    'max_tokens': 60,
+                }
+            )
+        caption = ''.join(str(t) for t in output) if isinstance(output, list) else str(output)
+        caption = caption.strip().strip('"\'').rstrip('.')
+        # 移除常見 preamble
+        for prefix in ('Description:', 'description:', 'The image shows', 'This stone', 'The stone'):
+            if caption.startswith(prefix):
+                caption = caption[len(prefix):].lstrip(' :,').strip()
+                break
+        # 限制長度避免回傳過長段落
+        if len(caption) > 200:
+            caption = caption[:200].rsplit(',', 1)[0]
+        return caption
+    except Exception as e:
+        print(f'[Vision AI 錯誤] {e}')
+        return ''
 
 
 def get_db():
@@ -683,7 +710,13 @@ def add_stone():
             if not color and auto_color:
                 color = auto_color  # 未選顏色則套用自動偵測
 
-        ai_prompt = generate_ai_prompt(stone_type, color, description)
+        # AI Prompt：優先使用管理員填寫；否則用視覺 AI 看照片；最後退回模板
+        ai_prompt = request.form.get('ai_prompt', '').strip()
+        if not ai_prompt and photo:
+            ai_prompt = describe_stone_with_vision(
+                os.path.join(app.config['UPLOAD_FOLDER'], photo))
+        if not ai_prompt:
+            ai_prompt = generate_ai_prompt(stone_type, color, description)
 
         conn = get_db()
         conn.execute('''
@@ -753,7 +786,15 @@ def edit_stone(id):
             if not color and auto_color:
                 color = auto_color
 
-        ai_prompt = generate_ai_prompt(stone_type, color, description)
+        # AI Prompt：優先使用管理員填寫；主照片有變更則用視覺 AI 重新分析；最後退回模板
+        ai_prompt = request.form.get('ai_prompt', '').strip()
+        if not ai_prompt and photos[0] and main_photo_changed:
+            ai_prompt = describe_stone_with_vision(
+                os.path.join(app.config['UPLOAD_FOLDER'], photos[0]))
+        if not ai_prompt:
+            # 主照片沒換 → 沿用原本的；都沒有就退回模板
+            existing = stone['ai_prompt'] if 'ai_prompt' in stone.keys() else ''
+            ai_prompt = existing or generate_ai_prompt(stone_type, color, description)
 
         conn.execute('''
             UPDATE stones
@@ -977,6 +1018,65 @@ def design_tool():
                            selected_id=selected_id,
                            color_map=COLOR_MAP,
                            replicate_enabled=bool(REPLICATE_API_TOKEN))
+
+
+@app.route('/admin/api/analyze-photo', methods=['POST'])
+@admin_required
+def admin_analyze_photo():
+    """管理員 AJAX：上傳照片或指定既有 stone_id，用視覺 AI 產生 prompt"""
+    from flask import jsonify
+    photo_file = request.files.get('photo')
+    stone_id = request.form.get('stone_id', type=int)
+
+    tmp_path = None
+    target_path = None
+    try:
+        if photo_file and photo_file.filename:
+            import tempfile
+            with tempfile.NamedTemporaryFile(suffix='.png', delete=False) as tf:
+                photo_file.save(tf.name)
+                tmp_path = tf.name
+            target_path = tmp_path
+        elif stone_id:
+            conn = get_db()
+            row = conn.execute('SELECT photo FROM stones WHERE id = ?', (stone_id,)).fetchone()
+            conn.close()
+            if row and row['photo']:
+                target_path = os.path.join(app.config['UPLOAD_FOLDER'], row['photo'])
+        if not target_path or not os.path.exists(target_path):
+            return jsonify({'error': '找不到照片'}), 400
+
+        prompt = describe_stone_with_vision(target_path)
+        if not prompt:
+            return jsonify({'error': 'AI 分析失敗（請確認 Replicate 餘額充足）'}), 500
+        return jsonify({'success': True, 'prompt': prompt})
+    finally:
+        if tmp_path and os.path.exists(tmp_path):
+            try: os.unlink(tmp_path)
+            except Exception: pass
+
+
+@app.route('/admin/reanalyze-prompts', methods=['POST'])
+@admin_required
+def admin_reanalyze_prompts():
+    """批次重新分析所有石材的 AI prompt（一次性升級舊資料）"""
+    conn = get_db()
+    stones = conn.execute('SELECT id, photo FROM stones WHERE photo IS NOT NULL AND photo != ""').fetchall()
+    updated, failed = 0, 0
+    for s in stones:
+        path = os.path.join(app.config['UPLOAD_FOLDER'], s['photo'])
+        if not os.path.exists(path):
+            failed += 1; continue
+        new_prompt = describe_stone_with_vision(path)
+        if new_prompt:
+            conn.execute('UPDATE stones SET ai_prompt = ? WHERE id = ?', (new_prompt, s['id']))
+            updated += 1
+        else:
+            failed += 1
+    conn.commit()
+    conn.close()
+    flash(f'AI Prompt 重新分析完成：{updated} 成功 / {failed} 失敗', 'success' if failed == 0 else 'error')
+    return redirect(url_for('admin_dashboard'))
 
 
 @app.route('/api/apply-stone', methods=['POST'])

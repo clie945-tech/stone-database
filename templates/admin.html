@@ -154,6 +154,9 @@
       <form method="post" action="/admin/reindex-images" style="display:inline" onsubmit="return confirm('將為所有現有石材重新計算 AI 圖片索引（顏色與相似度比對用），可能需要幾秒鐘。是否繼續？')">
         <button type="submit" class="btn btn-secondary" title="為現有照片建立 AI 索引">🔄 重新索引照片</button>
       </form>
+      <form method="post" action="/admin/reanalyze-prompts" style="display:inline" onsubmit="return confirm('將用視覺 AI 重新分析所有石材照片並更新 Prompt。每張約 NT$0.5，{{ stones|length if stones else 0 }} 張預估費用 NT${{ (stones|length * 0.5)|round(0)|int if stones else 0 }}。是否繼續？')">
+        <button type="submit" class="btn btn-secondary" title="用視覺 AI 重寫所有石材的 Prompt">✨ 重新分析 Prompt</button>
+      </form>
       <a href="/admin/export/stones" class="btn btn-secondary">↓ 匯出 Excel</a>
       <a href="/admin/add" class="btn btn-primary">＋ 新增石材</a>
     </div>

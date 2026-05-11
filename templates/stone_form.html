@@ -231,6 +231,26 @@
             </div>
           </div>
 
+          <div class="section-title">✨ AI 設計工具 Prompt <span class="hint" style="font-weight:400;color:var(--text-muted)">（設計工具合成時使用）</span></div>
+          <div class="form-group">
+            <label for="ai_prompt">
+              石材描述（英文，留空會自動從照片生成）
+              {% if stone and stone.photo %}
+              <button type="button" id="btn-ai-analyze" data-stone-id="{{ stone.id }}"
+                style="margin-left:0.5rem;padding:4px 10px;background:linear-gradient(135deg,#2563EB,#7C3AED);color:white;border:none;border-radius:6px;font-size:0.72rem;font-weight:700;cursor:pointer">
+                ✨ 用 AI 重新分析照片
+              </button>
+              <span id="ai-analyze-status" style="margin-left:0.5rem;font-size:0.72rem;color:var(--text-muted)"></span>
+              {% endif %}
+            </label>
+            <textarea id="ai_prompt" name="ai_prompt" rows="2"
+              placeholder="例：deep green serpentine with white veining, polished glossy surface"
+              style="width:100%;padding:0.7rem 0.9rem;border:1.5px solid var(--border);border-radius:8px;font-size:0.85rem;font-family:'SF Mono',Consolas,monospace;background:var(--stone-pale);outline:none;resize:vertical">{{ stone.ai_prompt if stone and stone.ai_prompt else '' }}</textarea>
+            <div style="font-size:0.72rem;color:var(--text-muted);margin-top:0.3rem;line-height:1.5">
+              💡 新增石材時若留空，系統會自動用視覺 AI 分析照片寫描述。也可手動編輯，例：「<code style="background:#F1F5F9;padding:1px 4px;border-radius:3px">cream beige limestone with subtle fossil patterns</code>」
+            </div>
+          </div>
+
           <div class="section-title">石材照片（最多 3 張）</div>
           {% for i in range(1, 4) %}
             {% set field = 'photo' if i == 1 else 'photo' ~ i %}
@@ -276,6 +296,32 @@
       };
       reader.readAsDataURL(input.files[0]);
     }
+  }
+
+  // ── AI 重新分析照片，自動填入 prompt ──
+  const aiBtn = document.getElementById('btn-ai-analyze');
+  if (aiBtn) {
+    aiBtn.addEventListener('click', async () => {
+      const status = document.getElementById('ai-analyze-status');
+      const ta = document.getElementById('ai_prompt');
+      aiBtn.disabled = true;
+      status.textContent = '⏳ AI 分析中…(約 10 秒)';
+      try {
+        const fd = new FormData();
+        fd.append('stone_id', aiBtn.dataset.stoneId);
+        const r = await fetch('/admin/api/analyze-photo', { method: 'POST', body: fd });
+        const data = await r.json();
+        if (!r.ok || !data.success) throw new Error(data.error || '失敗');
+        ta.value = data.prompt;
+        status.textContent = '✓ 已更新（請按下方「儲存」生效）';
+        status.style.color = '#16A34A';
+      } catch (e) {
+        status.textContent = '⚠ ' + e.message;
+        status.style.color = '#DC2626';
+      } finally {
+        aiBtn.disabled = false;
+      }
+    });
   }
 </script>
 </body>
