@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ReStone LOGO 設計提案</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Space+Grotesk:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Inter', 'Noto Sans TC', sans-serif; background: #F1F5F9; color: #0F172A; padding-bottom: 4rem; }
+
+    .page-title { text-align: center; padding: 3rem 2rem 0.5rem; font-size: 1.6rem; font-weight: 800; }
+    .page-sub { text-align: center; color: #64748B; font-size: 0.9rem; margin-bottom: 3rem; }
+
+    .grid { display: grid; grid-template-columns: 1fr; max-width: 1100px; margin: 0 auto; gap: 2rem; padding: 0 2rem; }
+
+    .logo-card {
+      background: white; border-radius: 22px; overflow: hidden;
+      box-shadow: 0 6px 36px rgba(0,0,0,0.08); border: 1px solid #E2E8F0;
+    }
+    .logo-card-header {
+      background: #F8FAFC; padding: 0.9rem 1.5rem;
+      border-bottom: 1px solid #E2E8F0;
+      display: flex; align-items: center; gap: 12px;
+    }
+    .num {
+      width: 28px; height: 28px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.78rem; font-weight: 800; color: white; background: #2563EB;
+    }
+    .logo-name { font-size: 0.95rem; font-weight: 700; }
+    .logo-desc { font-size: 0.8rem; color: #64748B; margin-left: auto; }
+
+    /* === 三種尺寸展示 === */
+    .showcase { display: grid; grid-template-columns: 1.4fr 1fr 0.8fr; min-height: 220px; }
+    @media (max-width: 700px) { .showcase { grid-template-columns: 1fr; } }
+
+    /* 大尺寸：完整 logo */
+    .show-large { padding: 2.5rem 2rem; display: flex; align-items: center; gap: 1rem; border-right: 1px solid #E2E8F0; }
+    .show-large .logo-mark { flex-shrink: 0; }
+    .show-large .text-block { display: flex; flex-direction: column; line-height: 1.1; }
+    .show-large .brand { font-size: 1.7rem; font-weight: 800; letter-spacing: -0.04em; }
+    .show-large .tag   { font-size: 0.72rem; color: #64748B; letter-spacing: 0.16em; margin-top: 6px; text-transform: uppercase; }
+
+    /* 中尺寸：深色背景 */
+    .show-mid {
+      background: #0F172A; padding: 2rem; display: flex; align-items: center; justify-content: center;
+      border-right: 1px solid #E2E8F0;
+    }
+    .show-mid svg { filter: drop-shadow(0 8px 24px rgba(56,189,248,0.4)); }
+
+    /* 小尺寸 / favicon */
+    .show-small { padding: 2rem 1rem; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1rem; }
+    .show-small svg { background: white; border-radius: 8px; }
+    .show-small .label { font-size: 0.65rem; color: #94A3B8; }
+
+    /* === LOGO #1：六角結晶（Crystal Core） === */
+    .logo-1-mark { display: block; }
+
+    /* === LOGO #2：循環石板（Recycling Slabs） === */
+    .logo-2-mark { display: block; }
+
+    /* === LOGO #3：切面鑽石（Faceted Stone） === */
+    .logo-3-mark { display: block; }
+
+    /* === LOGO #4：石材波紋（Stone Wave） === */
+    .logo-4-mark { display: block; }
+
+    /* === LOGO #5：智慧矩陣（AI Matrix R） === */
+    .logo-5-mark { display: block; }
+
+    /* hover 動畫 */
+    .logo-card:hover .show-large svg { animation: spin 2.5s ease infinite alternate; }
+    @keyframes spin { from { transform: rotate(-3deg); } to { transform: rotate(3deg); } }
+
+    .logo-1-mark .pulse { animation: pulseRing 2s infinite; transform-origin: center; }
+    @keyframes pulseRing { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.6; transform: scale(0.92); } }
+
+    .logo-2-mark .arrow-cycle { animation: rotate 6s linear infinite; transform-origin: center; transform-box: fill-box; }
+    @keyframes rotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+
+<h1 class="page-title">ReStone LOGO 設計提案</h1>
+<p class="page-sub">5 款風格 · 每款顯示「完整版 / 深色版 / Favicon」三種尺寸</p>
+
+<div class="grid">
+
+  <!-- ───────── LOGO 1：六角結晶 ───────── -->
+  <div class="logo-card">
+    <div class="logo-card-header">
+      <div class="num">1</div>
+      <div class="logo-name">六角結晶 · CRYSTAL CORE</div>
+      <div class="logo-desc">石材結晶結構 + 中心循環脈動</div>
+    </div>
+    <div class="showcase">
+      <div class="show-large">
+        <svg class="logo-1-mark logo-mark" width="76" height="76" viewBox="0 0 100 100">
+          <defs>
+            <linearGradient id="g1" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#3B82F6"/>
+              <stop offset="100%" stop-color="#1E40AF"/>
+            </linearGradient>
+          </defs>
+          <!-- outer hex -->
+          <polygon points="50,8 86,29 86,71 50,92 14,71 14,29" fill="url(#g1)" />
+          <!-- inner hex (lighter) -->
+          <polygon points="50,22 74,36 74,64 50,78 26,64 26,36" fill="white" opacity="0.18" />
+          <!-- core dot pulse -->
+          <circle cx="50" cy="50" r="9" fill="white" class="pulse"/>
+          <!-- crystal rays -->
+          <g stroke="white" stroke-width="2" stroke-linecap="round" opacity="0.85">
+            <line x1="50" y1="35" x2="50" y2="22"/>
+            <line x1="50" y1="65" x2="50" y2="78"/>
+            <line x1="36" y1="42" x2="26" y2="36"/>
+            <line x1="64" y1="42" x2="74" y2="36"/>
+            <line x1="36" y1="58" x2="26" y2="64"/>
+            <line x1="64" y1="58" x2="74" y2="64"/>
+          </g>
+        </svg>
+        <div class="text-block">
+          <div class="brand">Re<span style="color:#2563EB">Stone</span></div>
+          <div class="tag">CIRCULAR STONE PLATFORM</div>
+        </div>
+      </div>
+      <div class="show-mid">
+        <svg class="logo-1-mark" width="70" height="70" viewBox="0 0 100 100">
+          <defs>
+            <linearGradient id="g1d" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#38BDF8"/>
+              <stop offset="100%" stop-color="#0EA5E9"/>
+            </linearGradient>
+          </defs>
+          <polygon points="50,8 86,29 86,71 50,92 14,71 14,29" fill="url(#g1d)" />
+          <polygon points="50,22 74,36 74,64 50,78 26,64 26,36" fill="white" opacity="0.18" />
+          <circle cx="50" cy="50" r="9" fill="white"/>
+          <g stroke="white" stroke-width="2" stroke-linecap="round" opacity="0.85">
+            <line x1="50" y1="35" x2="50" y2="22"/><line x1="50" y1="65" x2="50" y2="78"/>
+            <line x1="36" y1="42" x2="26" y2="36"/><line x1="64" y1="42" x2="74" y2="36"/>
+            <line x1="36" y1="58" x2="26" y2="64"/><line x1="64" y1="58" x2="74" y2="64"/>
+          </g>
+        </svg>
+      </div>
+      <div class="show-small">
+        <svg class="logo-1-mark" width="40" height="40" viewBox="0 0 100 100">
+          <polygon points="50,8 86,29 86,71 50,92 14,71 14,29" fill="#2563EB"/>
+          <polygon points="50,22 74,36 74,64 50,78 26,64 26,36" fill="white" opacity="0.2"/>
+          <circle cx="50" cy="50" r="9" fill="white"/>
+        </svg>
+        <div class="label">FAVICON 32px</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ───────── LOGO 2：循環石板 ───────── -->
+  <div class="logo-card">
+    <div class="logo-card-header">
+      <div class="num">2</div>
+      <div class="logo-name">循環石板 · RECYCLING SLABS</div>
+      <div class="logo-desc">三層石板 + 旋轉循環箭頭，最直白的循環經濟</div>
+    </div>
+    <div class="showcase">
+      <div class="show-large">
+        <svg class="logo-2-mark logo-mark" width="76" height="76" viewBox="0 0 100 100">
+          <defs>
+            <linearGradient id="g2a" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0%" stop-color="#3B82F6"/>
+              <stop offset="100%" stop-color="#1D4ED8"/>
+            </linearGradient>
+          </defs>
+          <!-- 旋轉的循環箭頭環 -->
+          <g class="arrow-cycle" stroke="#BFDBFE" stroke-width="3" fill="none" stroke-linecap="round">
+            <path d="M 50,10 A 40,40 0 0 1 90,50" stroke-dasharray="8 6"/>
+            <path d="M 50,90 A 40,40 0 0 1 10,50" stroke-dasharray="8 6"/>
+          </g>
+          <!-- 三疊石板（從大到小） -->
+          <rect x="22" y="60" width="56" height="9" rx="2" fill="url(#g2a)"/>
+          <rect x="28" y="48" width="44" height="9" rx="2" fill="url(#g2a)" opacity="0.85"/>
+          <rect x="34" y="36" width="32" height="9" rx="2" fill="url(#g2a)" opacity="0.7"/>
+          <!-- 小亮點 -->
+          <circle cx="50" cy="26" r="3" fill="#60A5FA"/>
+        </svg>
+        <div class="text-block">
+          <div class="brand">Re<span style="color:#2563EB">Stone</span></div>
+          <div class="tag">CIRCULAR STONE PLATFORM</div>
+        </div>
+      </div>
+      <div class="show-mid">
+        <svg class="logo-2-mark" width="70" height="70" viewBox="0 0 100 100">
+          <g stroke="#475569" stroke-width="3" fill="none" stroke-linecap="round">
+            <path d="M 50,10 A 40,40 0 0 1 90,50" stroke-dasharray="8 6"/>
+            <path d="M 50,90 A 40,40 0 0 1 10,50" stroke-dasharray="8 6"/>
+          </g>
+          <rect x="22" y="60" width="56" height="9" rx="2" fill="#38BDF8"/>
+          <rect x="28" y="48" width="44" height="9" rx="2" fill="#38BDF8" opacity="0.85"/>
+          <rect x="34" y="36" width="32" height="9" rx="2" fill="#38BDF8" opacity="0.7"/>
+          <circle cx="50" cy="26" r="3" fill="#7DD3FC"/>
+        </svg>
+      </div>
+      <div class="show-small">
+        <svg class="logo-2-mark" width="40" height="40" viewBox="0 0 100 100">
+          <rect x="22" y="60" width="56" height="9" rx="2" fill="#2563EB"/>
+          <rect x="28" y="48" width="44" height="9" rx="2" fill="#2563EB" opacity="0.85"/>
+          <rect x="34" y="36" width="32" height="9" rx="2" fill="#2563EB" opacity="0.7"/>
+          <circle cx="50" cy="26" r="3" fill="#60A5FA"/>
+        </svg>
+        <div class="label">FAVICON 32px</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ───────── LOGO 3：切面鑽石 ───────── -->
+  <div class="logo-card">
+    <div class="logo-card-header">
+      <div class="num">3</div>
+      <div class="logo-name">切面鑽石 · FACETED STONE</div>
+      <div class="logo-desc">寶石切割面，由 R 字母切片組成，奢華精緻感</div>
+    </div>
+    <div class="showcase">
+      <div class="show-large">
+        <svg class="logo-3-mark logo-mark" width="76" height="76" viewBox="0 0 100 100">
+          <defs>
+            <linearGradient id="g3a" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#60A5FA"/>
+              <stop offset="100%" stop-color="#1E40AF"/>
+            </linearGradient>
+            <linearGradient id="g3b" x1="0" y1="1" x2="1" y2="0">
+              <stop offset="0%" stop-color="#3B82F6"/>
+              <stop offset="100%" stop-color="#93C5FD"/>
+            </linearGradient>
+          </defs>
+          <!-- 切面構成的 R/菱形 -->
+          <polygon points="50,8 92,30 92,70 50,92 8,70 8,30" fill="url(#g3a)"/>
+          <!-- 上半亮面 -->
+          <polygon points="50,8 92,30 50,50 8,30" fill="white" opacity="0.25"/>
+          <!-- 中間菱形切面 -->
+          <polygon points="50,28 70,50 50,72 30,50" fill="url(#g3b)"/>
+          <polygon points="50,28 70,50 50,50" fill="white" opacity="0.3"/>
+          <!-- 切割線 -->
+          <g stroke="white" stroke-width="1" opacity="0.5" fill="none">
+            <line x1="50" y1="8" x2="50" y2="92"/>
+            <line x1="8" y1="30" x2="92" y2="70"/>
+            <line x1="92" y1="30" x2="8" y2="70"/>
+          </g>
+        </svg>
+        <div class="text-block">
+          <div class="brand">Re<span style="color:#2563EB">Stone</span></div>
+          <div class="tag">CIRCULAR STONE PLATFORM</div>
+        </div>
+      </div>
+      <div class="show-mid">
+        <svg class="logo-3-mark" width="70" height="70" viewBox="0 0 100 100">
+          <defs>
+            <linearGradient id="g3c" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#7DD3FC"/>
+              <stop offset="100%" stop-color="#0369A1"/>
+            </linearGradient>
+          </defs>
+          <polygon points="50,8 92,30 92,70 50,92 8,70 8,30" fill="url(#g3c)"/>
+          <polygon points="50,8 92,30 50,50 8,30" fill="white" opacity="0.25"/>
+          <polygon points="50,28 70,50 50,72 30,50" fill="#38BDF8"/>
+          <polygon points="50,28 70,50 50,50" fill="white" opacity="0.3"/>
+          <g stroke="white" stroke-width="1" opacity="0.5" fill="none">
+            <line x1="50" y1="8" x2="50" y2="92"/>
+            <line x1="8" y1="30" x2="92" y2="70"/>
+            <line x1="92" y1="30" x2="8" y2="70"/>
+          </g>
+        </svg>
+      </div>
+      <div class="show-small">
+        <svg class="logo-3-mark" width="40" height="40" viewBox="0 0 100 100">
+          <polygon points="50,8 92,30 92,70 50,92 8,70 8,30" fill="#2563EB"/>
+          <polygon points="50,28 70,50 50,72 30,50" fill="#60A5FA"/>
+        </svg>
+        <div class="label">FAVICON 32px</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ───────── LOGO 4：石材波紋 ───────── -->
+  <div class="logo-card">
+    <div class="logo-card-header">
+      <div class="num">4</div>
+      <div class="logo-name">石材波紋 · STONE WAVE</div>
+      <div class="logo-desc">大理石紋路曲線，最有質感與藝術氣息</div>
+    </div>
+    <div class="showcase">
+      <div class="show-large">
+        <svg class="logo-4-mark logo-mark" width="76" height="76" viewBox="0 0 100 100">
+          <defs>
+            <linearGradient id="g4a" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#3B82F6"/>
+              <stop offset="100%" stop-color="#1E40AF"/>
+            </linearGradient>
+          </defs>
+          <!-- 圓形主體 -->
+          <circle cx="50" cy="50" r="42" fill="url(#g4a)"/>
+          <!-- 大理石紋路（白色波浪） -->
+          <g stroke="white" fill="none" stroke-linecap="round" opacity="0.85">
+            <path d="M 15,40 Q 30,30 50,40 T 85,42" stroke-width="2.5"/>
+            <path d="M 12,55 Q 32,48 52,57 T 88,55" stroke-width="2"/>
+            <path d="M 18,68 Q 35,62 55,72 T 86,68" stroke-width="1.5" opacity="0.7"/>
+          </g>
+          <!-- 中央亮點（高光） -->
+          <ellipse cx="38" cy="36" rx="14" ry="8" fill="white" opacity="0.25"/>
+          <!-- 外環 -->
+          <circle cx="50" cy="50" r="42" fill="none" stroke="white" stroke-width="1.5" opacity="0.4"/>
+        </svg>
+        <div class="text-block">
+          <div class="brand">Re<span style="color:#2563EB">Stone</span></div>
+          <div class="tag">CIRCULAR STONE PLATFORM</div>
+        </div>
+      </div>
+      <div class="show-mid">
+        <svg class="logo-4-mark" width="70" height="70" viewBox="0 0 100 100">
+          <defs>
+            <linearGradient id="g4b" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#38BDF8"/>
+              <stop offset="100%" stop-color="#0369A1"/>
+            </linearGradient>
+          </defs>
+          <circle cx="50" cy="50" r="42" fill="url(#g4b)"/>
+          <g stroke="white" fill="none" stroke-linecap="round" opacity="0.85">
+            <path d="M 15,40 Q 30,30 50,40 T 85,42" stroke-width="2.5"/>
+            <path d="M 12,55 Q 32,48 52,57 T 88,55" stroke-width="2"/>
+            <path d="M 18,68 Q 35,62 55,72 T 86,68" stroke-width="1.5" opacity="0.7"/>
+          </g>
+          <ellipse cx="38" cy="36" rx="14" ry="8" fill="white" opacity="0.3"/>
+          <circle cx="50" cy="50" r="42" fill="none" stroke="white" stroke-width="1.5" opacity="0.5"/>
+        </svg>
+      </div>
+      <div class="show-small">
+        <svg class="logo-4-mark" width="40" height="40" viewBox="0 0 100 100">
+          <circle cx="50" cy="50" r="42" fill="#2563EB"/>
+          <g stroke="white" fill="none" stroke-linecap="round" opacity="0.9">
+            <path d="M 15,40 Q 30,30 50,40 T 85,42" stroke-width="3"/>
+            <path d="M 12,55 Q 32,48 52,57 T 88,55" stroke-width="2.5"/>
+          </g>
+        </svg>
+        <div class="label">FAVICON 32px</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ───────── LOGO 5：智慧矩陣 ───────── -->
+  <div class="logo-card">
+    <div class="logo-card-header">
+      <div class="num">5</div>
+      <div class="logo-name">智慧矩陣 · AI MATRIX</div>
+      <div class="logo-desc">由像素點陣構成的字母 R，最強科技 AI 感</div>
+    </div>
+    <div class="showcase">
+      <div class="show-large">
+        <svg class="logo-5-mark logo-mark" width="76" height="76" viewBox="0 0 100 100">
+          <defs>
+            <linearGradient id="g5" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#60A5FA"/>
+              <stop offset="100%" stop-color="#1E40AF"/>
+            </linearGradient>
+          </defs>
+          <!-- 圓角方形背景 -->
+          <rect x="6" y="6" width="88" height="88" rx="20" fill="url(#g5)"/>
+          <!-- R 字母由方塊組成 (5x6 grid) -->
+          <g fill="white">
+            <!-- 直立左邊 -->
+            <rect x="25" y="22" width="10" height="10" rx="2"/>
+            <rect x="25" y="34" width="10" height="10" rx="2"/>
+            <rect x="25" y="46" width="10" height="10" rx="2"/>
+            <rect x="25" y="58" width="10" height="10" rx="2"/>
+            <rect x="25" y="70" width="10" height="10" rx="2"/>
+            <!-- 上橫 -->
+            <rect x="37" y="22" width="10" height="10" rx="2"/>
+            <rect x="49" y="22" width="10" height="10" rx="2"/>
+            <!-- 右上直 -->
+            <rect x="61" y="22" width="10" height="10" rx="2"/>
+            <rect x="61" y="34" width="10" height="10" rx="2"/>
+            <!-- 中橫 -->
+            <rect x="37" y="46" width="10" height="10" rx="2"/>
+            <rect x="49" y="46" width="10" height="10" rx="2"/>
+            <!-- 右下對角 -->
+            <rect x="49" y="58" width="10" height="10" rx="2" opacity="0.85"/>
+            <rect x="61" y="70" width="10" height="10" rx="2"/>
+          </g>
+          <!-- 角落小亮點（資料點） -->
+          <circle cx="80" cy="20" r="2.5" fill="#7DD3FC"/>
+          <circle cx="20" cy="80" r="2" fill="#7DD3FC" opacity="0.7"/>
+        </svg>
+        <div class="text-block">
+          <div class="brand">Re<span style="color:#2563EB">Stone</span></div>
+          <div class="tag">CIRCULAR STONE PLATFORM</div>
+        </div>
+      </div>
+      <div class="show-mid">
+        <svg class="logo-5-mark" width="70" height="70" viewBox="0 0 100 100">
+          <defs>
+            <linearGradient id="g5d" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#38BDF8"/>
+              <stop offset="100%" stop-color="#0EA5E9"/>
+            </linearGradient>
+          </defs>
+          <rect x="6" y="6" width="88" height="88" rx="20" fill="url(#g5d)"/>
+          <g fill="white">
+            <rect x="25" y="22" width="10" height="10" rx="2"/><rect x="25" y="34" width="10" height="10" rx="2"/>
+            <rect x="25" y="46" width="10" height="10" rx="2"/><rect x="25" y="58" width="10" height="10" rx="2"/>
+            <rect x="25" y="70" width="10" height="10" rx="2"/>
+            <rect x="37" y="22" width="10" height="10" rx="2"/><rect x="49" y="22" width="10" height="10" rx="2"/>
+            <rect x="61" y="22" width="10" height="10" rx="2"/><rect x="61" y="34" width="10" height="10" rx="2"/>
+            <rect x="37" y="46" width="10" height="10" rx="2"/><rect x="49" y="46" width="10" height="10" rx="2"/>
+            <rect x="49" y="58" width="10" height="10" rx="2" opacity="0.85"/>
+            <rect x="61" y="70" width="10" height="10" rx="2"/>
+          </g>
+          <circle cx="80" cy="20" r="2.5" fill="#0F172A"/>
+          <circle cx="20" cy="80" r="2" fill="#0F172A" opacity="0.7"/>
+        </svg>
+      </div>
+      <div class="show-small">
+        <svg class="logo-5-mark" width="40" height="40" viewBox="0 0 100 100">
+          <rect x="6" y="6" width="88" height="88" rx="20" fill="#2563EB"/>
+          <g fill="white">
+            <rect x="25" y="22" width="10" height="10" rx="2"/><rect x="25" y="34" width="10" height="10" rx="2"/>
+            <rect x="25" y="46" width="10" height="10" rx="2"/><rect x="25" y="58" width="10" height="10" rx="2"/>
+            <rect x="25" y="70" width="10" height="10" rx="2"/>
+            <rect x="37" y="22" width="10" height="10" rx="2"/><rect x="49" y="22" width="10" height="10" rx="2"/>
+            <rect x="61" y="22" width="10" height="10" rx="2"/><rect x="61" y="34" width="10" height="10" rx="2"/>
+            <rect x="37" y="46" width="10" height="10" rx="2"/><rect x="49" y="46" width="10" height="10" rx="2"/>
+            <rect x="49" y="58" width="10" height="10" rx="2"/>
+            <rect x="61" y="70" width="10" height="10" rx="2"/>
+          </g>
+        </svg>
+        <div class="label">FAVICON 32px</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div style="text-align:center; padding: 3rem 1rem 0; color: #64748B; font-size: 0.85rem;">
+  💡 看完後告訴我喜歡哪一款（或想要混搭哪些元素），我會幫你套用到整個網站、生成 favicon
+</div>
+
+</body>
+</html>

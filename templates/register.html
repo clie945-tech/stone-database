@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>會員註冊 — ReStone</title>
+  <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
@@ -23,7 +24,7 @@
     .wrap { width: 100%; max-width: 440px; }
     .logo { text-align: center; margin-bottom: 1.5rem; }
     .logo a { text-decoration: none; color: var(--text); display: inline-flex; align-items: center; gap: 8px; }
-    .logo-icon { width: 32px; height: 32px; background: var(--blue); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white; font-size: 15px; }
+    .logo-icon { width: 32px; height: 32px; flex-shrink: 0; }
     .logo-text { font-size: 0.95rem; font-weight: 700; }
 
     .card { background: var(--white); border-radius: 18px; padding: 2rem; border: 1px solid var(--border); box-shadow: 0 8px 40px rgba(0,0,0,0.08); }
@@ -56,7 +57,7 @@
 <body>
 <div class="wrap">
   <div class="logo">
-    <a href="/"><div class="logo-icon">◈</div><div class="logo-text">ReStone 循環石材服務平台</div></a>
+    <a href="/"><span class="logo-icon">{% with size=32, sfx='hdr' %}{% include '_logo.html' %}{% endwith %}</span><div class="logo-text">ReStone 循環石材服務平台</div></a>
   </div>
   <div class="card">
     <div class="card-title">會員註冊</div>

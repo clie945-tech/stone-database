@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>管理後台 — ReStone 循環石材服務平台</title>
+  <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
@@ -23,7 +24,7 @@
       display: flex; flex-direction: column; z-index: 200;
     }
     .sidebar-logo { padding: 1.4rem 1.2rem; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 10px; }
-    .sidebar-logo-icon { width: 34px; height: 34px; background: var(--blue); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white; font-size: 16px; flex-shrink: 0; }
+    .sidebar-logo-icon { width: 34px; height: 34px; flex-shrink: 0; }
     .sidebar-logo-text { font-size: 0.85rem; font-weight: 700; line-height: 1.3; }
     .sidebar-logo-sub  { font-size: 0.65rem; color: var(--text-muted); }
 
@@ -121,7 +122,7 @@
 
 <nav class="sidebar">
   <div class="sidebar-logo">
-    <div class="sidebar-logo-icon">◈</div>
+    <span class="sidebar-logo-icon">{% with size=34, sfx='sb' %}{% include '_logo.html' %}{% endwith %}</span>
     <div>
       <div class="sidebar-logo-text">ReStone 循環石材服務平台</div>
       <div class="sidebar-logo-sub">管理後台</div>

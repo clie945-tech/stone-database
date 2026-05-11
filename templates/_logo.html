@@ -1,0 +1,24 @@
+{# 切面鑽石 LOGO 元件 — 使用方式：{% with size=32, sfx='hdr' %}{% include '_logo.html' %}{% endwith %} #}
+{% set s = size if size else 32 %}
+{% set k = sfx if sfx else 'm' %}
+<svg width="{{ s }}" height="{{ s }}" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0;display:block">
+  <defs>
+    <linearGradient id="lg-{{ k }}-a" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#60A5FA"/>
+      <stop offset="100%" stop-color="#1E40AF"/>
+    </linearGradient>
+    <linearGradient id="lg-{{ k }}-b" x1="0" y1="1" x2="1" y2="0">
+      <stop offset="0%" stop-color="#3B82F6"/>
+      <stop offset="100%" stop-color="#93C5FD"/>
+    </linearGradient>
+  </defs>
+  <polygon points="50,8 92,30 92,70 50,92 8,70 8,30" fill="url(#lg-{{ k }}-a)"/>
+  <polygon points="50,8 92,30 50,50 8,30" fill="white" opacity="0.25"/>
+  <polygon points="50,28 70,50 50,72 30,50" fill="url(#lg-{{ k }}-b)"/>
+  <polygon points="50,28 70,50 50,50" fill="white" opacity="0.3"/>
+  <g stroke="white" stroke-width="1" opacity="0.5" fill="none">
+    <line x1="50" y1="8" x2="50" y2="92"/>
+    <line x1="8" y1="30" x2="92" y2="70"/>
+    <line x1="92" y1="30" x2="8" y2="70"/>
+  </g>
+</svg>

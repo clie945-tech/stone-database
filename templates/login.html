@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>管理員登入 — ReStone 循環石材服務平台</title>
+  <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
@@ -40,7 +41,7 @@
       line-height: 1; pointer-events: none; user-select: none;
     }
     .left-logo { display: flex; align-items: center; gap: 12px; }
-    .left-logo-icon { width: 38px; height: 38px; background: rgba(255,255,255,0.2); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: white; font-size: 18px; }
+    .left-logo-icon { width: 38px; height: 38px; flex-shrink: 0; filter: drop-shadow(0 4px 12px rgba(0,0,0,0.2)); }
     .left-logo-text { color: white; font-size: 0.9rem; font-weight: 700; }
     .left-logo-sub { color: rgba(255,255,255,0.55); font-size: 0.6rem; letter-spacing: 0.08em; }
     .left-main { position: relative; z-index: 1; }
@@ -111,7 +112,7 @@
 <!-- 左側 -->
 <div class="login-left">
   <div class="left-logo">
-    <div class="left-logo-icon">◈</div>
+    <span class="left-logo-icon">{% with size=38, sfx='ladm' %}{% include '_logo.html' %}{% endwith %}</span>
     <div>
       <div class="left-logo-text">ReStone 循環石材服務平台</div>
       <div class="left-logo-sub">ADMIN PORTAL</div>
