@@ -1130,17 +1130,38 @@ def api_apply_stone():
                 }
             )
 
-        # Replicate 回傳可能是：URL 字串、URL list、或 FileOutput 物件（具 .url 屬性）
-        def _to_url(o):
-            if hasattr(o, 'url'):
-                return o.url
-            return str(o)
+        print(f'[Replicate output] type={type(output).__name__}, repr={output!r}')
 
-        if isinstance(output, list) and output:
-            result_url = _to_url(output[0])
-        else:
-            result_url = _to_url(output)
+        # 強化版 URL 萃取：兼容 str / list / FileOutput / 其它型別
+        def extract_url(o):
+            if o is None:
+                return None
+            if isinstance(o, str):
+                return o if o.startswith('http') else None
+            # FileOutput.url 是 str 屬性（新版 SDK）
+            url_attr = getattr(o, 'url', None)
+            if isinstance(url_attr, str) and url_attr.startswith('http'):
+                return url_attr
+            if callable(url_attr):
+                try:
+                    r = url_attr()
+                    if isinstance(r, str) and r.startswith('http'):
+                        return r
+                except Exception:
+                    pass
+            # 最後的 fallback：str() 轉換
+            s = str(o)
+            return s if s.startswith('http') else None
 
+        candidate = output[0] if isinstance(output, list) and output else output
+        result_url = extract_url(candidate)
+
+        if not result_url:
+            return jsonify({
+                'error': f'AI 完成但回傳格式無法解析（type={type(candidate).__name__}）。請查看 Railway logs。'
+            }), 500
+
+        print(f'[Replicate result_url] {result_url}')
         return jsonify({
             'success': True,
             'result_url': result_url,

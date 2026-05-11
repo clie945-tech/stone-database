@@ -476,35 +476,76 @@ btnApply.addEventListener('click', async () => {
   resultBox.innerHTML = '<div class="loading"><div class="spinner"></div>AI 正在合成中… 通常需要 15–40 秒</div>';
   resultPanel.scrollIntoView({ behavior: 'smooth', block: 'center' });
 
+  let stage = '準備中';
   try {
+    stage = '匯出遮罩';
     const maskBlob = await exportMask();
+    if (!maskBlob) throw new Error('遮罩匯出失敗（請確認有塗選區域）');
+
+    stage = '組合表單';
     const fd = new FormData();
-    fd.append('stone_id', selectedStoneId);
+    fd.append('stone_id', String(selectedStoneId || ''));
     fd.append('design', designBlob, 'design.png');
     fd.append('mask', maskBlob, 'mask.png');
-    // 如果使用者編輯過 prompt，就送自訂版本
-    const editedPrompt = promptText.value.trim();
+    const editedPrompt = (promptText.value || '').trim();
     if (editedPrompt && editedPrompt !== originalPrompt) {
       fd.append('prompt', editedPrompt);
     }
 
-    const r = await fetch('/api/apply-stone', { method: 'POST', body: fd });
-    const data = await r.json();
-    if (!r.ok || !data.success) throw new Error(data.error || '合成失敗');
+    stage = '傳送請求';
+    let r;
+    try {
+      r = await fetch('/api/apply-stone', { method: 'POST', body: fd });
+    } catch (netErr) {
+      throw new Error('網路請求失敗：' + (netErr.message || netErr));
+    }
 
-    resultBox.innerHTML = `
-      <img src="${data.result_url}" alt="AI 合成結果">
-      <div class="result-actions">
-        <a href="${data.result_url}" target="_blank">🔍 開啟原圖</a>
-        <a href="${data.result_url}" download="restone-design.jpg">↓ 下載圖片</a>
-      </div>
-      <div class="prompt-box" style="margin-top:1rem;">
-        <div class="prompt-label">使用石材 · ${data.stone_name}</div>
-        <div>${data.prompt}</div>
-      </div>`;
+    stage = '解析回應';
+    let data;
+    try {
+      data = await r.json();
+    } catch (jsonErr) {
+      const txt = await r.text().catch(() => '');
+      throw new Error('回應非 JSON 格式（HTTP ' + r.status + '）：' + txt.slice(0, 120));
+    }
+
+    if (!r.ok || !data.success) {
+      throw new Error(data.error || ('伺服器錯誤 HTTP ' + r.status));
+    }
+
+    stage = '驗證圖片網址';
+    if (!data.result_url || typeof data.result_url !== 'string' || !/^https?:\/\//.test(data.result_url)) {
+      console.error('Invalid result_url:', data);
+      throw new Error('AI 回傳的圖片網址無效：' + JSON.stringify(data.result_url).slice(0, 80));
+    }
+    console.log('[apply-stone] result_url:', data.result_url);
+
+    stage = '顯示結果';
+    // 用 DOM API 設定 src，避免 HTML 內插造成的特殊字元問題
+    const img = document.createElement('img');
+    img.alt = 'AI 合成結果';
+    img.src = data.result_url;
+
+    const safeUrl = data.result_url;
+    resultBox.innerHTML = '';
+    resultBox.appendChild(img);
+    const actions = document.createElement('div');
+    actions.className = 'result-actions';
+    const openA = document.createElement('a'); openA.href = safeUrl; openA.target = '_blank'; openA.textContent = '🔍 開啟原圖';
+    const dlA   = document.createElement('a'); dlA.href = safeUrl; dlA.setAttribute('download', 'restone-design.jpg'); dlA.textContent = '↓ 下載圖片';
+    actions.appendChild(openA); actions.appendChild(dlA);
+    resultBox.appendChild(actions);
+    const pBox = document.createElement('div');
+    pBox.className = 'prompt-box';
+    pBox.style.marginTop = '1rem';
+    pBox.innerHTML = '<div class="prompt-label">使用石材 · </div><div></div>';
+    pBox.querySelector('.prompt-label').textContent = '使用石材 · ' + (data.stone_name || '');
+    pBox.querySelectorAll('div')[1].textContent = data.prompt || '';
+    resultBox.appendChild(pBox);
   } catch (e) {
+    console.error('[apply-stone] 失敗於階段:', stage, e);
     resultPanel.classList.remove('active');
-    errorBox.textContent = '⚠ ' + e.message;
+    errorBox.textContent = '⚠ [' + stage + '] ' + (e.message || e);
     errorBox.classList.add('active');
   } finally {
     refreshApplyState();
