@@ -346,13 +346,34 @@ def expand_query(query):
 
 
 def save_photo(file_field):
-    """儲存上傳照片，回傳檔名或 None"""
-    if file_field and file_field.filename and allowed_file(file_field.filename):
-        filename = secure_filename(file_field.filename)
-        filename = f"{secrets.token_hex(8)}_{filename}"
-        file_field.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-        return filename
-    return None
+    """儲存上傳照片，回傳檔名或 None（含詳細診斷）"""
+    if not file_field:
+        print('[save_photo] file_field 為 None（表單未夾帶檔案）')
+        return None
+    if not file_field.filename:
+        print('[save_photo] file_field.filename 為空字串')
+        return None
+    if not allowed_file(file_field.filename):
+        print(f'[save_photo] 副檔名不被允許：{file_field.filename}')
+        return None
+    try:
+        # secure_filename 會剝離中文字元，導致檔名只剩 .jpg
+        # 因此自行保留副檔名並補上隨機 ID
+        original = file_field.filename
+        ext = original.rsplit('.', 1)[1].lower() if '.' in original else 'jpg'
+        filename = f"{secrets.token_hex(12)}.{ext}"
+        full_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+        os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)  # 確保資料夾存在
+        file_field.save(full_path)
+        # 確認檔案真的存在且不是 0 bytes
+        if os.path.exists(full_path) and os.path.getsize(full_path) > 0:
+            print(f'[save_photo] ✓ 儲存成功：{filename}（{os.path.getsize(full_path)} bytes）')
+            return filename
+        print(f'[save_photo] ⚠ 檔案儲存後不存在或為空：{full_path}')
+        return None
+    except Exception as e:
+        print(f'[save_photo] ✗ 儲存發生例外：{type(e).__name__}: {e}')
+        return None
 
 
 def delete_photo(filename):
@@ -698,9 +719,21 @@ def add_stone():
         description = request.form.get('description', '').strip()
         color       = request.form.get('color', '')
 
+        # 紀錄表單收到的檔案清單（Railway log 用，協助排錯）
+        print(f'[add_stone] request.files keys: {list(request.files.keys())}')
+        for key in ['photo', 'photo2', 'photo3']:
+            f = request.files.get(key)
+            if f:
+                print(f'[add_stone] {key}: filename="{f.filename}", content_type={f.content_type}')
+
         photo  = save_photo(request.files.get('photo'))
         photo2 = save_photo(request.files.get('photo2'))
         photo3 = save_photo(request.files.get('photo3'))
+
+        # 主照片上傳失敗時，明確告知管理員
+        main_photo_attempted = bool(request.files.get('photo') and request.files.get('photo').filename)
+        if main_photo_attempted and not photo:
+            flash('⚠ 主照片上傳失敗，請檢查檔案格式（PNG/JPG/JPEG/GIF/WebP）或檔案大小（≤32MB）', 'error')
 
         # 主照片 AI 分析：自動偵測顏色 + 計算雜湊
         image_hash, dominant_rgb = '', ''
@@ -763,9 +796,13 @@ def edit_stone(id):
         description = request.form.get('description', '').strip()
         color       = request.form.get('color', '')
 
+        # 紀錄表單收到的檔案清單（Railway log 用）
+        print(f'[edit_stone] request.files keys: {list(request.files.keys())}')
+
         # 處理三張照片（有新上傳才替換）
         photos = []
         main_photo_changed = False
+        failed_uploads = []
         for field, old_key in [('photo', 'photo'), ('photo2', 'photo2'), ('photo3', 'photo3')]:
             new_file = request.files.get(field)
             new_photo = save_photo(new_file)
@@ -775,7 +812,13 @@ def edit_stone(id):
                 if field == 'photo':
                     main_photo_changed = True
             else:
+                # 使用者有選檔案但儲存失敗 → 記錄下來警示
+                if new_file and new_file.filename:
+                    failed_uploads.append(field)
                 photos.append(stone[old_key])
+
+        if failed_uploads:
+            flash(f'⚠ 以下照片上傳失敗（已保留原檔案）：{", ".join(failed_uploads)}', 'error')
 
         # 主照片若有變更或缺少分析資料，則重新分析
         image_hash = stone['image_hash'] if 'image_hash' in stone.keys() else ''
