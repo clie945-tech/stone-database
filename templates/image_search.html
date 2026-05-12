@@ -59,6 +59,10 @@
       background: var(--blue-light); position: relative;
     }
     .upload-area:hover { border-color: var(--blue); background: #DBEAFE; transform: translateY(-2px); }
+    .upload-area.dragover {
+      border-color: var(--blue); background: #DBEAFE;
+      transform: scale(1.01); box-shadow: 0 0 0 6px rgba(37,99,235,0.12);
+    }
     .upload-area.has-file { padding: 1.5rem; background: white; border-style: solid; }
     .upload-area input[type="file"] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
     .upload-icon { font-size: 3rem; margin-bottom: 0.6rem; }
@@ -295,6 +299,26 @@
     btn.textContent = '⏳ AI 分析中...';
     btn.disabled = true;
   });
+
+  // ── 拖放上傳支援（含視覺回饋）──
+  (() => {
+    const area = document.getElementById('uploadArea');
+    const input = document.getElementById('refFile');
+    ['dragenter','dragover','dragleave','drop'].forEach(ev => {
+      area.addEventListener(ev, e => { e.preventDefault(); e.stopPropagation(); });
+    });
+    ['dragenter','dragover'].forEach(ev => area.addEventListener(ev, () => area.classList.add('dragover')));
+    ['dragleave','drop'].forEach(ev => area.addEventListener(ev, () => area.classList.remove('dragover')));
+    area.addEventListener('drop', e => {
+      const files = e.dataTransfer.files;
+      if (!files || !files.length) return;
+      input.files = files;
+      previewRef(input);
+    });
+    ['dragover','drop'].forEach(ev => window.addEventListener(ev, e => {
+      if (!e.target.closest('.upload-area')) e.preventDefault();
+    }));
+  })();
 </script>
 </body>
 </html>

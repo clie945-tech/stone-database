@@ -79,6 +79,10 @@
       background: var(--bg); position: relative;
     }
     .upload-area:hover { border-color: var(--blue); background: var(--blue-light); }
+    .upload-area.dragover {
+      border-color: var(--blue); background: var(--blue-light);
+      transform: scale(1.01); box-shadow: 0 0 0 4px rgba(37,99,235,0.12);
+    }
     .upload-area input[type="file"] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; padding: 0; border: none; background: transparent; }
     .upload-icon { font-size: 2rem; margin-bottom: 0.5rem; opacity: 0.4; }
     .upload-text { font-size: 0.85rem; color: var(--text-muted); }
@@ -297,6 +301,27 @@
       reader.readAsDataURL(input.files[0]);
     }
   }
+
+  // ── 拖放上傳支援（含視覺回饋）──
+  document.querySelectorAll('.upload-area').forEach(area => {
+    const input = area.querySelector('input[type="file"]');
+    if (!input) return;
+    ['dragenter','dragover','dragleave','drop'].forEach(ev => {
+      area.addEventListener(ev, e => { e.preventDefault(); e.stopPropagation(); });
+    });
+    ['dragenter','dragover'].forEach(ev => area.addEventListener(ev, () => area.classList.add('dragover')));
+    ['dragleave','drop'].forEach(ev => area.addEventListener(ev, () => area.classList.remove('dragover')));
+    area.addEventListener('drop', e => {
+      const files = e.dataTransfer.files;
+      if (!files || !files.length) return;
+      input.files = files;
+      input.dispatchEvent(new Event('change'));
+    });
+  });
+  // 防止整頁拖放時瀏覽器直接打開圖片
+  ['dragover','drop'].forEach(ev => window.addEventListener(ev, e => {
+    if (!e.target.closest('.upload-area')) e.preventDefault();
+  }));
 
   // ── AI 重新分析照片，自動填入 prompt ──
   const aiBtn = document.getElementById('btn-ai-analyze');
