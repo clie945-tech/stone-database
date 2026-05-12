@@ -38,12 +38,33 @@
     .header-inner {
       max-width: 1280px; margin: 0 auto;
       display: flex; align-items: center; justify-content: space-between;
-      height: 60px;
+      height: 76px;
     }
-    .logo { display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--text); }
-    .logo-icon { width: 32px; height: 32px; flex-shrink: 0; }
-    .logo-text { font-size: 0.92rem; font-weight: 700; }
-    .logo-sub  { font-size: 0.6rem; color: var(--text-light); letter-spacing: 0.08em; }
+    .logo {
+      display: flex; align-items: center; gap: 14px; text-decoration: none; color: var(--text);
+      animation: logo-entrance 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+    }
+    .logo-icon {
+      width: 48px; height: 48px; flex-shrink: 0;
+      filter: drop-shadow(0 4px 10px rgba(37, 99, 235, 0.2));
+      transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1),
+                  filter 0.4s ease;
+    }
+    .logo:hover .logo-icon {
+      transform: scale(1.12) rotate(12deg);
+      filter: drop-shadow(0 6px 18px rgba(124, 58, 237, 0.4));
+    }
+    .logo:active .logo-icon { transform: scale(0.96); }
+    .logo-text { font-size: 1.05rem; font-weight: 800; letter-spacing: -0.01em; transition: color 0.2s; }
+    .logo-sub  { font-size: 0.65rem; color: var(--text-light); letter-spacing: 0.08em; margin-top: 2px; }
+    .logo:hover .logo-text { color: var(--blue); }
+    @keyframes logo-entrance {
+      from { opacity: 0; transform: translateX(-12px); }
+      to   { opacity: 1; transform: translateX(0); }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .logo, .logo-icon { animation: none; transition: none; }
+    }
     .header-right { display: flex; align-items: center; gap: 0.75rem; }
     .header-admin {
       font-size: 0.8rem; color: var(--text-muted); text-decoration: none;
@@ -319,7 +340,7 @@
 <header>
   <div class="header-inner">
     <a href="/" class="logo">
-      <span class="logo-icon">{% with size=32, sfx='hdr' %}{% include '_logo.html' %}{% endwith %}</span>
+      <span class="logo-icon">{% with size=48, sfx='hdr' %}{% include '_logo.html' %}{% endwith %}</span>
       <div>
         <div class="logo-text">ReStone</div>
         <div class="logo-sub">循環石材服務平台</div>

@@ -1,7 +1,7 @@
 {# 切面鑽石 LOGO 元件 — 使用方式：{% with size=32, sfx='hdr' %}{% include '_logo.html' %}{% endwith %} #}
 {% set s = size if size else 32 %}
 {% set k = sfx if sfx else 'm' %}
-<svg width="{{ s }}" height="{{ s }}" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0;display:block">
+<svg width="{{ s }}" height="{{ s }}" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0;display:block;overflow:visible">
   <defs>
     <linearGradient id="lg-{{ k }}-a" x1="0" y1="0" x2="1" y2="1">
       <stop offset="0%" stop-color="#60A5FA"/>
@@ -11,14 +11,75 @@
       <stop offset="0%" stop-color="#3B82F6"/>
       <stop offset="100%" stop-color="#93C5FD"/>
     </linearGradient>
+    {# 動態 shine 漸層：模擬光線在切面上滑動 #}
+    <linearGradient id="lg-{{ k }}-shine" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%"   stop-color="white" stop-opacity="0">
+        <animate attributeName="offset" values="-0.3;-0.3;1.0;1.0" keyTimes="0;0.4;0.8;1" dur="5s" repeatCount="indefinite"/>
+      </stop>
+      <stop offset="0.05" stop-color="white" stop-opacity="0.7">
+        <animate attributeName="offset" values="-0.25;-0.25;1.05;1.05" keyTimes="0;0.4;0.8;1" dur="5s" repeatCount="indefinite"/>
+      </stop>
+      <stop offset="0.1"  stop-color="white" stop-opacity="0">
+        <animate attributeName="offset" values="-0.2;-0.2;1.1;1.1" keyTimes="0;0.4;0.8;1" dur="5s" repeatCount="indefinite"/>
+      </stop>
+    </linearGradient>
+    <clipPath id="lg-{{ k }}-clip">
+      <polygon points="50,8 92,30 92,70 50,92 8,70 8,30"/>
+    </clipPath>
   </defs>
-  <polygon points="50,8 92,30 92,70 50,92 8,70 8,30" fill="url(#lg-{{ k }}-a)"/>
-  <polygon points="50,8 92,30 50,50 8,30" fill="white" opacity="0.25"/>
-  <polygon points="50,28 70,50 50,72 30,50" fill="url(#lg-{{ k }}-b)"/>
-  <polygon points="50,28 70,50 50,50" fill="white" opacity="0.3"/>
-  <g stroke="white" stroke-width="1" opacity="0.5" fill="none">
-    <line x1="50" y1="8" x2="50" y2="92"/>
-    <line x1="8" y1="30" x2="92" y2="70"/>
-    <line x1="92" y1="30" x2="8" y2="70"/>
+  <style>
+    .lg-{{ k }}-frame {
+      transform-origin: 50px 50px;
+      animation: lg-{{ k }}-breathe 6s ease-in-out infinite;
+    }
+    .lg-{{ k }}-core {
+      transform-origin: 50px 50px;
+      animation: lg-{{ k }}-spin 8s ease-in-out infinite alternate;
+    }
+    .lg-{{ k }}-top {
+      animation: lg-{{ k }}-pulse 3.5s ease-in-out infinite;
+    }
+    .lg-{{ k }}-rays {
+      animation: lg-{{ k }}-rays 4s ease-in-out infinite;
+    }
+    @keyframes lg-{{ k }}-breathe {
+      0%, 100% { transform: scale(1); }
+      50%      { transform: scale(1.03); }
+    }
+    @keyframes lg-{{ k }}-spin {
+      0%   { transform: rotate(-4deg); }
+      100% { transform: rotate(4deg); }
+    }
+    @keyframes lg-{{ k }}-pulse {
+      0%, 100% { opacity: 0.25; }
+      50%      { opacity: 0.5;  }
+    }
+    @keyframes lg-{{ k }}-rays {
+      0%, 100% { opacity: 0.5; }
+      50%      { opacity: 0.85; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .lg-{{ k }}-frame, .lg-{{ k }}-core, .lg-{{ k }}-top, .lg-{{ k }}-rays { animation: none; }
+    }
+  </style>
+
+  <g class="lg-{{ k }}-frame">
+    {# 外框六角形 #}
+    <polygon points="50,8 92,30 92,70 50,92 8,70 8,30" fill="url(#lg-{{ k }}-a)"/>
+    {# 上半部白色 facet #}
+    <polygon class="lg-{{ k }}-top" points="50,8 92,30 50,50 8,30" fill="white"/>
+    {# 內部鑽石 #}
+    <g class="lg-{{ k }}-core">
+      <polygon points="50,28 70,50 50,72 30,50" fill="url(#lg-{{ k }}-b)"/>
+      <polygon points="50,28 70,50 50,50" fill="white" opacity="0.3"/>
+    </g>
+    {# 切面射線 #}
+    <g class="lg-{{ k }}-rays" stroke="white" stroke-width="1" fill="none">
+      <line x1="50" y1="8" x2="50" y2="92"/>
+      <line x1="8" y1="30" x2="92" y2="70"/>
+      <line x1="92" y1="30" x2="8" y2="70"/>
+    </g>
+    {# 光線掃過效果 — 從左上滑到右下，模擬鑽石反光 #}
+    <polygon points="50,8 92,30 92,70 50,92 8,70 8,30" fill="url(#lg-{{ k }}-shine)" clip-path="url(#lg-{{ k }}-clip)"/>
   </g>
 </svg>
