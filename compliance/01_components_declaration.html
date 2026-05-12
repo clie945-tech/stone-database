@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<title>技術組件清單與來源國聲明 — ReStone 循環石材服務平台</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { font-size: 13px; }
+  body {
+    font-family: 'Noto Sans TC', 'PingFang TC', sans-serif;
+    color: #0F172A; line-height: 1.7; background: #E5E7EB;
+  }
+  .page {
+    width: 210mm; min-height: 297mm; background: white;
+    margin: 12mm auto; padding: 22mm 22mm 25mm;
+    position: relative; page-break-after: always;
+    box-shadow: 0 4px 30px rgba(0,0,0,0.1);
+  }
+  .page:last-child { page-break-after: auto; }
+
+  /* 公文表頭 */
+  .doc-header {
+    border-bottom: 3px double #0F172A;
+    padding-bottom: 8mm; margin-bottom: 8mm;
+  }
+  .doc-title {
+    font-size: 1.7rem; font-weight: 900; text-align: center;
+    letter-spacing: 0.05em; margin-bottom: 4mm;
+  }
+  .doc-meta {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 2mm 8mm;
+    font-size: 0.85rem;
+  }
+  .doc-meta dt { font-weight: 700; display: inline-block; min-width: 6em; }
+  .doc-meta dd { display: inline; }
+  .meta-row { display: flex; gap: 4mm; }
+
+  /* 主體標題 */
+  h2 {
+    font-size: 1.15rem; font-weight: 800; margin-top: 7mm; margin-bottom: 4mm;
+    padding-left: 3mm; border-left: 4px solid #0F172A;
+  }
+  h3 { font-size: 1rem; font-weight: 700; margin-top: 5mm; margin-bottom: 2mm; }
+  p { font-size: 0.9rem; margin-bottom: 3mm; text-align: justify; }
+  .note { font-size: 0.82rem; color: #475569; font-style: italic; }
+
+  /* 表格 */
+  table {
+    width: 100%; border-collapse: collapse;
+    font-size: 0.82rem; margin: 3mm 0 5mm;
+  }
+  th, td {
+    border: 1px solid #334155; padding: 2.5mm 3mm;
+    text-align: left; vertical-align: top;
+  }
+  th { background: #F1F5F9; font-weight: 800; font-size: 0.78rem; }
+  td.center, th.center { text-align: center; }
+  td.flag { font-size: 0.95rem; text-align: center; white-space: nowrap; }
+  tr.confirm td { background: #F0FDF4; }
+
+  /* 聲明區 */
+  .declaration {
+    margin-top: 8mm; padding: 6mm 8mm;
+    background: #F8FAFC; border: 1.5px solid #0F172A;
+  }
+  .declaration h3 { margin-top: 0; }
+  .declaration p { font-size: 0.92rem; }
+
+  /* 簽章區 */
+  .sign-block {
+    margin-top: 12mm;
+    display: grid; grid-template-columns: 1fr 1fr; gap: 12mm;
+  }
+  .sign-cell { border: 1px solid #94A3B8; padding: 4mm; min-height: 38mm; position: relative; }
+  .sign-cell .label { font-size: 0.78rem; font-weight: 700; color: #475569; margin-bottom: 2mm; }
+  .sign-cell .field { font-size: 0.85rem; padding: 2mm 0; border-bottom: 1px solid #CBD5E1; min-height: 7mm; margin-bottom: 3mm; }
+  .sign-cell .stamp {
+    position: absolute; right: 4mm; bottom: 4mm;
+    width: 25mm; height: 25mm; border: 1.5px dashed #94A3B8; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.7rem; color: #94A3B8; text-align: center;
+  }
+
+  /* 頁碼 */
+  .page-num {
+    position: absolute; bottom: 12mm; left: 0; right: 0; text-align: center;
+    font-size: 0.78rem; color: #475569;
+  }
+  .doc-footer {
+    position: absolute; bottom: 8mm; left: 22mm; right: 22mm;
+    border-top: 1px solid #CBD5E1; padding-top: 3mm;
+    display: flex; justify-content: space-between;
+    font-size: 0.7rem; color: #64748B;
+  }
+
+  /* 列印優化 */
+  @media print {
+    html, body { background: white !important; }
+    .page { box-shadow: none; margin: 0; }
+    @page { size: A4; margin: 0; }
+  }
+  @page { size: A4; }
+</style>
+</head>
+<body>
+
+<!-- ============================ 第 1 頁 ============================ -->
+<div class="page">
+
+  <div class="doc-header">
+    <div class="doc-title">技術組件清單與來源國聲明書</div>
+    <div style="text-align:center;font-size:0.85rem;color:#475569;margin-bottom:4mm">
+      Technical Components Inventory and Country of Origin Declaration
+    </div>
+    <div class="doc-meta">
+      <div><dt>專案名稱：</dt><dd>ReStone 循環石材服務平台</dd></div>
+      <div><dt>文件編號：</dt><dd>RS-COMP-2026-001</dd></div>
+      <div><dt>製作日期：</dt><dd>中華民國 115 年 5 月 12 日</dd></div>
+      <div><dt>文件版本：</dt><dd>v1.0</dd></div>
+      <div><dt>提交單位：</dt><dd>__________________________</dd></div>
+      <div><dt>審核機關：</dt><dd>__________________________</dd></div>
+    </div>
+  </div>
+
+  <h2>一、文件目的</h2>
+  <p>本聲明書旨在揭露 ReStone 循環石材服務平台所使用之全部技術組件、開發單位、來源國別與授權方式，供主管機關進行採購合規審查、資安風險評估及大陸地區資本排除之確認。</p>
+
+  <h2>二、適用依據</h2>
+  <table>
+    <thead><tr><th style="width:35%">法規 / 規範</th><th>條文 / 範圍</th></tr></thead>
+    <tbody>
+      <tr><td>政府採購法</td><td>第 8 條、第 17 條（限制大陸地區廠商）</td></tr>
+      <tr><td>資通安全管理法</td><td>第 11 條、第 18 條（資通系統建置應符合資安規範）</td></tr>
+      <tr><td>各機關對危害國家資通安全產品限制使用原則</td><td>行政院 108.04.19 函頒</td></tr>
+      <tr><td>經濟部產業發展署相關採購要點</td><td>適用於本中心採購規定</td></tr>
+    </tbody>
+  </table>
+
+  <h2>三、技術組件總覽</h2>
+  <p>本平台採用之技術組件共 <strong>18 項</strong>，依層級分類如下：</p>
+  <table>
+    <thead>
+      <tr><th class="center" style="width:8%">編號</th><th style="width:18%">層級類別</th><th style="width:24%">組件名稱</th><th style="width:24%">開發 / 維護組織</th><th class="center" style="width:14%">來源國別</th><th class="center" style="width:12%">合規狀態</th></tr>
+    </thead>
+    <tbody>
+      <tr class="confirm"><td class="center">1</td><td>程式語言</td><td>Python 3.9</td><td>Python Software Foundation（非營利）</td><td class="flag">🇺🇸 美國</td><td class="center">✓ 合規</td></tr>
+      <tr class="confirm"><td class="center">2</td><td>Web 框架</td><td>Flask 3.x</td><td>Pallets Projects（開源組織）</td><td class="flag">🇺🇸 美國</td><td class="center">✓ 合規</td></tr>
+      <tr class="confirm"><td class="center">3</td><td>Web 工具庫</td><td>Werkzeug</td><td>Pallets Projects</td><td class="flag">🇺🇸 美國</td><td class="center">✓ 合規</td></tr>
+      <tr class="confirm"><td class="center">4</td><td>WSGI 伺服器</td><td>Gunicorn</td><td>Benoit Chesneau 等開源社群</td><td class="flag">🇫🇷 法國</td><td class="center">✓ 合規</td></tr>
+      <tr class="confirm"><td class="center">5</td><td>資料庫</td><td>SQLite</td><td>D. Richard Hipp（Public Domain）</td><td class="flag">🇺🇸 美國</td><td class="center">✓ 合規</td></tr>
+      <tr class="confirm"><td class="center">6</td><td>郵件模組</td><td>Flask-Mail</td><td>Dan Jacob 等社群</td><td class="flag">🇺🇸 美國</td><td class="center">✓ 合規</td></tr>
+      <tr class="confirm"><td class="center">7</td><td>Excel 匯出</td><td>openpyxl</td><td>Eric Gazoni 等 EU 社群</td><td class="flag">🇪🇺 歐盟</td><td class="center">✓ 合規</td></tr>
+      <tr class="confirm"><td class="center">8</td><td>圖像處理</td><td>Pillow (PIL Fork)</td><td>Alex Clark 等社群</td><td class="flag">🇺🇸 美國</td><td class="center">✓ 合規</td></tr>
+      <tr class="confirm"><td class="center">9</td><td>感知雜湊</td><td>ImageHash</td><td>Johannes Buchner</td><td class="flag">🇦🇹 奧地利</td><td class="center">✓ 合規</td></tr>
+      <tr class="confirm"><td class="center">10</td><td>AI 服務 SDK</td><td>Replicate Python Client</td><td>Replicate, Inc.</td><td class="flag">🇺🇸 美國</td><td class="center">✓ 合規</td></tr>
+    </tbody>
+  </table>
+
+  <div class="doc-footer">
+    <div>ReStone 循環石材服務平台 · 技術組件清單與來源國聲明書</div>
+    <div>RS-COMP-2026-001 · v1.0</div>
+  </div>
+  <div class="page-num">— 1 / 3 —</div>
+</div>
+
+<!-- ============================ 第 2 頁 ============================ -->
+<div class="page">
+
+  <h2>三、技術組件總覽（續）</h2>
+  <table>
+    <thead>
+      <tr><th class="center" style="width:8%">編號</th><th style="width:18%">層級類別</th><th style="width:24%">組件名稱</th><th style="width:24%">開發 / 維護組織</th><th class="center" style="width:14%">來源國別</th><th class="center" style="width:12%">合規狀態</th></tr>
+    </thead>
+    <tbody>
+      <tr class="confirm"><td class="center">11</td><td>AI 模型（影像生成）</td><td>Flux Fill Pro</td><td>Black Forest Labs GmbH</td><td class="flag">🇩🇪 德國</td><td class="center">✓ 合規</td></tr>
+      <tr class="confirm"><td class="center">12</td><td>AI 模型（視覺語言）</td><td>LLaVA v1.6 Mistral 7B</td><td>University of Wisconsin-Madison + Microsoft Research</td><td class="flag">🇺🇸 美國</td><td class="center">✓ 合規</td></tr>
+      <tr class="confirm"><td class="center">13</td><td>託管平台 (PaaS)</td><td>Railway</td><td>Railway Corp.（Y Combinator 投資）</td><td class="flag">🇺🇸 美國</td><td class="center">✓ 合規</td></tr>
+      <tr class="confirm"><td class="center">14</td><td>版本控制平台</td><td>GitHub</td><td>Microsoft Corporation</td><td class="flag">🇺🇸 美國</td><td class="center">✓ 合規</td></tr>
+      <tr class="confirm"><td class="center">15</td><td>郵件傳輸服務 (SMTP)</td><td>Gmail</td><td>Google LLC</td><td class="flag">🇺🇸 美國</td><td class="center">✓ 合規</td></tr>
+      <tr class="confirm"><td class="center">16</td><td>網頁字型</td><td>Inter</td><td>Rasmus Andersson（OFL 開源授權）</td><td class="flag">🇸🇪 瑞典</td><td class="center">✓ 合規</td></tr>
+      <tr class="confirm"><td class="center">17</td><td>中文網頁字型</td><td>Noto Sans TC</td><td>Google LLC（OFL 開源授權）</td><td class="flag">🇺🇸 美國</td><td class="center">✓ 合規</td></tr>
+      <tr class="confirm"><td class="center">18</td><td>字型 CDN</td><td>Google Fonts</td><td>Google LLC</td><td class="flag">🇺🇸 美國</td><td class="center">✓ 合規</td></tr>
+    </tbody>
+  </table>
+
+  <h2>四、大陸地區資本排除說明</h2>
+  <p>本平台經逐項稽核，<strong>未使用任何具大陸地區資本或控股</strong>之技術產品、軟體模組或雲端服務。具體排除確認如下：</p>
+
+  <table>
+    <thead><tr><th style="width:40%">疑似中資技術 / 服務</th><th class="center" style="width:15%">使用狀態</th><th>排除說明</th></tr></thead>
+    <tbody>
+      <tr><td>TikTok / 抖音 / ByteDance Volcengine</td><td class="center">未使用</td><td>無任何分析、追蹤或 SDK 引用</td></tr>
+      <tr><td>騰訊雲 / 騰訊 SDK / WeChat 服務</td><td class="center">未使用</td><td>—</td></tr>
+      <tr><td>阿里雲 / 阿里巴巴 SDK</td><td class="center">未使用</td><td>—</td></tr>
+      <tr><td>百度 / 百度地圖 / 百度雲</td><td class="center">未使用</td><td>—</td></tr>
+      <tr><td>華為雲 / HMS 服務</td><td class="center">未使用</td><td>—</td></tr>
+      <tr><td>小米雲 / Mi Cloud</td><td class="center">未使用</td><td>—</td></tr>
+      <tr><td>jsDelivr 中國節點 / BootCDN 等中國 CDN</td><td class="center">未使用</td><td>所有靜態資源僅使用 Google Fonts 官方 CDN</td></tr>
+      <tr><td>大陸地區註冊（.cn 網域）之外部資源</td><td class="center">未使用</td><td>程式碼及範本經 grep 全文掃描，僅引用 fonts.googleapis.com</td></tr>
+      <tr><td>大陸地區開發之 npm / PyPI 套件</td><td class="center">未使用</td><td>requirements.txt 全數來自上表合規清單</td></tr>
+    </tbody>
+  </table>
+
+  <h2>五、資料儲存與處理位置</h2>
+  <p>本平台所有使用者資料、業務資料、AI 處理過程皆於下列伺服器處理，<strong>無任何資料流經大陸地區</strong>：</p>
+  <table>
+    <thead><tr><th style="width:30%">資料類別</th><th style="width:25%">儲存位置</th><th class="center" style="width:12%">國別</th><th>備註</th></tr></thead>
+    <tbody>
+      <tr><td>會員資料、密碼雜湊</td><td>Railway (US-West)</td><td class="flag">🇺🇸 美國</td><td>PBKDF2-SHA256 雜湊</td></tr>
+      <tr><td>石材庫存資料、照片</td><td>Railway (US-West)</td><td class="flag">🇺🇸 美國</td><td>SQLite + 檔案系統</td></tr>
+      <tr><td>詢問紀錄、Email 內容</td><td>Railway (US-West)</td><td class="flag">🇺🇸 美國</td><td>—</td></tr>
+      <tr><td>AI 暫存（合成中圖像）</td><td>Replicate (US)</td><td class="flag">🇺🇸 美國</td><td>處理完成後依其政策刪除</td></tr>
+      <tr><td>郵件傳輸</td><td>Google Gmail SMTP</td><td class="flag">🇺🇸 美國</td><td>TLS 加密傳輸</td></tr>
+    </tbody>
+  </table>
+
+  <div class="doc-footer">
+    <div>ReStone 循環石材服務平台 · 技術組件清單與來源國聲明書</div>
+    <div>RS-COMP-2026-001 · v1.0</div>
+  </div>
+  <div class="page-num">— 2 / 3 —</div>
+</div>
+
+<!-- ============================ 第 3 頁 ============================ -->
+<div class="page">
+
+  <h2>六、合規聲明</h2>
+
+  <div class="declaration">
+    <h3>正式聲明</h3>
+    <p>本單位謹此聲明：ReStone 循環石材服務平台所使用之全部技術組件、雲端服務、開發工具及第三方函式庫，<strong>皆無任何具中華人民共和國（含香港、澳門）資本、控股或主要研發據點之來源</strong>。</p>
+    <p>本平台所有資料流向皆於非大陸地區之伺服器處理，符合「各機關對危害國家資通安全產品限制使用原則」及「政府採購法第 17 條」之要求。</p>
+    <p>本聲明書內容如有不實，本單位願負相關法律責任，並接受撤銷採購、合約終止等處置。</p>
+  </div>
+
+  <h2>七、稽核方式與證據</h2>
+  <table>
+    <thead><tr><th style="width:30%">稽核項目</th><th>稽核方式 / 證據</th></tr></thead>
+    <tbody>
+      <tr><td>套件清單比對</td><td>requirements.txt 逐項對照官方專案頁面（PyPI、GitHub）</td></tr>
+      <tr><td>外部資源掃描</td><td>於程式碼與範本目錄執行 grep 全文掃描 https:// 與 http:// 連結</td></tr>
+      <tr><td>網域歸屬查詢</td><td>對所有外連網域進行 WHOIS 查詢，確認註冊國別</td></tr>
+      <tr><td>授權條款檢視</td><td>確認所有開源套件之 LICENSE 文件來源</td></tr>
+      <tr><td>開發者背景核對</td><td>查詢主要 maintainer 之公開資訊（GitHub、LinkedIn 等）</td></tr>
+    </tbody>
+  </table>
+
+  <h2>八、版本維護與通報機制</h2>
+  <p>本聲明書將於下列情境主動更新並重新提交：</p>
+  <ul style="padding-left:6mm;font-size:0.9rem;margin-bottom:4mm">
+    <li>新增任何套件、雲端服務或第三方 API 時</li>
+    <li>既有套件之開發單位或控股結構發生變動時</li>
+    <li>政府公告新增限制使用清單時</li>
+    <li>每年定期重新稽核（至少一次）</li>
+  </ul>
+  <p class="note">※ 如發現任何疑慮，請聯絡技術負責人立即進行替代評估。</p>
+
+  <div class="sign-block">
+    <div class="sign-cell">
+      <div class="label">提交單位 / 技術負責人</div>
+      <div style="font-size:0.78rem;color:#64748B;margin-bottom:2mm">姓名</div>
+      <div class="field"></div>
+      <div style="font-size:0.78rem;color:#64748B;margin-bottom:2mm">職稱</div>
+      <div class="field"></div>
+      <div style="font-size:0.78rem;color:#64748B;margin-bottom:2mm">簽署日期</div>
+      <div class="field"></div>
+      <div class="stamp">簽 章<br>蓋 印</div>
+    </div>
+    <div class="sign-cell">
+      <div class="label">審核 / 核章</div>
+      <div style="font-size:0.78rem;color:#64748B;margin-bottom:2mm">審核人</div>
+      <div class="field"></div>
+      <div style="font-size:0.78rem;color:#64748B;margin-bottom:2mm">職稱</div>
+      <div class="field"></div>
+      <div style="font-size:0.78rem;color:#64748B;margin-bottom:2mm">核章日期</div>
+      <div class="field"></div>
+      <div class="stamp">機關<br>關防</div>
+    </div>
+  </div>
+
+  <div class="doc-footer">
+    <div>ReStone 循環石材服務平台 · 技術組件清單與來源國聲明書</div>
+    <div>RS-COMP-2026-001 · v1.0</div>
+  </div>
+  <div class="page-num">— 3 / 3 —</div>
+</div>
+
+</body>
+</html>

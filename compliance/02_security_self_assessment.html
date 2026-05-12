@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<title>資安規範符合性自評表 — ReStone 循環石材服務平台</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { font-size: 12.5px; }
+  body { font-family: 'Noto Sans TC','PingFang TC',sans-serif; color:#0F172A; line-height:1.65; background:#E5E7EB; }
+  .page { width:210mm; min-height:297mm; background:white; margin:12mm auto; padding:20mm 20mm 24mm; position:relative; page-break-after:always; box-shadow:0 4px 30px rgba(0,0,0,0.1); }
+  .page:last-child { page-break-after:auto; }
+
+  .doc-header { border-bottom:3px double #0F172A; padding-bottom:7mm; margin-bottom:7mm; }
+  .doc-title { font-size:1.6rem; font-weight:900; text-align:center; letter-spacing:0.05em; margin-bottom:3mm; }
+  .doc-subtitle { text-align:center; font-size:0.82rem; color:#475569; margin-bottom:4mm; }
+  .doc-meta { display:grid; grid-template-columns:1fr 1fr; gap:1.5mm 8mm; font-size:0.82rem; }
+  .doc-meta dt { font-weight:700; display:inline-block; min-width:6em; }
+
+  h2 { font-size:1.1rem; font-weight:800; margin-top:6mm; margin-bottom:3mm; padding:2mm 3mm; background:#0F172A; color:white; }
+  h3 { font-size:0.95rem; font-weight:800; margin-top:4mm; margin-bottom:2mm; padding-left:3mm; border-left:3px solid #0F172A; }
+  p { font-size:0.88rem; margin-bottom:2.5mm; text-align:justify; }
+
+  table { width:100%; border-collapse:collapse; font-size:0.78rem; margin:2mm 0 4mm; }
+  th, td { border:1px solid #475569; padding:2mm 2.5mm; text-align:left; vertical-align:top; }
+  th { background:#F1F5F9; font-weight:800; font-size:0.75rem; }
+  td.center, th.center { text-align:center; }
+
+  /* 評分指標 */
+  .status { display:inline-block; padding:1mm 2.5mm; border-radius:3mm; font-weight:800; font-size:0.72rem; letter-spacing:0.05em; white-space:nowrap; }
+  .status.pass { background:#065F46; color:white; }
+  .status.partial { background:#92400E; color:white; }
+  .status.todo { background:#7F1D1D; color:white; }
+  .status.na { background:#475569; color:white; }
+
+  /* 摘要區 */
+  .summary {
+    background:linear-gradient(135deg,#F8FAFC,#EFF6FF);
+    border:1.5px solid #0F172A; padding:5mm 6mm; margin:4mm 0;
+  }
+  .summary h3 { border:none; padding:0; margin-bottom:3mm; }
+  .summary-row { display:grid; grid-template-columns:repeat(4,1fr); gap:3mm; margin-top:3mm; }
+  .summary-cell { text-align:center; padding:3mm; background:white; border:1px solid #CBD5E1; }
+  .summary-cell .n { font-size:1.8rem; font-weight:900; line-height:1; }
+  .summary-cell .l { font-size:0.7rem; color:#475569; margin-top:1mm; font-weight:700; }
+
+  /* 簽章 */
+  .sign-block { margin-top:8mm; display:grid; grid-template-columns:1fr 1fr 1fr; gap:6mm; }
+  .sign-cell { border:1px solid #94A3B8; padding:3mm; min-height:32mm; position:relative; }
+  .sign-cell .label { font-size:0.75rem; font-weight:700; margin-bottom:2mm; }
+  .sign-cell .field { font-size:0.8rem; padding:1.5mm 0; border-bottom:1px solid #CBD5E1; min-height:6mm; margin-bottom:2mm; }
+  .sign-cell .stamp { position:absolute; right:3mm; bottom:3mm; width:18mm; height:18mm; border:1.5px dashed #94A3B8; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:0.62rem; color:#94A3B8; text-align:center; }
+
+  .doc-footer { position:absolute; bottom:7mm; left:20mm; right:20mm; border-top:1px solid #CBD5E1; padding-top:2mm; display:flex; justify-content:space-between; font-size:0.68rem; color:#64748B; }
+  .page-num { position:absolute; bottom:11mm; left:0; right:0; text-align:center; font-size:0.72rem; color:#475569; }
+
+  .scale-table { font-size:0.78rem; }
+  .scale-table td { padding:1.5mm 3mm; }
+
+  @media print {
+    html, body { background:white !important; }
+    .page { box-shadow:none; margin:0; }
+    @page { size:A4; margin:0; }
+  }
+  @page { size:A4; }
+</style>
+</head>
+<body>
+
+<!-- ============================ 第 1 頁：說明 + 摘要 ============================ -->
+<div class="page">
+  <div class="doc-header">
+    <div class="doc-title">資通安全規範符合性自評表</div>
+    <div class="doc-subtitle">Information Security Compliance Self-Assessment Form</div>
+    <dl class="doc-meta">
+      <div><dt>受評系統：</dt><dd>ReStone 循環石材服務平台</dd></div>
+      <div><dt>文件編號：</dt><dd>RS-SEC-2026-001</dd></div>
+      <div><dt>評估日期：</dt><dd>中華民國 115 年 5 月 12 日</dd></div>
+      <div><dt>文件版本：</dt><dd>v1.0</dd></div>
+      <div><dt>系統分級：</dt><dd>第三級（建議）— 一般行政服務</dd></div>
+      <div><dt>下次複評：</dt><dd>每 12 個月或重大改版後</dd></div>
+    </dl>
+  </div>
+
+  <h2>一、評估依據與適用範圍</h2>
+  <p>本自評表依據下列法規與規範製作，逐項檢視本系統之資安實作現況：</p>
+  <table>
+    <thead><tr><th style="width:45%">適用規範</th><th>主要適用條文 / 章節</th></tr></thead>
+    <tbody>
+      <tr><td>資通安全管理法及其施行細則</td><td>第 10、11、12、18 條</td></tr>
+      <tr><td>資通系統防護基準（行政院公告）</td><td>普級 / 中級 / 高級防護要求</td></tr>
+      <tr><td>個人資料保護法及其施行細則</td><td>第 18、27、28 條</td></tr>
+      <tr><td>各機關對危害國家資通安全產品限制使用原則</td><td>全部</td></tr>
+      <tr><td>OWASP Top 10 (2021)</td><td>常見 Web 應用程式弱點</td></tr>
+      <tr><td>NIST Cybersecurity Framework</td><td>Identify / Protect / Detect / Respond / Recover</td></tr>
+    </tbody>
+  </table>
+
+  <h2>二、評估結果摘要</h2>
+  <div class="summary">
+    <h3>總體合規評估</h3>
+    <div class="summary-row">
+      <div class="summary-cell"><div class="n" style="color:#065F46">12</div><div class="l">已符合項目</div></div>
+      <div class="summary-cell"><div class="n" style="color:#92400E">9</div><div class="l">部分符合 / 待補強</div></div>
+      <div class="summary-cell"><div class="n" style="color:#7F1D1D">4</div><div class="l">尚未實施 / 需建立</div></div>
+      <div class="summary-cell"><div class="n" style="color:#475569">3</div><div class="l">不適用 (N/A)</div></div>
+    </div>
+    <p style="font-size:0.82rem;color:#475569;margin-top:4mm;margin-bottom:0">總計 28 項評估構面，合規率 <strong style="color:#065F46">43%（已符合）+ 32%（部分符合）= 75%</strong>。已規劃改善時程於文件第 4 頁。</p>
+  </div>
+
+  <h2>三、評估標準說明</h2>
+  <table class="scale-table">
+    <tbody>
+      <tr><td style="width:30%"><span class="status pass">已符合</span></td><td>已實作並通過自我檢核，無需改善</td></tr>
+      <tr><td><span class="status partial">部分符合</span></td><td>已實作基礎功能，但仍有可強化之處</td></tr>
+      <tr><td><span class="status todo">尚未實施</span></td><td>規範要求項目，目前尚未實作，已列入改善計畫</td></tr>
+      <tr><td><span class="status na">不適用</span></td><td>規範要求項目與本系統業務範圍無關</td></tr>
+    </tbody>
+  </table>
+
+  <h2>四、評估範圍說明</h2>
+  <p>本系統屬<strong>非政府機關</strong>之循環經濟服務平台，本評估自願性比照「資通系統防護基準」之普級 / 中級防護要求，並參考經濟部產業發展署之資安相關採購指引。系統定位為對外提供石材庫存查詢、會員管理、AI 設計輔助等功能。</p>
+
+  <div class="doc-footer"><div>RS-SEC-2026-001 · 資通安全規範符合性自評表</div><div>v1.0</div></div>
+  <div class="page-num">— 1 / 5 —</div>
+</div>
+
+<!-- ============================ 第 2 頁：存取控制、身分驗證 ============================ -->
+<div class="page">
+  <h2>五、逐項自評（A 類：存取控制 Access Control）</h2>
+  <table>
+    <thead>
+      <tr>
+        <th class="center" style="width:6%">編號</th>
+        <th style="width:24%">控制項目</th>
+        <th style="width:30%">規範要求</th>
+        <th style="width:24%">實作現況</th>
+        <th class="center" style="width:16%">評估結果</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="center">A-1</td>
+        <td>身分鑑別 — 帳號管理</td>
+        <td>使用者應採唯一識別碼，禁用預設密碼</td>
+        <td>Email 為唯一識別；管理員預設帳號 admin/admin123 <strong>未強制變更</strong></td>
+        <td class="center"><span class="status partial">部分符合</span></td>
+      </tr>
+      <tr>
+        <td class="center">A-2</td>
+        <td>密碼儲存</td>
+        <td>密碼應加鹽雜湊儲存</td>
+        <td>使用 PBKDF2-SHA256（Werkzeug 內建）</td>
+        <td class="center"><span class="status pass">已符合</span></td>
+      </tr>
+      <tr>
+        <td class="center">A-3</td>
+        <td>密碼強度政策</td>
+        <td>應強制最少長度、複雜度</td>
+        <td>目前僅要求最少 6 字元，未要求大小寫 / 數字 / 符號組合</td>
+        <td class="center"><span class="status partial">部分符合</span></td>
+      </tr>
+      <tr>
+        <td class="center">A-4</td>
+        <td>登入錯誤鎖定</td>
+        <td>連續錯誤達一定次數應暫時鎖定</td>
+        <td>未實作，登入無錯誤次數限制</td>
+        <td class="center"><span class="status todo">尚未實施</span></td>
+      </tr>
+      <tr>
+        <td class="center">A-5</td>
+        <td>多因子驗證 (MFA)</td>
+        <td>具特權帳號宜啟用 MFA</td>
+        <td>未實作，僅單因子（密碼）</td>
+        <td class="center"><span class="status todo">尚未實施</span></td>
+      </tr>
+      <tr>
+        <td class="center">A-6</td>
+        <td>權限分層</td>
+        <td>應依職務區分權限</td>
+        <td>管理員 / 會員 / 訪客三層完全分離，Session 隔離</td>
+        <td class="center"><span class="status pass">已符合</span></td>
+      </tr>
+      <tr>
+        <td class="center">A-7</td>
+        <td>Session 管理</td>
+        <td>Session Cookie 應設 Secure、HttpOnly、SameSite</td>
+        <td>未明確設定（依 Flask 預設）</td>
+        <td class="center"><span class="status partial">部分符合</span></td>
+      </tr>
+      <tr>
+        <td class="center">A-8</td>
+        <td>登出機制</td>
+        <td>應提供主動登出功能</td>
+        <td>管理員與會員皆有 /logout 路由清除 Session</td>
+        <td class="center"><span class="status pass">已符合</span></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>六、逐項自評（B 類：通訊與資料保護）</h2>
+  <table>
+    <thead><tr><th class="center" style="width:6%">編號</th><th style="width:24%">控制項目</th><th style="width:30%">規範要求</th><th style="width:24%">實作現況</th><th class="center" style="width:16%">評估結果</th></tr></thead>
+    <tbody>
+      <tr>
+        <td class="center">B-1</td>
+        <td>傳輸層加密</td>
+        <td>應強制 HTTPS / TLS 1.2+</td>
+        <td>Railway 自動配發 SSL 憑證，全站 HTTPS</td>
+        <td class="center"><span class="status pass">已符合</span></td>
+      </tr>
+      <tr>
+        <td class="center">B-2</td>
+        <td>HSTS 安全標頭</td>
+        <td>應啟用 HTTP Strict Transport Security</td>
+        <td>未明確設定</td>
+        <td class="center"><span class="status partial">部分符合</span></td>
+      </tr>
+      <tr>
+        <td class="center">B-3</td>
+        <td>內容安全政策 (CSP)</td>
+        <td>應設定 Content-Security-Policy</td>
+        <td>未設定</td>
+        <td class="center"><span class="status todo">尚未實施</span></td>
+      </tr>
+      <tr>
+        <td class="center">B-4</td>
+        <td>點擊劫持防護</td>
+        <td>應設定 X-Frame-Options</td>
+        <td>未設定</td>
+        <td class="center"><span class="status todo">尚未實施</span></td>
+      </tr>
+      <tr>
+        <td class="center">B-5</td>
+        <td>資料庫加密</td>
+        <td>敏感資料應加密儲存</td>
+        <td>密碼加鹽雜湊；其餘個資依託管平台磁碟加密</td>
+        <td class="center"><span class="status pass">已符合</span></td>
+      </tr>
+      <tr>
+        <td class="center">B-6</td>
+        <td>API 機密管理</td>
+        <td>API Key / Secret 不應寫死於程式碼</td>
+        <td>Replicate Token、Mail 帳密皆以環境變數注入；Flask Secret Key <strong>仍寫死於程式碼</strong></td>
+        <td class="center"><span class="status partial">部分符合</span></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="doc-footer"><div>RS-SEC-2026-001 · 資通安全規範符合性自評表</div><div>v1.0</div></div>
+  <div class="page-num">— 2 / 5 —</div>
+</div>
+
+<!-- ============================ 第 3 頁：輸入驗證、稽核、營運 ============================ -->
+<div class="page">
+  <h2>七、逐項自評（C 類：輸入驗證與弱點防護）</h2>
+  <table>
+    <thead><tr><th class="center" style="width:6%">編號</th><th style="width:24%">控制項目</th><th style="width:30%">規範要求</th><th style="width:24%">實作現況</th><th class="center" style="width:16%">評估結果</th></tr></thead>
+    <tbody>
+      <tr>
+        <td class="center">C-1</td>
+        <td>SQL Injection 防護</td>
+        <td>應使用參數化查詢</td>
+        <td>全程使用 sqlite3 parameterized query（? placeholder）</td>
+        <td class="center"><span class="status pass">已符合</span></td>
+      </tr>
+      <tr>
+        <td class="center">C-2</td>
+        <td>跨站腳本 XSS 防護</td>
+        <td>輸出應進行 HTML escape</td>
+        <td>Jinja2 預設自動 escape；未發現 |safe 過度使用</td>
+        <td class="center"><span class="status pass">已符合</span></td>
+      </tr>
+      <tr>
+        <td class="center">C-3</td>
+        <td>跨站偽造請求 CSRF 防護</td>
+        <td>狀態變更請求應驗證 CSRF Token</td>
+        <td><strong>未實作</strong>，所有 POST 表單缺乏 CSRF token</td>
+        <td class="center"><span class="status todo">尚未實施</span></td>
+      </tr>
+      <tr>
+        <td class="center">C-4</td>
+        <td>檔案上傳安全</td>
+        <td>應檢查副檔名、MIME、大小</td>
+        <td>secure_filename + 副檔名白名單 + 32MB 上限；<strong>未深度檢查 MIME 內容</strong></td>
+        <td class="center"><span class="status partial">部分符合</span></td>
+      </tr>
+      <tr>
+        <td class="center">C-5</td>
+        <td>請求頻率限制 (Rate Limiting)</td>
+        <td>應對 API 限流防止濫用</td>
+        <td>未實作，僅以會員登入機制限制 AI API</td>
+        <td class="center"><span class="status partial">部分符合</span></td>
+      </tr>
+      <tr>
+        <td class="center">C-6</td>
+        <td>錯誤訊息揭露控制</td>
+        <td>不應對外揭露堆疊追蹤</td>
+        <td>正式環境 Flask 預設關閉 debug mode</td>
+        <td class="center"><span class="status pass">已符合</span></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>八、逐項自評（D 類：稽核與監控）</h2>
+  <table>
+    <thead><tr><th class="center" style="width:6%">編號</th><th style="width:24%">控制項目</th><th style="width:30%">規範要求</th><th style="width:24%">實作現況</th><th class="center" style="width:16%">評估結果</th></tr></thead>
+    <tbody>
+      <tr>
+        <td class="center">D-1</td>
+        <td>稽核日誌（管理者操作）</td>
+        <td>關鍵操作應留下稽核紀錄</td>
+        <td>未實作 admin_log 資料表</td>
+        <td class="center"><span class="status todo">尚未實施</span></td>
+      </tr>
+      <tr>
+        <td class="center">D-2</td>
+        <td>登入紀錄</td>
+        <td>登入成功 / 失敗應有日誌</td>
+        <td>Railway 平台層級有保留請求 log，但應用層無詳細登入紀錄</td>
+        <td class="center"><span class="status partial">部分符合</span></td>
+      </tr>
+      <tr>
+        <td class="center">D-3</td>
+        <td>異常監控 / 告警</td>
+        <td>應有即時異常告警機制</td>
+        <td>Railway 內建錯誤通知；應用層無自訂告警</td>
+        <td class="center"><span class="status partial">部分符合</span></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>九、逐項自評（E 類：營運持續與備援）</h2>
+  <table>
+    <thead><tr><th class="center" style="width:6%">編號</th><th style="width:24%">控制項目</th><th style="width:30%">規範要求</th><th style="width:24%">實作現況</th><th class="center" style="width:16%">評估結果</th></tr></thead>
+    <tbody>
+      <tr>
+        <td class="center">E-1</td>
+        <td>資料備份</td>
+        <td>應定期備份並異地保存</td>
+        <td>SQLite 隨 Railway Volume；未建立自動異地備份</td>
+        <td class="center"><span class="status partial">部分符合</span></td>
+      </tr>
+      <tr>
+        <td class="center">E-2</td>
+        <td>災害復原 (DR)</td>
+        <td>應有復原時間目標 (RTO)</td>
+        <td>託管平台層級具自動重啟；未撰寫應用層 DR 文件</td>
+        <td class="center"><span class="status partial">部分符合</span></td>
+      </tr>
+      <tr>
+        <td class="center">E-3</td>
+        <td>弱點掃描</td>
+        <td>應定期檢視套件弱點</td>
+        <td>可手動 pip-audit，未建立 CI 自動化</td>
+        <td class="center"><span class="status partial">部分符合</span></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="doc-footer"><div>RS-SEC-2026-001 · 資通安全規範符合性自評表</div><div>v1.0</div></div>
+  <div class="page-num">— 3 / 5 —</div>
+</div>
+
+<!-- ============================ 第 4 頁：個資、供應鏈、不適用 + 改善計畫 ============================ -->
+<div class="page">
+
+  <h2>十、逐項自評（F 類：個人資料保護）</h2>
+  <table>
+    <thead><tr><th class="center" style="width:6%">編號</th><th style="width:24%">控制項目</th><th style="width:30%">規範要求</th><th style="width:24%">實作現況</th><th class="center" style="width:16%">評估結果</th></tr></thead>
+    <tbody>
+      <tr>
+        <td class="center">F-1</td>
+        <td>個資蒐集告知</td>
+        <td>應於蒐集前告知用途、保存期間等</td>
+        <td>註冊頁未設置隱私權政策同意機制</td>
+        <td class="center"><span class="status todo">尚未實施</span></td>
+      </tr>
+      <tr>
+        <td class="center">F-2</td>
+        <td>當事人權利行使</td>
+        <td>應提供查詢、刪除、停止處理機制</td>
+        <td>會員可登入查詢自身詢問紀錄；<strong>未提供自助刪除帳號</strong></td>
+        <td class="center"><span class="status partial">部分符合</span></td>
+      </tr>
+      <tr>
+        <td class="center">F-3</td>
+        <td>個資跨境傳輸告知</td>
+        <td>跨境傳輸應告知當事人</td>
+        <td>所有資料於美國境內處理（Railway / Replicate / Gmail），<strong>未明確告知</strong></td>
+        <td class="center"><span class="status partial">部分符合</span></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>十一、逐項自評（G 類：供應鏈與來源管理）</h2>
+  <table>
+    <thead><tr><th class="center" style="width:6%">編號</th><th style="width:24%">控制項目</th><th style="width:30%">規範要求</th><th style="width:24%">實作現況</th><th class="center" style="width:16%">評估結果</th></tr></thead>
+    <tbody>
+      <tr>
+        <td class="center">G-1</td>
+        <td>大陸地區資本排除</td>
+        <td>禁用具中資成分產品 / 服務</td>
+        <td>已逐項稽核全部 18 項組件，無中資來源（詳見 RS-COMP-2026-001）</td>
+        <td class="center"><span class="status pass">已符合</span></td>
+      </tr>
+      <tr>
+        <td class="center">G-2</td>
+        <td>第三方服務評估</td>
+        <td>採用第三方服務應評估其安全性</td>
+        <td>已篩選 Replicate / Railway / Gmail 等美國合規供應商</td>
+        <td class="center"><span class="status pass">已符合</span></td>
+      </tr>
+      <tr>
+        <td class="center">G-3</td>
+        <td>開源套件授權合規</td>
+        <td>應確認授權允許商用</td>
+        <td>全部 18 項皆為 MIT / BSD / Apache / OFL 等寬鬆授權</td>
+        <td class="center"><span class="status pass">已符合</span></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>十二、不適用項目（H 類）</h2>
+  <table>
+    <thead><tr><th class="center" style="width:6%">編號</th><th style="width:30%">控制項目</th><th style="width:54%">不適用理由</th></tr></thead>
+    <tbody>
+      <tr><td class="center">H-1</td><td>內部網路區隔 / DMZ</td><td>本系統為單一 PaaS 應用，無多層網路架構需求</td></tr>
+      <tr><td class="center">H-2</td><td>實體機房門禁</td><td>採用 PaaS 託管，無自建機房</td></tr>
+      <tr><td class="center">H-3</td><td>離線備份介質管理</td><td>採用雲端備份策略，無實體介質</td></tr>
+    </tbody>
+  </table>
+
+  <h2>十三、改善計畫（依風險等級排序）</h2>
+  <table>
+    <thead><tr><th class="center" style="width:6%">編號</th><th style="width:35%">改善項目</th><th class="center" style="width:12%">風險</th><th class="center" style="width:15%">預計完成</th><th>備註</th></tr></thead>
+    <tbody>
+      <tr><td class="center">①</td><td>Flask Secret Key 改用環境變數注入</td><td class="center">🔴 高</td><td class="center">7 日內</td><td>對應 B-6</td></tr>
+      <tr><td class="center">②</td><td>強制首次登入變更預設管理員密碼</td><td class="center">🔴 高</td><td class="center">7 日內</td><td>對應 A-1</td></tr>
+      <tr><td class="center">③</td><td>加入 CSRF Token 保護（Flask-WTF）</td><td class="center">🔴 高</td><td class="center">14 日內</td><td>對應 C-3</td></tr>
+      <tr><td class="center">④</td><td>Session Cookie 啟用 HttpOnly / Secure / SameSite</td><td class="center">🟡 中</td><td class="center">14 日內</td><td>對應 A-7</td></tr>
+      <tr><td class="center">⑤</td><td>導入 HTTP 安全標頭（HSTS / CSP / XFO）</td><td class="center">🟡 中</td><td class="center">21 日內</td><td>對應 B-2~B-4</td></tr>
+      <tr><td class="center">⑥</td><td>導入 Flask-Limiter 登入錯誤鎖定 + API 限流</td><td class="center">🟡 中</td><td class="center">21 日內</td><td>對應 A-4、C-5</td></tr>
+      <tr><td class="center">⑦</td><td>密碼強度政策升級（≥12 字元 + 複雜度）</td><td class="center">🟡 中</td><td class="center">30 日內</td><td>對應 A-3</td></tr>
+      <tr><td class="center">⑧</td><td>建立 admin_log 資料表記錄管理者關鍵操作</td><td class="center">🟡 中</td><td class="center">30 日內</td><td>對應 D-1</td></tr>
+      <tr><td class="center">⑨</td><td>註冊頁加入隱私權政策同意機制</td><td class="center">🟡 中</td><td class="center">30 日內</td><td>對應 F-1、F-3</td></tr>
+      <tr><td class="center">⑩</td><td>會員自助刪除 / 匯出個資功能</td><td class="center">🟡 中</td><td class="center">60 日內</td><td>對應 F-2</td></tr>
+      <tr><td class="center">⑪</td><td>建立 SQLite 自動異地備份（每日）</td><td class="center">🟡 中</td><td class="center">60 日內</td><td>對應 E-1</td></tr>
+      <tr><td class="center">⑫</td><td>CI 整合 pip-audit 弱點掃描</td><td class="center">🟢 低</td><td class="center">90 日內</td><td>對應 E-3</td></tr>
+      <tr><td class="center">⑬</td><td>撰寫資安事件通報 SOP</td><td class="center">🟢 低</td><td class="center">90 日內</td><td>—</td></tr>
+    </tbody>
+  </table>
+
+  <div class="doc-footer"><div>RS-SEC-2026-001 · 資通安全規範符合性自評表</div><div>v1.0</div></div>
+  <div class="page-num">— 4 / 5 —</div>
+</div>
+
+<!-- ============================ 第 5 頁：聲明 + 簽章 ============================ -->
+<div class="page">
+  <h2>十四、自評聲明</h2>
+  <div class="summary">
+    <h3>負責人聲明</h3>
+    <p style="font-size:0.9rem">本評估表內容依現有資通系統實作現況詳實填寫，所列「已符合」項目皆有對應之程式碼或設定可供查驗，「部分符合」與「尚未實施」項目皆已列入第十三章改善計畫並訂定完成期限。</p>
+    <p style="font-size:0.9rem">本系統技術負責人承諾依下列原則持續維護資安：</p>
+    <ul style="padding-left:6mm;font-size:0.88rem;margin-bottom:0">
+      <li>於規範改善期限內完成所列項目，逾期主動回報並重新規劃</li>
+      <li>每年度至少進行一次完整自評，並於重大改版後進行差異評估</li>
+      <li>發現重大資安事件時，於 72 小時內依規定通報</li>
+      <li>持續關注政府公告之限制使用清單，主動下架不合規元件</li>
+    </ul>
+  </div>
+
+  <h2>十五、相關文件交叉引用</h2>
+  <table>
+    <thead><tr><th style="width:30%">文件編號</th><th>文件名稱</th><th class="center" style="width:18%">版本</th></tr></thead>
+    <tbody>
+      <tr><td>RS-COMP-2026-001</td><td>技術組件清單與來源國聲明書</td><td class="center">v1.0</td></tr>
+      <tr><td>RS-DATA-2026-001</td><td>資料流向圖與跨境傳輸說明</td><td class="center">v1.0</td></tr>
+      <tr><td>RS-SEC-2026-001</td><td>資通安全規範符合性自評表（本文件）</td><td class="center">v1.0</td></tr>
+    </tbody>
+  </table>
+
+  <h2>十六、簽章核可</h2>
+  <div class="sign-block">
+    <div class="sign-cell">
+      <div class="label">填寫人 / 技術負責人</div>
+      <div style="font-size:0.7rem;color:#64748B;margin-bottom:1mm">姓名</div><div class="field"></div>
+      <div style="font-size:0.7rem;color:#64748B;margin-bottom:1mm">職稱</div><div class="field"></div>
+      <div style="font-size:0.7rem;color:#64748B;margin-bottom:1mm">日期</div><div class="field"></div>
+      <div class="stamp">簽章</div>
+    </div>
+    <div class="sign-cell">
+      <div class="label">資安主管 / 業務主管</div>
+      <div style="font-size:0.7rem;color:#64748B;margin-bottom:1mm">姓名</div><div class="field"></div>
+      <div style="font-size:0.7rem;color:#64748B;margin-bottom:1mm">職稱</div><div class="field"></div>
+      <div style="font-size:0.7rem;color:#64748B;margin-bottom:1mm">日期</div><div class="field"></div>
+      <div class="stamp">簽章</div>
+    </div>
+    <div class="sign-cell">
+      <div class="label">機關 / 中心審核</div>
+      <div style="font-size:0.7rem;color:#64748B;margin-bottom:1mm">審核人</div><div class="field"></div>
+      <div style="font-size:0.7rem;color:#64748B;margin-bottom:1mm">職稱</div><div class="field"></div>
+      <div style="font-size:0.7rem;color:#64748B;margin-bottom:1mm">日期</div><div class="field"></div>
+      <div class="stamp">關防</div>
+    </div>
+  </div>
+
+  <p style="margin-top:8mm;font-size:0.78rem;color:#64748B;text-align:center">— 本文件正本一式三份，受評單位、技術負責人、審核機關各執一份 —</p>
+
+  <div class="doc-footer"><div>RS-SEC-2026-001 · 資通安全規範符合性自評表</div><div>v1.0</div></div>
+  <div class="page-num">— 5 / 5 —</div>
+</div>
+
+</body>
+</html>

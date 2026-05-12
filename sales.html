@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ReStone — 讓客戶 30 秒看到完成效果的石材平台</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --blue: #2563EB; --blue-dark: #1D4ED8;
+    --blue-light: #EFF6FF; --blue-mid: #BFDBFE;
+    --purple: #7C3AED; --purple-light: #F3E8FF;
+    --pink: #DB2777;
+    --text: #0F172A; --text-muted: #64748B; --text-light: #94A3B8;
+    --border: #E2E8F0; --bg: #F8FAFC; --white: #FFFFFF;
+  }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'Inter', 'Noto Sans TC', sans-serif;
+    color: var(--text); line-height: 1.6; background: white;
+  }
+
+  /* ---- 共用 ---- */
+  section { padding: 8rem 6vw; position: relative; overflow: hidden; }
+  .container { max-width: 1100px; margin: 0 auto; }
+  .eyebrow { display: inline-block; font-size: 0.78rem; font-weight: 800; letter-spacing: 0.2em; padding: 6px 14px; border-radius: 50px; background: var(--blue-light); color: var(--blue); margin-bottom: 1.5rem; text-transform: uppercase; }
+  .eyebrow.purple { background: var(--purple-light); color: var(--purple); }
+  .eyebrow.dark { background: rgba(255,255,255,0.15); color: white; backdrop-filter: blur(8px); }
+  h1.huge { font-size: clamp(2.5rem, 6vw, 5rem); font-weight: 900; letter-spacing: -0.04em; line-height: 1.05; }
+  h2.big { font-size: clamp(2rem, 4vw, 3.5rem); font-weight: 900; letter-spacing: -0.03em; line-height: 1.1; margin-bottom: 1rem; }
+  h3.section-title { font-size: 1.6rem; font-weight: 800; margin-bottom: 0.8rem; }
+  .lead { font-size: clamp(1.05rem, 1.4vw, 1.3rem); color: var(--text-muted); line-height: 1.65; max-width: 60ch; }
+  .gradient-text { background: linear-gradient(135deg, var(--blue), var(--purple)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+
+  /* ---- Nav ---- */
+  nav.top {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    background: rgba(255,255,255,0.85); backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border); padding: 0.8rem 2rem;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .brand { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 1rem; }
+  .brand-mark { width: 22px; height: 22px; background: linear-gradient(135deg, var(--blue), var(--purple)); clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%); }
+  .nav-cta {
+    background: linear-gradient(135deg, var(--blue), var(--purple)); color: white;
+    padding: 0.5rem 1.2rem; border-radius: 8px; text-decoration: none;
+    font-weight: 700; font-size: 0.85rem;
+  }
+
+  /* ---- HERO ---- */
+  .hero {
+    padding: 9rem 6vw 7rem;
+    background: linear-gradient(135deg, #EFF6FF 0%, #F3E8FF 100%);
+    text-align: center; position: relative;
+  }
+  .hero::before {
+    content: '◈'; position: absolute; right: -8vw; bottom: -10vw;
+    font-size: 50vw; color: rgba(124,58,237,0.04); line-height: 1; pointer-events: none;
+  }
+  .hero h1 { margin-bottom: 1.5rem; max-width: 18ch; margin-left: auto; margin-right: auto; }
+  .hero .lead { margin: 0 auto 2.5rem; }
+  .cta-row { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; margin-bottom: 1.5rem; }
+  .btn-primary {
+    background: linear-gradient(135deg, var(--blue), var(--purple)); color: white;
+    padding: 1.1rem 2.4rem; border-radius: 14px; text-decoration: none;
+    font-weight: 800; font-size: 1.05rem; letter-spacing: 0.02em;
+    box-shadow: 0 8px 28px rgba(124,58,237,0.3); transition: all 0.2s;
+    display: inline-block;
+  }
+  .btn-primary:hover { transform: translateY(-3px); box-shadow: 0 14px 36px rgba(124,58,237,0.4); }
+  .btn-secondary {
+    background: white; color: var(--text); padding: 1.1rem 2.2rem;
+    border: 1.5px solid var(--border); border-radius: 14px; text-decoration: none;
+    font-weight: 700; font-size: 1.05rem;
+  }
+  .hero-foot { font-size: 0.8rem; color: var(--text-muted); margin-top: 0.8rem; }
+  .hero-stats { display: flex; gap: 3rem; justify-content: center; margin-top: 4rem; flex-wrap: wrap; }
+  .hero-stat .n { font-size: 2.6rem; font-weight: 900; background: linear-gradient(135deg, var(--blue), var(--purple)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; line-height: 1; }
+  .hero-stat .l { font-size: 0.85rem; color: var(--text-muted); margin-top: 0.3rem; font-weight: 600; }
+
+  /* ---- Problem ---- */
+  .problem { background: var(--bg); }
+  .problem-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1.5rem; margin-top: 3rem; }
+  .problem-card {
+    background: white; border: 1px solid var(--border); border-radius: 16px;
+    padding: 2rem; position: relative;
+  }
+  .problem-card-icon { font-size: 1.8rem; margin-bottom: 1rem; opacity: 0.6; }
+  .problem-card h4 { font-size: 1.1rem; font-weight: 800; margin-bottom: 0.6rem; }
+  .problem-card p { font-size: 0.92rem; color: var(--text-muted); line-height: 1.65; }
+  .problem-strike { text-decoration: line-through; color: #DC2626; }
+
+  /* ---- Solution ---- */
+  .solution { background: white; text-align: center; }
+  .solution-visual {
+    display: flex; align-items: center; justify-content: center; gap: 1.5rem;
+    margin: 3rem auto; flex-wrap: wrap; max-width: 900px;
+  }
+  .solution-step {
+    background: linear-gradient(135deg, #EFF6FF, #F3E8FF);
+    border: 1px solid var(--blue-mid); border-radius: 18px;
+    padding: 2rem 1.5rem; flex: 1; min-width: 180px;
+    position: relative;
+  }
+  .solution-step .ico { font-size: 2.5rem; margin-bottom: 1rem; }
+  .solution-step h4 { font-size: 1rem; font-weight: 800; margin-bottom: 0.4rem; }
+  .solution-step p { font-size: 0.85rem; color: var(--text-muted); }
+  .solution-step .step-num {
+    position: absolute; top: -12px; left: 50%; transform: translateX(-50%);
+    width: 28px; height: 28px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--blue), var(--purple)); color: white;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.78rem; font-weight: 900;
+  }
+  .solution-arrow { color: var(--text-light); font-size: 2rem; font-weight: 200; }
+
+  /* ---- Benefits ---- */
+  .benefits { background: linear-gradient(180deg, white 0%, var(--bg) 100%); }
+  .benefit-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; margin-top: 3rem; }
+  .benefit-card {
+    background: white; border-radius: 18px; padding: 2.5rem 2rem;
+    border: 1px solid var(--border); position: relative; overflow: hidden;
+    transition: all 0.2s;
+  }
+  .benefit-card:hover { transform: translateY(-4px); box-shadow: 0 12px 36px rgba(0,0,0,0.08); }
+  .benefit-card.featured {
+    background: linear-gradient(135deg, #0F172A, #312E81); color: white;
+    border-color: transparent;
+  }
+  .benefit-card.featured::after {
+    content: '熱門'; position: absolute; top: 1.2rem; right: 1.2rem;
+    background: linear-gradient(135deg, #F59E0B, #EF4444); color: white;
+    font-size: 0.65rem; font-weight: 800; padding: 4px 10px; border-radius: 50px; letter-spacing: 0.05em;
+  }
+  .benefit-num { font-size: 3.2rem; font-weight: 900; line-height: 1; margin-bottom: 0.8rem; background: linear-gradient(135deg, var(--blue), var(--purple)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  .benefit-card.featured .benefit-num { background: linear-gradient(135deg, #60A5FA, #C4B5FD); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  .benefit-card h4 { font-size: 1.2rem; font-weight: 800; margin-bottom: 0.5rem; }
+  .benefit-card p { font-size: 0.92rem; color: var(--text-muted); line-height: 1.65; }
+  .benefit-card.featured p { color: rgba(255,255,255,0.7); }
+
+  /* ---- For Who ---- */
+  .for-who { background: white; }
+  .audience-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.5rem; margin-top: 3rem; }
+  .audience {
+    text-align: center; padding: 2.5rem 1.5rem; border-radius: 16px;
+    background: var(--bg); border: 1px solid var(--border);
+    transition: all 0.2s;
+  }
+  .audience:hover { background: linear-gradient(135deg, #EFF6FF, #F3E8FF); border-color: var(--blue-mid); transform: scale(1.02); }
+  .audience-icon { font-size: 3rem; margin-bottom: 1rem; }
+  .audience h4 { font-size: 1.15rem; font-weight: 800; margin-bottom: 0.8rem; }
+  .audience p { font-size: 0.88rem; color: var(--text-muted); line-height: 1.65; }
+
+  /* ---- Features ---- */
+  .features { background: linear-gradient(180deg, var(--bg) 0%, white 100%); }
+  .feature-row {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 4rem;
+    align-items: center; margin-bottom: 6rem;
+  }
+  .feature-row:nth-child(even) > div:first-child { order: 2; }
+  .feature-row .tag { display: inline-block; padding: 4px 12px; border-radius: 50px; background: var(--purple-light); color: var(--purple); font-size: 0.7rem; font-weight: 800; letter-spacing: 0.1em; margin-bottom: 1rem; }
+  .feature-row h3 { font-size: 2.2rem; font-weight: 900; letter-spacing: -0.03em; margin-bottom: 1rem; line-height: 1.15; }
+  .feature-row p { color: var(--text-muted); font-size: 1rem; line-height: 1.7; margin-bottom: 1.5rem; }
+  .feature-bullets { list-style: none; }
+  .feature-bullets li { padding: 0.4rem 0 0.4rem 1.8rem; position: relative; font-size: 0.92rem; }
+  .feature-bullets li::before { content: '✓'; position: absolute; left: 0; top: 0.5rem; width: 20px; height: 20px; background: linear-gradient(135deg, var(--blue), var(--purple)); color: white; border-radius: 50%; font-size: 0.7rem; font-weight: 800; display: flex; align-items: center; justify-content: center; }
+  .feature-visual {
+    background: linear-gradient(135deg, #1E40AF, #6D28D9); border-radius: 24px;
+    aspect-ratio: 4/3; display: flex; align-items: center; justify-content: center;
+    color: white; font-size: 5rem; box-shadow: 0 20px 60px rgba(124,58,237,0.25);
+    position: relative; overflow: hidden;
+  }
+  .feature-visual::before {
+    content: ''; position: absolute; inset: 0;
+    background-image: linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px);
+    background-size: 30px 30px;
+  }
+  .feature-visual span { position: relative; z-index: 1; }
+  @media (max-width: 768px) {
+    .feature-row { grid-template-columns: 1fr; gap: 2rem; }
+    .feature-row:nth-child(even) > div:first-child { order: 0; }
+  }
+
+  /* ---- Pricing ---- */
+  .pricing { background: linear-gradient(135deg, #0F172A 0%, #1E1B4B 100%); color: white; text-align: center; }
+  .pricing h2 { color: white; }
+  .pricing .lead { color: rgba(255,255,255,0.7); margin: 0 auto 3rem; }
+  .price-card {
+    background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+    backdrop-filter: blur(12px); border-radius: 24px; padding: 3rem 2rem;
+    max-width: 480px; margin: 0 auto;
+  }
+  .price-card .tag {
+    background: linear-gradient(135deg, #60A5FA, #C4B5FD); color: #0F172A;
+    padding: 4px 14px; border-radius: 50px; font-size: 0.75rem;
+    font-weight: 800; letter-spacing: 0.1em; display: inline-block; margin-bottom: 1rem;
+  }
+  .price-card .amount { font-size: 5rem; font-weight: 900; line-height: 1; }
+  .price-card .amount-sub { color: rgba(255,255,255,0.6); margin: 0.5rem 0 2rem; font-size: 0.95rem; }
+  .price-list { list-style: none; text-align: left; margin: 2rem 0; }
+  .price-list li { padding: 0.6rem 0 0.6rem 1.8rem; position: relative; color: rgba(255,255,255,0.85); font-size: 0.95rem; }
+  .price-list li::before { content: '✓'; position: absolute; left: 0; top: 0.7rem; width: 20px; height: 20px; background: linear-gradient(135deg, #60A5FA, #C4B5FD); color: #0F172A; border-radius: 50%; font-size: 0.7rem; font-weight: 800; display: flex; align-items: center; justify-content: center; }
+  .price-row {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;
+    text-align: center; padding: 1.5rem 0; border-top: 1px solid rgba(255,255,255,0.1);
+    border-bottom: 1px solid rgba(255,255,255,0.1); margin: 1rem 0;
+  }
+  .price-row > div .top { font-size: 0.7rem; color: rgba(255,255,255,0.6); letter-spacing: 0.1em; font-weight: 700; }
+  .price-row > div .mid { font-size: 1.4rem; font-weight: 800; margin-top: 0.3rem; }
+
+  /* ---- FAQ ---- */
+  .faq { background: white; }
+  .faq-list { max-width: 800px; margin: 3rem auto 0; }
+  details {
+    background: var(--bg); border: 1px solid var(--border); border-radius: 12px;
+    padding: 1.2rem 1.5rem; margin-bottom: 0.8rem; cursor: pointer;
+  }
+  details[open] { background: linear-gradient(135deg, #EFF6FF, #F3E8FF); border-color: var(--blue-mid); }
+  summary { font-weight: 700; font-size: 1rem; list-style: none; position: relative; padding-right: 2rem; }
+  summary::-webkit-details-marker { display: none; }
+  summary::after { content: '+'; position: absolute; right: 0; top: 50%; transform: translateY(-50%); font-size: 1.5rem; font-weight: 300; color: var(--purple); transition: transform 0.2s; }
+  details[open] summary::after { transform: translateY(-50%) rotate(45deg); }
+  details > p { margin-top: 1rem; color: var(--text-muted); line-height: 1.7; font-size: 0.92rem; }
+
+  /* ---- Final CTA ---- */
+  .final-cta { background: linear-gradient(135deg, var(--blue) 0%, var(--purple) 100%); color: white; text-align: center; }
+  .final-cta h2 { color: white; max-width: 18ch; margin-left: auto; margin-right: auto; }
+  .final-cta .lead { color: rgba(255,255,255,0.85); margin: 2rem auto; }
+  .final-cta .btn-primary {
+    background: white; color: var(--purple);
+    box-shadow: 0 8px 30px rgba(0,0,0,0.2);
+  }
+  .final-cta .btn-primary:hover { box-shadow: 0 14px 40px rgba(0,0,0,0.3); }
+
+  /* ---- Footer ---- */
+  footer.site {
+    background: #0F172A; color: rgba(255,255,255,0.6); padding: 3rem 6vw;
+    font-size: 0.85rem; text-align: center;
+  }
+
+  /* ---- Copy library ---- */
+  .copy-lib { background: #FFFBEB; border-top: 6px solid #F59E0B; padding: 6rem 6vw; }
+  .copy-lib h2 { color: #78350F; margin-bottom: 0.8rem; }
+  .copy-lib .lead { color: #92400E; }
+  .copy-cat { margin-top: 3rem; }
+  .copy-cat h3 { font-size: 1rem; font-weight: 800; color: #78350F; margin-bottom: 1rem; padding: 0.5rem 0.9rem; background: #FDE68A; border-radius: 8px; display: inline-block; letter-spacing: 0.05em; text-transform: uppercase; font-size: 0.78rem; }
+  .copy-block { background: white; border-left: 4px solid #F59E0B; border-radius: 8px; padding: 1.2rem 1.5rem; margin-bottom: 1rem; font-size: 0.95rem; line-height: 1.7; }
+  .copy-block .label { font-size: 0.72rem; font-weight: 800; color: #92400E; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 0.4rem; }
+  .copy-block strong { color: var(--text); }
+</style>
+</head>
+<body>
+
+<nav class="top">
+  <a href="#" style="text-decoration:none;color:inherit"><div class="brand"><span class="brand-mark"></span> ReStone</div></a>
+  <a href="#cta" class="nav-cta">立即試用 →</a>
+</nav>
+
+<!-- ============================================================== -->
+<!-- HERO -->
+<!-- ============================================================== -->
+<section class="hero">
+  <div class="container">
+    <span class="eyebrow purple">✨ AI-POWERED · 全台首創</span>
+    <h1 class="huge">30 秒讓客戶<br>看見<span class="gradient-text">完成後的樣子</span></h1>
+    <p class="lead" style="margin-top:1.5rem">不用 Photoshop、不用合成師。<br>上傳設計圖，圈選牆面或桌面，AI 自動套上你選的石材。</p>
+    <div class="cta-row" style="margin-top:3rem">
+      <a href="#cta" class="btn-primary">✨ 免費試用 ReStone</a>
+      <a href="#how" class="btn-secondary">看 30 秒怎麼運作 →</a>
+    </div>
+    <div class="hero-foot">免註冊先逛石材庫 · 註冊會員即可開始 AI 合成</div>
+
+    <div class="hero-stats">
+      <div class="hero-stat"><div class="n">30 秒</div><div class="l">取代 30 分鐘 PS</div></div>
+      <div class="hero-stat"><div class="n">6 項</div><div class="l">AI 引擎深度整合</div></div>
+      <div class="hero-stat"><div class="n">NT$0</div><div class="l">月固定費用</div></div>
+      <div class="hero-stat"><div class="n">3 種</div><div class="l">角色都受益</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================== -->
+<!-- 問題 -->
+<!-- ============================================================== -->
+<section class="problem">
+  <div class="container">
+    <span class="eyebrow">THE PROBLEM</span>
+    <h2 class="big">給客戶看效果，<br>你還在這樣做嗎？</h2>
+    <p class="lead">石材選得對不對，客戶看不到實品永遠不會買單。<br>但每次提案的「視覺化」過程，都讓設計師和廠商苦不堪言。</p>
+
+    <div class="problem-grid">
+      <div class="problem-card">
+        <div class="problem-card-icon">⏱</div>
+        <h4>每次提案 PS 半小時</h4>
+        <p>找素材、去背、調光影、套紋理、輸出。一個案子來回三五次，光是視覺合成就吃掉幾個小時。</p>
+      </div>
+      <div class="problem-card">
+        <div class="problem-card-icon">😕</div>
+        <h4>客戶看不懂規格表</h4>
+        <p>「米色大理石、60×60 公分、亮面拋光」── 客戶心裡想像不出來，最後總是說「再給我看幾張參考」。</p>
+      </div>
+      <div class="problem-card">
+        <div class="problem-card-icon">📦</div>
+        <h4>剩料、邊角料賣不掉</h4>
+        <p>循環經濟石材有夠美，但設計師找料只挑「主力商品」，剩料永遠躺在倉庫長灰塵。</p>
+      </div>
+      <div class="problem-card">
+        <div class="problem-card-icon">💬</div>
+        <h4>三方溝通鬼打牆</h4>
+        <p>業主說一套、設計師想一套、客戶看一套。沒有共同的視覺基礎，每次會議都從頭吵起。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================== -->
+<!-- 解決方案 -->
+<!-- ============================================================== -->
+<section class="solution" id="how">
+  <div class="container">
+    <span class="eyebrow purple">THE SOLUTION</span>
+    <h2 class="big">3 個步驟，<br><span class="gradient-text">30 秒看到效果</span></h2>
+    <p class="lead" style="margin:0 auto">不用學新工具、不用裝軟體、不用合成師。<br>一個瀏覽器就能做完整個工作流。</p>
+
+    <div class="solution-visual">
+      <div class="solution-step">
+        <span class="step-num">1</span>
+        <div class="ico">🖼</div>
+        <h4>上傳設計圖</h4>
+        <p>客廳渲染圖、家具照、產品概念圖都行</p>
+      </div>
+      <div class="solution-arrow">→</div>
+      <div class="solution-step">
+        <span class="step-num">2</span>
+        <div class="ico">🖌</div>
+        <h4>筆刷圈選</h4>
+        <p>用滑鼠塗一塗，標出要替換的表面</p>
+      </div>
+      <div class="solution-arrow">→</div>
+      <div class="solution-step">
+        <span class="step-num">3</span>
+        <div class="ico">✨</div>
+        <h4>AI 自動合成</h4>
+        <p>從石材庫選一塊，30 秒輸出寫實圖</p>
+      </div>
+    </div>
+
+    <a href="#cta" class="btn-primary">✨ 我要試試看</a>
+  </div>
+</section>
+
+<!-- ============================================================== -->
+<!-- 三大效益 -->
+<!-- ============================================================== -->
+<section class="benefits">
+  <div class="container">
+    <span class="eyebrow">WHY RESTONE</span>
+    <h2 class="big">不只快，還省、還準</h2>
+    <p class="lead">不是把工具丟給你，是把整個工作流幫你重新設計。</p>
+
+    <div class="benefit-grid">
+      <div class="benefit-card featured">
+        <div class="benefit-num">⚡ 60×</div>
+        <h4>提案速度</h4>
+        <p>30 秒 vs. 30 分鐘 PS。當天可以給客戶看 10 個方案，不再卡關。</p>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-num">💰 0 元</div>
+        <h4>固定月費</h4>
+        <p>用多少付多少，沒人用就 0 元。每次 AI 合成只要 NT$1.5。</p>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-num">🎯 100%</div>
+        <h4>客戶決策信心</h4>
+        <p>看實品比看規格表有效 100 倍。客戶確認後再下單，後悔率大降。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================== -->
+<!-- 給誰用 -->
+<!-- ============================================================== -->
+<section class="for-who">
+  <div class="container">
+    <span class="eyebrow purple">FOR YOU</span>
+    <h2 class="big">三種人，<br>三種立刻看見的價值</h2>
+
+    <div class="audience-grid">
+      <div class="audience">
+        <div class="audience-icon">🎨</div>
+        <h4>室內設計師</h4>
+        <p>提案速度 60 倍，客戶滿意度爆表。再也不用熬夜趕 PS。</p>
+      </div>
+      <div class="audience">
+        <div class="audience-icon">🏗</div>
+        <h4>石材廠商</h4>
+        <p>剩料、循環石材精準曝光。AI 自動寫描述、自動分類，後台幾秒上架。</p>
+      </div>
+      <div class="audience">
+        <div class="audience-icon">🛋</div>
+        <h4>產品/家具設計師</h4>
+        <p>跨域材質實驗。把石材套到桌面、檯面、產品表面，提案多元化。</p>
+      </div>
+      <div class="audience">
+        <div class="audience-icon">🏠</div>
+        <h4>終端業主/屋主</h4>
+        <p>看到自家牆面、桌面換上後的樣子。不再憑空想像，下單沒有後悔。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================== -->
+<!-- 6 大 AI 功能 -->
+<!-- ============================================================== -->
+<section class="features">
+  <div class="container">
+    <span class="eyebrow">AI POWERED</span>
+    <h2 class="big" style="margin-bottom:4rem">6 大 AI 引擎，<br><span class="gradient-text">幫你做掉所有瑣事</span></h2>
+
+    <div class="feature-row">
+      <div>
+        <span class="tag">★ 旗艦功能</span>
+        <h3>AI 設計合成<br>把石材「貼」到任何設計圖</h3>
+        <p>上傳客戶的設計圖，筆刷圈選要替換的區域（牆面、桌面、地板），AI 自動套上你選的石材，30 秒輸出商業級寫實圖。</p>
+        <ul class="feature-bullets">
+          <li>支援室內、家具、產品設計</li>
+          <li>Canvas 雙圖層即時預覽</li>
+          <li>iPad、手機觸控都能畫</li>
+          <li>Prompt 還能即時微調</li>
+        </ul>
+      </div>
+      <div class="feature-visual"><span>🎨</span></div>
+    </div>
+
+    <div class="feature-row">
+      <div>
+        <span class="tag">自動化</span>
+        <h3>AI 看圖寫描述<br>新增石材不用打字</h3>
+        <p>上傳一張石材照片，LLaVA 視覺 AI 自動看圖寫出精準描述。從此告別「請幫我寫商品描述」的痛苦。</p>
+        <ul class="feature-bullets">
+          <li>新增石材時自動觸發</li>
+          <li>單張成本 NT$0.5</li>
+          <li>可手動編輯覆寫</li>
+          <li>批次升級舊資料一鍵搞定</li>
+        </ul>
+      </div>
+      <div class="feature-visual"><span>👁</span></div>
+    </div>
+
+    <div class="feature-row">
+      <div>
+        <span class="tag">設計師最愛</span>
+        <h3>以圖搜圖<br>有參考圖就能找到對的料</h3>
+        <p>客戶傳 Pinterest 截圖、雜誌照片、競品圖。上傳到 ReStone，秒找出庫存中最像的石材，附上 0–100% 相似度評分。</p>
+        <ul class="feature-bullets">
+          <li>紋理結構 + 整體色調雙軸比對</li>
+          <li>無需 ML 訓練、零延遲</li>
+          <li>免會員就能用</li>
+        </ul>
+      </div>
+      <div class="feature-visual"><span>🔍</span></div>
+    </div>
+
+    <div class="feature-row">
+      <div>
+        <span class="tag">智能分類</span>
+        <h3>AI 顏色自動偵測<br>免人工標籤</h3>
+        <p>上傳石材照沒選顏色？AI 用 HSV 色彩空間自動分類為白、灰、黑、米、棕、綠、紅、其他 8 種顏色標籤。</p>
+        <ul class="feature-bullets">
+          <li>針對台灣蛇紋石特別優化</li>
+          <li>客戶可用顏色 pills 篩選</li>
+          <li>提升找料效率</li>
+        </ul>
+      </div>
+      <div class="feature-visual"><span>🌈</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================== -->
+<!-- Pricing -->
+<!-- ============================================================== -->
+<section class="pricing">
+  <div class="container">
+    <span class="eyebrow dark">PRICING</span>
+    <h2 class="big">沒人用 · 就 NT$0</h2>
+    <p class="lead">沒有月費、沒有最低消費、沒有綁約。<br>所有成本與真實使用量綁定，邊際成本可控。</p>
+
+    <div class="price-card">
+      <span class="tag">USAGE-BASED</span>
+      <div class="amount">NT$0</div>
+      <div class="amount-sub">/ 月固定費用</div>
+
+      <ul class="price-list">
+        <li>無限上架石材</li>
+        <li>無限會員註冊</li>
+        <li>無限以圖搜圖（AI 免費！）</li>
+        <li>無限 AI 顏色偵測</li>
+        <li>無限後台管理</li>
+        <li>無限 Excel 匯出</li>
+      </ul>
+
+      <div class="price-row">
+        <div>
+          <div class="top">AI 視覺寫描述</div>
+          <div class="mid">~NT$0.5 / 張</div>
+        </div>
+        <div>
+          <div class="top">AI 設計合成</div>
+          <div class="mid">~NT$1.5 / 張</div>
+        </div>
+      </div>
+
+      <p style="font-size:0.85rem;color:rgba(255,255,255,0.6);margin-top:1.5rem">💡 100 次完整 AI 合成成本 ≈ NT$200</p>
+
+      <a href="#cta" class="btn-primary" style="background:white;color:var(--purple);margin-top:2rem;width:100%">立即免費試用 →</a>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================== -->
+<!-- FAQ -->
+<!-- ============================================================== -->
+<section class="faq">
+  <div class="container">
+    <span class="eyebrow">FAQ</span>
+    <h2 class="big">你可能想問</h2>
+
+    <div class="faq-list">
+      <details>
+        <summary>不會用電腦也能操作嗎？</summary>
+        <p>會用 LINE 就會用 ReStone。整個流程在瀏覽器內，上傳照片、用滑鼠塗一塗、選個石材，按按鈕。連 PS、Illustrator 都不用打開。</p>
+      </details>
+      <details>
+        <summary>合成出來的圖品質好嗎？可以直接給客戶看嗎？</summary>
+        <p>使用 Flux Fill Pro，是目前商用最強的 inpainting 模型，紋理寫實度足以做為提案視覺。許多設計師直接把合成圖貼進報告就交給客戶。</p>
+      </details>
+      <details>
+        <summary>API 費用會不會被亂用？</summary>
+        <p>AI 設計合成只開放給「登入會員」使用。任何人都要先註冊（留下 Email、姓名），才能觸發 API。後端有雙重防護，前端按鈕就算被 bypass，後端也擋下。</p>
+      </details>
+      <details>
+        <summary>會員資料安全嗎？</summary>
+        <p>密碼以 PBKDF2-SHA256 雜湊儲存（業界標準），管理員與客戶 session 完全分離。無法用會員帳號進後台，也無法用管理員後門看會員密碼。</p>
+      </details>
+      <details>
+        <summary>可以加我自己的石材種類嗎？</summary>
+        <p>現在預設有大理石、蛇紋石、化石、花崗岩四大類。要加任何類別 5 分鐘可以擴充，AI 描述、顏色偵測都會自動適應。</p>
+      </details>
+      <details>
+        <summary>如果使用量爆炸，成本怎麼控制？</summary>
+        <p>達到月 10,000 次合成時可考慮自建 GPU 伺服器，邊際成本降至 NT$0.3–0.5 / 張。在那之前，現行方案綽綽有餘。也可以加「會員每月配額」功能。</p>
+      </details>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================== -->
+<!-- Final CTA -->
+<!-- ============================================================== -->
+<section class="final-cta" id="cta">
+  <div class="container">
+    <span class="eyebrow dark">START NOW</span>
+    <h2 class="big">讓你的下一個提案，<br>從 30 秒開始</h2>
+    <p class="lead">沒有試用期、沒有信用卡、沒有後悔成本。<br>立刻體驗 AI 為循環石材帶來的設計新流程。</p>
+    <div class="cta-row" style="margin-top:2.5rem">
+      <a href="/" class="btn-primary">✨ 開始使用 ReStone</a>
+      <a href="/register" class="btn-secondary" style="background:rgba(255,255,255,0.15);color:white;border-color:rgba(255,255,255,0.3);backdrop-filter:blur(8px)">註冊免費會員</a>
+    </div>
+    <p style="margin-top:2.5rem;font-size:0.85rem;opacity:0.7">已有帳號？<a href="/customer/login" style="color:white;text-decoration:underline;font-weight:600">登入</a></p>
+  </div>
+</section>
+
+<!-- ============================================================== -->
+<!-- 文案資料庫（給業主自己選） -->
+<!-- ============================================================== -->
+<section class="copy-lib">
+  <div class="container">
+    <span class="eyebrow" style="background:#FDE68A;color:#78350F">COPY LIBRARY · 內部使用</span>
+    <h2 class="big">📝 文案備用庫</h2>
+    <p class="lead">以下是各種通路、不同調性的文案變體。複製貼上即可使用。</p>
+
+    <div class="copy-cat">
+      <h3>主視覺標語（Headlines）</h3>
+      <div class="copy-block">
+        <div class="label">短版 · 14 字內</div>
+        <strong>30 秒讓客戶看見完成後的樣子</strong>
+      </div>
+      <div class="copy-block">
+        <div class="label">利益導向</div>
+        <strong>不用 PS，AI 幫你把石材貼進設計圖</strong>
+      </div>
+      <div class="copy-block">
+        <div class="label">情境導向</div>
+        <strong>讓客戶決定前，先看到家裡的樣子</strong>
+      </div>
+      <div class="copy-block">
+        <div class="label">差異化</div>
+        <strong>全台首創 · AI 驅動的循環石材服務平台</strong>
+      </div>
+      <div class="copy-block">
+        <div class="label">永續導向</div>
+        <strong>讓每一塊石材，找到對的設計</strong>
+      </div>
+    </div>
+
+    <div class="copy-cat">
+      <h3>一句話 Pitch（電梯簡報）</h3>
+      <div class="copy-block">
+        <div class="label">給設計師</div>
+        ReStone 是設計師專用的 AI 石材平台 —— 上傳設計圖，圈選牆面或桌面，<strong>30 秒</strong>就能讓客戶看到不同石材的實際效果，<strong>取代 30 分鐘的 Photoshop 流程</strong>。
+      </div>
+      <div class="copy-block">
+        <div class="label">給石材廠商</div>
+        ReStone 幫石材廠把<strong>剩料、循環石材</strong>精準曝光到對的設計案。上傳一張照片，AI 自動寫描述、自動分類，設計師找料時用顏色、紋理、相似圖都能搜得到。
+      </div>
+      <div class="copy-block">
+        <div class="label">給投資人</div>
+        ReStone 是<strong>循環石材的 AI 設計輔助平台</strong>。月固定成本近乎零、邊際成本 NT$2/次，可橫向擴展到木材、皮革、磁磚等所有建材，是循環經濟基礎建設的 SaaS 機會。
+      </div>
+    </div>
+
+    <div class="copy-cat">
+      <h3>社群貼文（LINE / FB / IG）</h3>
+      <div class="copy-block">
+        <div class="label">LINE 社群版</div>
+        🎨 設計師朋友看過來！<br>
+        想給客戶看「換上石材後的樣子」？<br>
+        以前要花半小時 PS，<strong>現在 30 秒</strong><br>
+        ↓ 上傳設計圖 → 圈選 → 選石材 → 完成<br>
+        立即試用 👉 [連結]<br>
+        #循環經濟 #石材 #AI設計
+      </div>
+      <div class="copy-block">
+        <div class="label">FB 廣告版 · 中等長度</div>
+        <strong>客戶看不懂規格表？讓他直接看「完成後的樣子」</strong><br><br>
+        ReStone 用 AI 把石材自動套到你的設計圖。<br>
+        ✅ 30 秒輸出商業級合成圖<br>
+        ✅ 沒有月費，用多少付多少<br>
+        ✅ 室內、家具、產品設計師都能用<br><br>
+        全台首創的 AI 循環石材平台，現在免費試用 →
+      </div>
+      <div class="copy-block">
+        <div class="label">IG 短版</div>
+        把石材「貼」進設計圖 ✨<br>
+        AI 30 秒完成<br>
+        Bio 連結 →
+      </div>
+    </div>
+
+    <div class="copy-cat">
+      <h3>Email 主旨行（Subject Lines）</h3>
+      <div class="copy-block">
+        <div class="label">好奇心驅動</div>
+        <strong>客戶說「再給我看幾張」之後，30 秒解決</strong>
+      </div>
+      <div class="copy-block">
+        <div class="label">數字驅動</div>
+        <strong>把提案速度加快 60 倍 · AI 設計合成上線</strong>
+      </div>
+      <div class="copy-block">
+        <div class="label">問題驅動</div>
+        <strong>你每週花在 PS 的時間，超過你想像</strong>
+      </div>
+      <div class="copy-block">
+        <div class="label">優惠驅動</div>
+        <strong>免費試用：用 AI 把石材貼進你的設計圖</strong>
+      </div>
+    </div>
+
+    <div class="copy-cat">
+      <h3>長文案：給設計師的信</h3>
+      <div class="copy-block">
+        <div class="label">EMAIL 內文版本</div>
+        <strong>嗨，做室內設計的你，</strong><br><br>
+        你一定遇過這種情境：<br>
+        客戶看著規格表，皺著眉頭說「我想像不出來」。<br>
+        然後你回去打開 PS，找素材、去背、調光影，半小時過去，<br>
+        傳一張合成圖過去，客戶說：「再換另一種看看？」<br><br>
+        ReStone 就是為了這個瞬間做的。<br><br>
+        <strong>30 秒，AI 幫你把任何石材貼進設計圖。</strong><br>
+        圈選牆面、選擇石材、按一個按鈕。<br>
+        商業級寫實圖，可以直接傳給客戶。<br><br>
+        現在註冊免費。沒有月費。用多少付多少。<br><br>
+        👉 立即試用：[連結]<br><br>
+        ReStone 團隊敬上
+      </div>
+    </div>
+
+    <div class="copy-cat">
+      <h3>產品 Slogan（標語短句）</h3>
+      <div class="copy-block">
+        <strong>讓每一塊石材，找到對的設計</strong>
+      </div>
+      <div class="copy-block">
+        <strong>從目錄到工具，從規格表到完成圖</strong>
+      </div>
+      <div class="copy-block">
+        <strong>循環不只是回收，是讓它再被選一次</strong>
+      </div>
+      <div class="copy-block">
+        <strong>AI for stones, design for everyone</strong>
+      </div>
+      <div class="copy-block">
+        <strong>30 秒，看見未來的牆</strong>
+      </div>
+    </div>
+
+    <div class="copy-cat">
+      <h3>痛點開場白（Hook Lines）</h3>
+      <div class="copy-block">
+        客戶傳來 Pinterest 截圖：「就要像這樣的感覺」<br>
+        你翻遍倉庫，怎麼也對不上。<br>
+        <strong>—— 試試 ReStone 的 AI 以圖搜圖。</strong>
+      </div>
+      <div class="copy-block">
+        提案改到第七版，客戶還是不確定。<br>
+        因為他從來沒看過「家裡的樣子」。<br>
+        <strong>—— ReStone 用 30 秒讓他看到。</strong>
+      </div>
+      <div class="copy-block">
+        倉庫裡的剩料越來越多，<br>
+        美的不得了，就是沒人找上門。<br>
+        <strong>—— 上 ReStone，讓 AI 幫你的剩料說話。</strong>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<footer class="site">
+  <div><strong>◈ ReStone 循環石材服務平台</strong> · 2026</div>
+  <div style="margin-top:0.5rem">讓每一塊石材，找到對的設計</div>
+</footer>
+
+</body>
+</html>

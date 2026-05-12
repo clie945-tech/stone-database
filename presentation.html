@@ -1,0 +1,780 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ReStone 循環石材服務平台 — 功能簡報</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --blue: #2563EB; --blue-dark: #1D4ED8;
+    --blue-light: #EFF6FF; --blue-mid: #BFDBFE;
+    --purple: #7C3AED; --purple-light: #F3E8FF;
+    --text: #0F172A; --text-muted: #64748B; --text-light: #94A3B8;
+    --border: #E2E8F0; --bg: #F8FAFC;
+  }
+  html, body {
+    width: 100%; height: 100%; overflow: hidden;
+    font-family: 'Inter', 'Noto Sans TC', sans-serif;
+    background: var(--bg); color: var(--text);
+    background-image:
+      linear-gradient(var(--border) 1px, transparent 1px),
+      linear-gradient(90deg, var(--border) 1px, transparent 1px);
+    background-size: 40px 40px;
+  }
+
+  .deck { width: 100vw; height: 100vh; position: relative; overflow: hidden; }
+
+  section.slide {
+    position: absolute; inset: 0;
+    padding: 5vh 8vw;
+    display: flex; flex-direction: column;
+    opacity: 0; visibility: hidden;
+    transition: opacity 0.4s ease, transform 0.5s ease;
+    transform: translateX(20px);
+    overflow-y: auto;
+  }
+  section.slide.active { opacity: 1; visibility: visible; transform: translateX(0); }
+
+  /* --- Cover --- */
+  .cover { background: linear-gradient(135deg, #1E40AF 0%, #6D28D9 100%); color: white; align-items: flex-start; justify-content: center; }
+  .cover::before {
+    content: '◈'; position: absolute; right: -8vw; bottom: -10vw;
+    font-size: 70vh; color: rgba(255,255,255,0.05); line-height: 1;
+  }
+  .cover-tag { display: inline-block; background: rgba(255,255,255,0.15); padding: 6px 16px; border-radius: 50px; font-size: 0.8rem; font-weight: 700; letter-spacing: 0.15em; margin-bottom: 1.5rem; backdrop-filter: blur(8px); }
+  .cover h1 { font-size: 5rem; font-weight: 900; letter-spacing: -0.04em; line-height: 1; margin-bottom: 1.2rem; }
+  .cover h2 { font-size: 1.6rem; font-weight: 500; opacity: 0.85; line-height: 1.5; max-width: 60ch; }
+  .cover .meta { position: absolute; bottom: 6vh; left: 8vw; font-size: 0.9rem; opacity: 0.6; }
+
+  /* --- Heading patterns --- */
+  .slide h1 { font-size: 2.8rem; font-weight: 900; letter-spacing: -0.03em; line-height: 1.1; margin-bottom: 0.5rem; }
+  .slide h1 .accent { background: linear-gradient(135deg, var(--blue), var(--purple)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+  .slide h2 { font-size: 1.6rem; font-weight: 700; margin-bottom: 1.5rem; }
+  .slide-eyebrow { font-size: 0.78rem; font-weight: 800; letter-spacing: 0.2em; color: var(--purple); text-transform: uppercase; margin-bottom: 0.8rem; }
+  .slide-subtitle { font-size: 1.15rem; color: var(--text-muted); margin-bottom: 2.5rem; line-height: 1.6; max-width: 70ch; }
+
+  /* --- AI big slide template --- */
+  .ai-flag { display: inline-flex; align-items: center; gap: 8px; font-size: 0.75rem; font-weight: 800; letter-spacing: 0.15em; padding: 5px 14px; border-radius: 50px; background: linear-gradient(135deg, var(--blue), var(--purple)); color: white; margin-bottom: 1.2rem; }
+
+  /* --- Grid layouts --- */
+  .grid-2 { display: grid; grid-template-columns: 1.2fr 1fr; gap: 3rem; align-items: start; flex: 1; }
+  .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; flex: 1; align-content: start; }
+  .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; flex: 1; align-content: start; }
+
+  .card {
+    background: white; border-radius: 16px; padding: 1.6rem;
+    border: 1px solid var(--border); box-shadow: 0 4px 24px rgba(0,0,0,0.04);
+  }
+  .card-icon { width: 44px; height: 44px; border-radius: 12px; background: var(--blue-light); display: flex; align-items: center; justify-content: center; font-size: 1.4rem; margin-bottom: 1rem; }
+  .card-icon.purple { background: var(--purple-light); }
+  .card-title { font-size: 1.05rem; font-weight: 800; margin-bottom: 0.4rem; }
+  .card-text { font-size: 0.85rem; color: var(--text-muted); line-height: 1.65; }
+  .card-tag { display: inline-block; background: linear-gradient(135deg, var(--blue), var(--purple)); color: white; font-size: 0.65rem; font-weight: 700; letter-spacing: 0.1em; padding: 3px 10px; border-radius: 50px; margin-bottom: 0.6rem; }
+
+  /* --- Big stat --- */
+  .stat-row { display: flex; gap: 3rem; margin-top: 1rem; }
+  .stat-num { font-size: 4rem; font-weight: 900; letter-spacing: -0.04em; line-height: 1; background: linear-gradient(135deg, var(--blue), var(--purple)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  .stat-label { font-size: 0.85rem; color: var(--text-muted); margin-top: 0.4rem; font-weight: 600; }
+
+  /* --- Tables --- */
+  table { width: 100%; border-collapse: collapse; font-size: 0.92rem; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 24px rgba(0,0,0,0.04); }
+  th, td { padding: 0.9rem 1.2rem; text-align: left; border-bottom: 1px solid var(--border); }
+  th { background: var(--bg); font-size: 0.78rem; font-weight: 800; letter-spacing: 0.05em; color: var(--text-muted); text-transform: uppercase; }
+  td.num { font-weight: 700; color: var(--purple); }
+
+  /* --- Process flow --- */
+  .flow { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; padding: 1.5rem 0; }
+  .flow-step { background: white; border: 2px solid var(--blue-mid); border-radius: 12px; padding: 1rem 1.4rem; font-weight: 700; font-size: 0.92rem; text-align: center; min-width: 130px; }
+  .flow-step.highlight { background: linear-gradient(135deg, var(--blue), var(--purple)); color: white; border-color: transparent; box-shadow: 0 6px 20px rgba(124,58,237,0.25); }
+  .flow-arrow { color: var(--text-light); font-size: 1.4rem; font-weight: 700; }
+
+  /* --- Code block --- */
+  .code {
+    background: #0F172A; color: #E2E8F0; padding: 1.2rem 1.5rem;
+    border-radius: 12px; font-family: 'SF Mono', Consolas, monospace;
+    font-size: 0.85rem; line-height: 1.7;
+  }
+  .code .k { color: #93C5FD; }
+  .code .s { color: #FCD34D; }
+  .code .c { color: #64748B; font-style: italic; }
+
+  /* --- Side-by-side compare --- */
+  .compare { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+  .compare-col { padding: 1.5rem; border-radius: 14px; }
+  .compare-col.bad { background: #FEF2F2; border: 1px solid #FECACA; }
+  .compare-col.good { background: linear-gradient(135deg, #EFF6FF, #F3E8FF); border: 1px solid var(--blue-mid); }
+  .compare-col h4 { font-size: 1rem; font-weight: 800; margin-bottom: 1rem; }
+  .compare-col ul { list-style: none; }
+  .compare-col li { font-size: 0.9rem; padding: 6px 0; line-height: 1.5; }
+
+  /* --- Footer & controls --- */
+  .footer {
+    position: fixed; bottom: 0; left: 0; right: 0; height: 50px;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 2rem; z-index: 10;
+    background: rgba(255,255,255,0.7); backdrop-filter: blur(12px);
+    border-top: 1px solid var(--border); font-size: 0.78rem; color: var(--text-muted);
+  }
+  .footer .brand { font-weight: 700; color: var(--text); display: flex; align-items: center; gap: 8px; }
+  .footer .controls { display: flex; gap: 0.5rem; align-items: center; }
+  .ctrl-btn { background: white; border: 1px solid var(--border); width: 32px; height: 32px; border-radius: 8px; cursor: pointer; font-size: 0.9rem; font-weight: 700; color: var(--text); display: flex; align-items: center; justify-content: center; transition: all 0.15s; }
+  .ctrl-btn:hover { border-color: var(--blue); color: var(--blue); }
+  .counter { font-weight: 700; min-width: 60px; text-align: center; }
+
+  .progress { position: fixed; top: 0; left: 0; height: 3px; background: linear-gradient(90deg, var(--blue), var(--purple)); transition: width 0.4s ease; z-index: 11; }
+
+  /* --- Helpers --- */
+  .pill { display: inline-block; padding: 3px 10px; border-radius: 50px; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.05em; background: var(--blue-light); color: var(--blue); }
+  .pill.purple { background: var(--purple-light); color: var(--purple); }
+  .pill.green { background: #D1FAE5; color: #065F46; }
+  .pill.gray { background: var(--bg); color: var(--text-muted); }
+
+  ul.checks { list-style: none; }
+  ul.checks li { padding: 8px 0; font-size: 0.95rem; line-height: 1.5; padding-left: 28px; position: relative; }
+  ul.checks li::before { content: '✓'; position: absolute; left: 0; top: 6px; width: 20px; height: 20px; background: linear-gradient(135deg, var(--blue), var(--purple)); color: white; border-radius: 50%; font-size: 0.7rem; font-weight: 800; display: flex; align-items: center; justify-content: center; }
+
+  /* --- Closing --- */
+  .closing { background: linear-gradient(135deg, #0F172A 0%, #1E1B4B 100%); color: white; align-items: center; justify-content: center; text-align: center; }
+  .closing h1 { font-size: 4.5rem; }
+  .closing .accent { background: linear-gradient(135deg, #60A5FA, #C4B5FD); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  .closing-sub { font-size: 1.3rem; opacity: 0.7; max-width: 50ch; margin-top: 1rem; line-height: 1.6; }
+</style>
+</head>
+<body>
+
+<div class="progress" id="progress" style="width: 0%"></div>
+
+<div class="deck" id="deck">
+
+  <!-- ========== 1. Cover ========== -->
+  <section class="slide cover active">
+    <div class="cover-tag">RESTONE PLATFORM · 2026</div>
+    <h1>循環石材<br>服務平台</h1>
+    <h2>以 AI 重新定義<br>石材庫存、設計師工作流與客戶溝通</h2>
+    <div class="meta">功能規格簡報 · 強調 AI 應用</div>
+  </section>
+
+  <!-- ========== 2. 平台一句話 ========== -->
+  <section class="slide">
+    <div class="slide-eyebrow">PLATFORM IN ONE LINE</div>
+    <h1>從<span class="accent"> 找料目錄 </span>升級為<br><span class="accent">AI 設計輔助工具</span></h1>
+    <div class="slide-subtitle">把石材廠商、設計師、終端客戶串在同一張視覺化的圖上溝通，<br>讓循環經濟石材在每一個設計專案中真實「物盡其用」。</div>
+    <div class="stat-row">
+      <div><div class="stat-num">6</div><div class="stat-label">項 AI 核心功能</div></div>
+      <div><div class="stat-num">30s</div><div class="stat-label">設計合成時間（取代 PS 半小時）</div></div>
+      <div><div class="stat-num">3</div><div class="stat-label">角色受益：業主 / 設計師 / 客戶</div></div>
+    </div>
+  </section>
+
+  <!-- ========== 3. AI 全景 ========== -->
+  <section class="slide">
+    <div class="ai-flag">✨ AI CORE</div>
+    <h1>六大 AI 引擎，<span class="accent">深度整合</span></h1>
+    <div class="slide-subtitle">不是「掛一個 AI 按鈕」，而是 AI 滲透每一個工作流關鍵節點。</div>
+    <div class="grid-3">
+      <div class="card">
+        <div class="card-tag">FLAGSHIP</div>
+        <div class="card-icon purple">🎨</div>
+        <div class="card-title">AI 設計合成</div>
+        <div class="card-text">設計圖一鍵套用石材紋理。Flux Fill Pro 高擬真 inpainting。</div>
+      </div>
+      <div class="card">
+        <div class="card-icon purple">👁</div>
+        <div class="card-title">AI 視覺分析</div>
+        <div class="card-text">LLaVA 看石材照自動產生精準描述，無需人工標註。</div>
+      </div>
+      <div class="card">
+        <div class="card-icon">🔍</div>
+        <div class="card-title">AI 以圖搜圖</div>
+        <div class="card-text">感知雜湊 + RGB 距離，從庫存找最相似石材。</div>
+      </div>
+      <div class="card">
+        <div class="card-icon">🌈</div>
+        <div class="card-title">AI 顏色偵測</div>
+        <div class="card-text">HSV 色彩分類，自動為每張照片標註 9 種顏色標籤。</div>
+      </div>
+      <div class="card">
+        <div class="card-icon purple">🧠</div>
+        <div class="card-title">Prompt 工程</div>
+        <div class="card-text">三層備援（人工 → 視覺 AI → 模板），平衡控制與自動化。</div>
+      </div>
+      <div class="card">
+        <div class="card-icon">💬</div>
+        <div class="card-title">語義搜尋</div>
+        <div class="card-text">中英同義詞自動展開查詢，搜「marble」也能找到大理石。</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== 4. AI 1 — 設計合成（旗艦） ========== -->
+  <section class="slide">
+    <div class="ai-flag">✨ AI #1 · FLAGSHIP</div>
+    <h1>AI 設計合成工具</h1>
+    <div class="slide-subtitle">設計師上傳設計圖，用筆刷圈選任意表面（牆面 / 桌面 / 產品），AI 在 30 秒內合成商業級寫實圖。</div>
+
+    <div class="flow">
+      <div class="flow-step">📤<br>上傳設計圖</div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-step">🖌<br>筆刷圈選</div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-step">◈<br>挑選石材</div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-step highlight">✨ AI 合成<br>15-40 秒</div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-step">🖼<br>輸出 / 下載</div>
+    </div>
+
+    <div class="grid-2" style="margin-top:1.5rem">
+      <div>
+        <h2 style="font-size:1.1rem">技術細節</h2>
+        <ul class="checks">
+          <li><strong>Replicate Flux Fill Pro</strong>：目前最強的 inpainting 模型</li>
+          <li>Canvas 雙圖層：底圖 + 半透明筆跡，保留視覺參考</li>
+          <li>觸控支援：iPad / 手機可直接畫</li>
+          <li>Prompt 即時微調（不影響資料庫設定）</li>
+          <li>🔒 僅限登入會員使用（保護 API 成本）</li>
+        </ul>
+      </div>
+      <div>
+        <h2 style="font-size:1.1rem">商業價值</h2>
+        <ul class="checks">
+          <li><strong>取代 30 分鐘 Photoshop 流程</strong></li>
+          <li>客戶能即時看到「家裡牆面換上後的樣子」</li>
+          <li>業主、設計師、客戶用同一張圖溝通</li>
+          <li>循環石材剩料更容易被選用（看得到才會用）</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== 5. AI 2 — 視覺分析 ========== -->
+  <section class="slide">
+    <div class="ai-flag">✨ AI #2</div>
+    <h1>AI 視覺分析<br><span class="accent">讓系統「看懂」每塊石材</span></h1>
+    <div class="slide-subtitle">用 LLaVA v1.6 視覺語言模型，自動為每張石材照片產生精準的英文描述 prompt，作為設計合成的「燃料」。</div>
+
+    <div class="grid-2">
+      <div>
+        <div class="code">
+<span class="c"># 上傳一張蛇紋石照片</span>
+<span class="k">input</span>: <span class="s">"gray_serpentine_004.jpg"</span>
+
+       <span style="color:#64748B">↓ LLaVA v1.6 Mistral 7B</span>
+
+<span class="k">output</span>: <span class="s">"gray serpentine with</span>
+        <span class="s">darker veining,</span>
+        <span class="s">polished glossy surface"</span>
+        </div>
+        <p style="margin-top:1rem;font-size:0.82rem;color:var(--text-muted);line-height:1.6">這段描述自動存入資料庫的 <code style="background:#F1F5F9;padding:2px 6px;border-radius:4px">ai_prompt</code> 欄位，作為設計合成的精準引導。</p>
+      </div>
+      <div>
+        <h2 style="font-size:1.1rem">三種觸發方式</h2>
+        <ul class="checks">
+          <li><strong>自動執行</strong>：新增石材 / 主照片變更時</li>
+          <li><strong>手動觸發</strong>：編輯頁「✨ AI 重新分析」按鈕</li>
+          <li><strong>批次升級</strong>：後台一鍵更新所有舊石材</li>
+        </ul>
+        <h2 style="font-size:1.1rem;margin-top:1.5rem">優勢</h2>
+        <ul class="checks">
+          <li>無需人工標註（每張僅 NT$0.5）</li>
+          <li>描述精準度遠高於模板生成</li>
+          <li>管理員仍可手動覆寫</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== 6. AI 3 — 以圖搜圖 ========== -->
+  <section class="slide">
+    <div class="ai-flag">✨ AI #3</div>
+    <h1>AI 以圖搜圖</h1>
+    <div class="slide-subtitle">設計師有客戶的參考圖（從 Pinterest、雜誌、競品截圖）→ 上傳後系統自動從庫存找出最相似的石材。</div>
+
+    <div class="grid-2">
+      <div>
+        <h2 style="font-size:1.1rem">兩軸相似度</h2>
+        <div class="card" style="margin-bottom:1rem">
+          <div class="card-title">📐 紋理結構</div>
+          <div class="card-text">Perceptual Hash (pHash) — 比對圖案的整體結構與紋路走向</div>
+        </div>
+        <div class="card">
+          <div class="card-title">🌈 整體色調</div>
+          <div class="card-text">主色 RGB 歐式距離 — 比對顏色基調的相近程度</div>
+        </div>
+      </div>
+      <div>
+        <h2 style="font-size:1.1rem">輸出結果</h2>
+        <ul class="checks">
+          <li>0-100% 相似度評分</li>
+          <li>網格 + 百分比徽章呈現</li>
+          <li>點擊直接進入該石材詳細頁</li>
+          <li>無需 ML 訓練、零延遲、零隨用成本</li>
+        </ul>
+        <h2 style="font-size:1.1rem;margin-top:1.5rem">技術</h2>
+        <div style="display:flex;gap:0.5rem;flex-wrap:wrap">
+          <span class="pill">Pillow</span>
+          <span class="pill">ImageHash</span>
+          <span class="pill">pHash 64-bit</span>
+          <span class="pill purple">RGB Distance</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== 7. AI 4 — 顏色偵測 ========== -->
+  <section class="slide">
+    <div class="ai-flag">✨ AI #4</div>
+    <h1>AI 自動顏色偵測</h1>
+    <div class="slide-subtitle">管理員上傳石材照片後，若未手動指定顏色，系統用 HSV 色彩空間自動分類 9 種顏色標籤。</div>
+
+    <div class="flow">
+      <div class="flow-step">📷<br>RGB 像素</div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-step">🎨<br>HSV 色彩空間</div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-step">🔬<br>飽和度 / 亮度 / 色相分析</div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-step highlight">🏷<br>顏色標籤</div>
+    </div>
+
+    <div class="grid-4" style="margin-top:2rem">
+      <div class="card" style="background:#F8FAFC;color:#64748B"><div class="card-title">白色系</div></div>
+      <div class="card" style="background:#E2E8F0;color:#475569"><div class="card-title">灰色系</div></div>
+      <div class="card" style="background:#1E293B;color:#F1F5F9"><div class="card-title">黑色系</div></div>
+      <div class="card" style="background:#FEF3C7;color:#92400E"><div class="card-title">米色系</div></div>
+      <div class="card" style="background:#78350F;color:#FEF3C7"><div class="card-title">棕色系</div></div>
+      <div class="card" style="background:#D1FAE5;color:#065F46"><div class="card-title">綠色系</div></div>
+      <div class="card" style="background:#FEE2E2;color:#991B1B"><div class="card-title">紅色系</div></div>
+      <div class="card" style="background:#F3E8FF;color:#6D28D9"><div class="card-title">其他</div></div>
+    </div>
+    <p style="margin-top:1.5rem;font-size:0.85rem;color:var(--text-muted)">📌 針對台灣常見的蛇紋石類，特別擴展綠色 hue 範圍至 195°，涵蓋偏青藍的蛇紋。</p>
+  </section>
+
+  <!-- ========== 8. AI 5 — Prompt 工程 ========== -->
+  <section class="slide">
+    <div class="ai-flag">✨ AI #5</div>
+    <h1>三層 Prompt 工程<br><span class="accent">人工控制 × AI 自動化</span></h1>
+    <div class="slide-subtitle">每塊石材的 AI Prompt 不是黑盒子。管理員能看、能改、能還原；設計師甚至能即時微調當次合成。</div>
+
+    <div style="display:flex;flex-direction:column;gap:1rem;margin-top:1rem">
+      <div class="card" style="display:flex;align-items:center;gap:1.5rem">
+        <div style="font-size:3rem;font-weight:900;background:linear-gradient(135deg,var(--blue),var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent">1</div>
+        <div style="flex:1">
+          <div class="card-title">管理員手動編輯</div>
+          <div class="card-text">最高優先級。對重要石材人工撰寫精準 prompt，確保關鍵商品的合成品質。</div>
+        </div>
+        <span class="pill purple">最優先</span>
+      </div>
+      <div class="card" style="display:flex;align-items:center;gap:1.5rem">
+        <div style="font-size:3rem;font-weight:900;background:linear-gradient(135deg,var(--blue),var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent">2</div>
+        <div style="flex:1">
+          <div class="card-title">LLaVA 視覺 AI 自動生成</div>
+          <div class="card-text">未手動編輯時，AI 看照片寫描述。大幅減輕管理員負擔，新增即用。</div>
+        </div>
+        <span class="pill">自動</span>
+      </div>
+      <div class="card" style="display:flex;align-items:center;gap:1.5rem">
+        <div style="font-size:3rem;font-weight:900;background:linear-gradient(135deg,var(--blue),var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent">3</div>
+        <div style="flex:1">
+          <div class="card-title">模板規則生成</div>
+          <div class="card-text">AI 服務不可用時的安全網。依「種類 + 顏色 + 拋光」組合最簡關鍵字。</div>
+        </div>
+        <span class="pill gray">備援</span>
+      </div>
+    </div>
+
+    <p style="margin-top:1.2rem;font-size:0.85rem;color:var(--text-muted)">💡 此外，設計師在合成時還能即時編輯當次的 prompt（不存檔），達到 4 層彈性。</p>
+  </section>
+
+  <!-- ========== 9. AI 6 — 語義搜尋 ========== -->
+  <section class="slide">
+    <div class="ai-flag">✨ AI #6</div>
+    <h1>智能語義搜尋</h1>
+    <div class="slide-subtitle">設計師輸入任一語言的查詢詞，系統自動展開同義詞庫，跨中英文匹配。</div>
+
+    <div class="grid-2">
+      <div>
+        <h2 style="font-size:1.1rem">中英文同義詞自動展開</h2>
+        <table>
+          <thead><tr><th>查詢詞</th><th>自動展開</th></tr></thead>
+          <tbody>
+            <tr><td><strong>大理石</strong></td><td>marble、雲石、大理岩、marmo</td></tr>
+            <tr><td><strong>花崗岩</strong></td><td>granite、花崗石、麻石</td></tr>
+            <tr><td><strong>蛇紋石</strong></td><td>serpentine、serpentinite</td></tr>
+            <tr><td><strong>化石</strong></td><td>fossil、fossiliferous</td></tr>
+            <tr><td><strong>marble</strong></td><td>大理石、雲石、大理岩</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div>
+        <h2 style="font-size:1.1rem">技術選擇</h2>
+        <ul class="checks">
+          <li>純 Python 實作，無需任何 ML 模型</li>
+          <li>零延遲（記憶體字典查找）</li>
+          <li>零隨用成本</li>
+          <li>易維護：新增同義詞只需改字典</li>
+        </ul>
+        <div class="card" style="margin-top:1.5rem">
+          <div class="card-title">📐 為什麼不用 Embedding？</div>
+          <div class="card-text">石材種類有限（4 大類）、查詢模式可預期、追求極致回應速度。同義詞字典在這個 scope 反而比向量搜尋更精準也更快。</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== 10. 核心管理功能 ========== -->
+  <section class="slide">
+    <div class="slide-eyebrow">CORE PLATFORM</div>
+    <h1>完整的後台與會員系統</h1>
+    <div class="slide-subtitle">AI 是錦上添花，骨幹仍是穩固的庫存管理、會員系統、詢問訂購、Email 通知、匯出報表。</div>
+
+    <div class="grid-3">
+      <div class="card">
+        <div class="card-icon">📦</div>
+        <div class="card-title">庫存管理</div>
+        <div class="card-text">石材 CRUD、3 張照片、種類下拉、9 色標籤、AI Prompt 欄位，全部後台可控。</div>
+      </div>
+      <div class="card">
+        <div class="card-icon">👥</div>
+        <div class="card-title">會員系統</div>
+        <div class="card-text">客戶註冊登入、與管理員 session 完全分離、PBKDF2-SHA256 密碼雜湊。</div>
+      </div>
+      <div class="card">
+        <div class="card-icon">💬</div>
+        <div class="card-title">詢問訂購</div>
+        <div class="card-text">會員向廠商發送詢問、三段狀態追蹤、後台統一回覆。</div>
+      </div>
+      <div class="card">
+        <div class="card-icon">📧</div>
+        <div class="card-title">Email 通知</div>
+        <div class="card-text">客戶收確認信、管理員收新詢問通知。環境變數驅動、未設定不影響運作。</div>
+      </div>
+      <div class="card">
+        <div class="card-icon">📊</div>
+        <div class="card-title">Excel 匯出</div>
+        <div class="card-text">石材庫存、詢問紀錄一鍵下載 .xlsx，方便財報、對帳、備份。</div>
+      </div>
+      <div class="card">
+        <div class="card-icon">📐</div>
+        <div class="card-title">用量計算機</div>
+        <div class="card-text">輸入空間尺寸自動算所需數量與費用，設計師快速估價。</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== 11. 角色 ✗ 功能 ========== -->
+  <section class="slide">
+    <div class="slide-eyebrow">PERMISSION MATRIX</div>
+    <h1>三種角色，<span class="accent">分層權限</span></h1>
+    <div class="slide-subtitle">公開內容、會員專屬、管理員後台 — 嚴格分層保護 API 成本與商業資料。</div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>功能</th>
+          <th>訪客</th>
+          <th>會員</th>
+          <th>管理員</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>瀏覽石材列表 / 詳細頁</td><td>✅</td><td>✅</td><td>✅</td></tr>
+        <tr><td>用量計算機</td><td>✅</td><td>✅</td><td>✅</td></tr>
+        <tr><td>顏色 / 種類篩選</td><td>✅</td><td>✅</td><td>✅</td></tr>
+        <tr><td>🤖 AI 以圖搜圖</td><td>✅</td><td>✅</td><td>✅</td></tr>
+        <tr><td>💬 詢問訂購</td><td>🔒</td><td>✅</td><td>—</td></tr>
+        <tr><td>✨ AI 設計合成工具</td><td>🔒</td><td>✅</td><td>✅</td></tr>
+        <tr><td>📋 我的詢問紀錄</td><td>—</td><td>✅</td><td>—</td></tr>
+        <tr><td>📦 石材 CRUD / 後台管理</td><td>—</td><td>—</td><td>✅</td></tr>
+        <tr><td>✨ Prompt 編輯 / 批次重分析</td><td>—</td><td>—</td><td>✅</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- ========== 12. Before / After ========== -->
+  <section class="slide">
+    <div class="slide-eyebrow">VALUE PROPOSITION</div>
+    <h1>傳統石材網站 <span class="accent">vs</span> ReStone</h1>
+
+    <div class="compare" style="margin-top:2rem">
+      <div class="compare-col bad">
+        <h4>❌ 傳統石材網站</h4>
+        <ul>
+          <li>商品圖 + 規格表 + Excel</li>
+          <li>找料 → 拍照 → PS 半小時 → 寄圖給客戶</li>
+          <li>業主、設計師、客戶各自想像</li>
+          <li>純文字搜尋，搜「marble」找不到</li>
+          <li>客戶看不到實際應用，難下決定</li>
+          <li>剩料、循環石材難曝光</li>
+        </ul>
+      </div>
+      <div class="compare-col good">
+        <h4>✅ ReStone 平台</h4>
+        <ul>
+          <li>商品圖 + AI 描述 + AI 設計合成 + 多軸搜尋</li>
+          <li>找料 → 圈選 → 30 秒合成 → 即時給客戶</li>
+          <li>同一張視覺化圖三方溝通</li>
+          <li>中英文同義詞，搜「marble」也行</li>
+          <li>客戶能看到家裡牆面換上後的樣子</li>
+          <li>循環剩料能精準曝光在對的設計案中</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== 13. 技術架構 ========== -->
+  <section class="slide">
+    <div class="slide-eyebrow">TECH STACK</div>
+    <h1>技術架構</h1>
+    <div class="slide-subtitle">輕量、現代、可雲端、低營運成本。</div>
+
+    <div class="grid-3">
+      <div class="card">
+        <div class="card-icon">🐍</div>
+        <div class="card-title">後端</div>
+        <div class="card-text" style="line-height:2"><span class="pill">Python 3.9</span><br><span class="pill">Flask 3.1</span><br><span class="pill">SQLite</span></div>
+      </div>
+      <div class="card">
+        <div class="card-icon purple">🤖</div>
+        <div class="card-title">AI 服務</div>
+        <div class="card-text" style="line-height:2"><span class="pill purple">Replicate</span><br><span class="pill purple">Flux Fill Pro</span><br><span class="pill purple">LLaVA v1.6</span></div>
+      </div>
+      <div class="card">
+        <div class="card-icon">🖼</div>
+        <div class="card-title">圖像處理</div>
+        <div class="card-text" style="line-height:2"><span class="pill">Pillow</span><br><span class="pill">ImageHash (pHash)</span><br><span class="pill">colorsys (HSV)</span></div>
+      </div>
+      <div class="card">
+        <div class="card-icon">☁</div>
+        <div class="card-title">部署</div>
+        <div class="card-text" style="line-height:2"><span class="pill">Railway</span><br><span class="pill">GitHub 自動部署</span><br><span class="pill">Gunicorn</span></div>
+      </div>
+      <div class="card">
+        <div class="card-icon">📧</div>
+        <div class="card-title">通知 / 匯出</div>
+        <div class="card-text" style="line-height:2"><span class="pill">Flask-Mail</span><br><span class="pill">Gmail SMTP</span><br><span class="pill">openpyxl</span></div>
+      </div>
+      <div class="card">
+        <div class="card-icon">🔒</div>
+        <div class="card-title">安全</div>
+        <div class="card-text" style="line-height:2"><span class="pill">PBKDF2-SHA256</span><br><span class="pill">Session 雙軌</span><br><span class="pill">CSRF Token</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== 14. 成本結構 ========== -->
+  <section class="slide">
+    <div class="slide-eyebrow">COST STRUCTURE</div>
+    <h1>用多少 · 付多少<br><span class="accent">沒人用就 0 元</span></h1>
+    <div class="slide-subtitle">所有 AI 成本與使用量綁定。月固定支出近乎零，只有真實價值被產生時才會發生費用。</div>
+
+    <table style="margin-top:1rem">
+      <thead>
+        <tr><th>項目</th><th>月固定</th><th>隨用單位</th><th>備註</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Railway 主機</strong></td>
+          <td class="num">NT$0</td>
+          <td>—</td>
+          <td>每月 $4.77 USD 免費額度內</td>
+        </tr>
+        <tr>
+          <td><strong>✨ AI 設計合成（Flux Fill Pro）</strong></td>
+          <td class="num">NT$0</td>
+          <td class="num">~NT$1.5 / 張</td>
+          <td>會員使用時才扣</td>
+        </tr>
+        <tr>
+          <td><strong>👁 AI 視覺分析（LLaVA）</strong></td>
+          <td class="num">NT$0</td>
+          <td class="num">~NT$0.5 / 張</td>
+          <td>新增石材時觸發</td>
+        </tr>
+        <tr>
+          <td><strong>📧 Email 通知</strong></td>
+          <td class="num">NT$0</td>
+          <td class="num">NT$0</td>
+          <td>Gmail SMTP 免費</td>
+        </tr>
+        <tr>
+          <td><strong>💾 SQLite + 檔案儲存</strong></td>
+          <td class="num">NT$0</td>
+          <td class="num">NT$0</td>
+          <td>Railway 內建</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="stat-row" style="margin-top:2rem">
+      <div><div class="stat-num">NT$0</div><div class="stat-label">最低月成本</div></div>
+      <div><div class="stat-num">NT$2</div><div class="stat-label">每次完整 AI 合成成本</div></div>
+      <div><div class="stat-num">100+</div><div class="stat-label">$5 USD 可跑次數</div></div>
+    </div>
+  </section>
+
+  <!-- ========== 15. 商業應用場景 ========== -->
+  <section class="slide">
+    <div class="slide-eyebrow">USE CASES</div>
+    <h1>誰會用？<span class="accent">怎麼用？</span></h1>
+
+    <div class="grid-3">
+      <div class="card">
+        <div class="card-icon">🏗</div>
+        <div class="card-title">石材廠商（業主）</div>
+        <div class="card-text" style="line-height:1.7">
+          • 上傳剩料、循環石材<br>
+          • AI 自動寫描述、分類<br>
+          • 接收設計師詢問<br>
+          • 一鍵匯出 Excel 對帳
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-icon purple">🎨</div>
+        <div class="card-title">室內設計師</div>
+        <div class="card-text" style="line-height:1.7">
+          • 多軸搜尋找料（顏色 / 紋路 / 風格）<br>
+          • 上傳客戶設計圖 → AI 合成<br>
+          • 即時給客戶看效果<br>
+          • 估價計算機快速報價
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-icon">🛋</div>
+        <div class="card-title">產品 / 家具設計師</div>
+        <div class="card-text" style="line-height:1.7">
+          • 把石材紋理套到桌面、檯面<br>
+          • 跨域材質實驗（產品 + 建材）<br>
+          • 給品牌客戶看材質提案
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-icon">🏠</div>
+        <div class="card-title">終端消費者</div>
+        <div class="card-text" style="line-height:1.7">
+          • 看到自家牆面 / 桌面換上後的樣子<br>
+          • 跨品項比較<br>
+          • 減少溝通落差與後悔成本
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-icon purple">🌱</div>
+        <div class="card-title">循環經濟推動者</div>
+        <div class="card-text" style="line-height:1.7">
+          • 剩料、邊角料能被精準曝光<br>
+          • 提高循環材料的設計採用率<br>
+          • 平台本身成為循環經濟基礎建設
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-icon">🏢</div>
+        <div class="card-title">建材通路 / 平台</div>
+        <div class="card-text" style="line-height:1.7">
+          • 模板可複製到其他建材<br>
+          • （木材、磁磚、皮革 etc.）<br>
+          • 完整解決方案授權
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== 16. 未來路線圖 ========== -->
+  <section class="slide">
+    <div class="slide-eyebrow">ROADMAP</div>
+    <h1>未來 AI 升級方向</h1>
+    <div class="slide-subtitle">基礎已建好，接下來可以漸進式加上更深的 AI 能力。</div>
+
+    <div class="grid-3">
+      <div class="card">
+        <span class="card-tag">短期</span>
+        <div class="card-title">SAM 自動辨識</div>
+        <div class="card-text">設計圖上傳後，AI 自動框出「這是牆面、那是桌面」，使用者直接點選不用畫筆刷。</div>
+      </div>
+      <div class="card">
+        <span class="card-tag">短期</span>
+        <div class="card-title">合成歷史紀錄</div>
+        <div class="card-text">會員專屬「我的合成」頁，可重複查看、下載、分享給客戶。</div>
+      </div>
+      <div class="card">
+        <span class="card-tag">短期</span>
+        <div class="card-title">並排比對模式</div>
+        <div class="card-text">同一張圖同時套 3 塊不同石材並排顯示，客戶直接選最喜歡的。</div>
+      </div>
+      <div class="card">
+        <span class="card-tag" style="background:linear-gradient(135deg,#F59E0B,#EF4444)">中期</span>
+        <div class="card-title">Claude / GPT 風格推薦</div>
+        <div class="card-text">客戶上傳「想要的風格圖」→ LLM 推薦 5 塊最適合的石材並解釋為什麼。</div>
+      </div>
+      <div class="card">
+        <span class="card-tag" style="background:linear-gradient(135deg,#F59E0B,#EF4444)">中期</span>
+        <div class="card-title">多角度合成</div>
+        <div class="card-text">客戶給多張照片（正面、側面、細節），AI 確保同一塊石材跨視角一致。</div>
+      </div>
+      <div class="card">
+        <span class="card-tag" style="background:linear-gradient(135deg,#7C3AED,#DB2777)">長期</span>
+        <div class="card-title">跨材質 SaaS</div>
+        <div class="card-text">同樣模板複製到木材、皮革、磁磚、布料，建立循環建材生態系。</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== 17. Closing ========== -->
+  <section class="slide closing">
+    <div style="font-size:1rem;font-weight:800;letter-spacing:0.3em;opacity:0.7;margin-bottom:2rem">RESTONE</div>
+    <h1>讓<span class="accent">每一塊石材</span><br>找到對的設計</h1>
+    <div class="closing-sub">AI 不是噱頭，而是讓循環經濟在<br>設計流程中真實可行的關鍵基礎建設。</div>
+    <div style="margin-top:4rem;font-size:0.85rem;opacity:0.5">ReStone 循環石材服務平台 · 功能規格簡報</div>
+  </section>
+
+</div>
+
+<div class="footer">
+  <div class="brand">◈ ReStone · 功能規格簡報</div>
+  <div class="controls">
+    <button class="ctrl-btn" onclick="prev()">‹</button>
+    <span class="counter" id="counter">1 / 17</span>
+    <button class="ctrl-btn" onclick="next()">›</button>
+    <button class="ctrl-btn" onclick="toggleFullscreen()" title="全螢幕">⛶</button>
+  </div>
+</div>
+
+<script>
+  const slides = document.querySelectorAll('.slide');
+  const total = slides.length;
+  let idx = 0;
+
+  function go(n) {
+    idx = Math.max(0, Math.min(total - 1, n));
+    slides.forEach((s, i) => s.classList.toggle('active', i === idx));
+    document.getElementById('counter').textContent = (idx + 1) + ' / ' + total;
+    document.getElementById('progress').style.width = ((idx + 1) / total * 100) + '%';
+  }
+  function next() { go(idx + 1); }
+  function prev() { go(idx - 1); }
+  function toggleFullscreen() {
+    if (!document.fullscreenElement) document.documentElement.requestFullscreen();
+    else document.exitFullscreen();
+  }
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') { next(); e.preventDefault(); }
+    if (e.key === 'ArrowLeft' || e.key === 'PageUp') { prev(); e.preventDefault(); }
+    if (e.key === 'Home') go(0);
+    if (e.key === 'End') go(total - 1);
+    if (e.key === 'f' || e.key === 'F') toggleFullscreen();
+  });
+
+  // Click to advance (but not on buttons/links)
+  document.querySelector('.deck').addEventListener('click', e => {
+    if (e.target.closest('button') || e.target.closest('a')) return;
+    next();
+  });
+
+  go(0);
+</script>
+
+</body>
+</html>

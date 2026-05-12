@@ -1,0 +1,1133 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ReStone 循環石材服務平台 — 功能規格報告</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --blue: #2563EB; --blue-dark: #1D4ED8;
+    --blue-light: #EFF6FF; --blue-mid: #BFDBFE;
+    --purple: #7C3AED; --purple-light: #F3E8FF;
+    --text: #0F172A; --text-muted: #64748B; --text-light: #94A3B8;
+    --border: #E2E8F0; --bg: #F8FAFC;
+  }
+  html { font-size: 14px; }
+  body {
+    font-family: 'Inter', 'Noto Sans TC', sans-serif;
+    color: var(--text); line-height: 1.6;
+    background: #E5E7EB;
+  }
+
+  /* ---- 頁面容器（A4 比例）---- */
+  .page {
+    width: 210mm; min-height: 297mm;
+    background: white;
+    margin: 12mm auto;
+    padding: 18mm 16mm 22mm;
+    position: relative;
+    box-shadow: 0 4px 30px rgba(0,0,0,0.1);
+    page-break-after: always;
+    overflow: hidden;
+  }
+  .page:last-child { page-break-after: auto; }
+
+  /* ---- 頁眉 / 頁腳 ---- */
+  .page-header {
+    position: absolute; top: 8mm; left: 16mm; right: 16mm;
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: 0.72rem; color: var(--text-muted);
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 4mm; font-weight: 600;
+  }
+  .page-header .brand { display: flex; align-items: center; gap: 6px; }
+  .page-header .brand-mark {
+    width: 14px; height: 14px; background: linear-gradient(135deg, var(--blue), var(--purple));
+    clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+  }
+  .page-footer {
+    position: absolute; bottom: 10mm; left: 16mm; right: 16mm;
+    display: flex; justify-content: space-between;
+    font-size: 0.7rem; color: var(--text-light);
+    border-top: 1px solid var(--border); padding-top: 4mm;
+  }
+
+  /* ---- 封面 ---- */
+  .cover {
+    background: linear-gradient(135deg, #1E40AF 0%, #6D28D9 100%);
+    color: white; padding: 0;
+    display: flex; flex-direction: column; justify-content: space-between;
+    position: relative; overflow: hidden;
+  }
+  .cover::before {
+    content: '◈'; position: absolute; right: -40mm; bottom: -50mm;
+    font-size: 380mm; color: rgba(255,255,255,0.05); line-height: 1; font-weight: 400;
+  }
+  .cover-content { padding: 22mm 18mm; position: relative; z-index: 1; }
+  .cover-tag {
+    display: inline-block; background: rgba(255,255,255,0.15);
+    padding: 5px 14px; border-radius: 50px; font-size: 0.7rem;
+    font-weight: 700; letter-spacing: 0.15em; backdrop-filter: blur(8px);
+    margin-bottom: 90mm;
+  }
+  .cover h1 { font-size: 3.4rem; font-weight: 900; letter-spacing: -0.04em; line-height: 1.05; margin-bottom: 6mm; }
+  .cover h2 { font-size: 1.2rem; font-weight: 500; opacity: 0.85; line-height: 1.6; max-width: 50ch; }
+  .cover-meta {
+    padding: 14mm 18mm; position: relative; z-index: 1;
+    border-top: 1px solid rgba(255,255,255,0.15);
+    display: flex; justify-content: space-between; font-size: 0.78rem;
+  }
+  .cover-meta .label { opacity: 0.5; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; margin-bottom: 4px; font-size: 0.65rem; }
+
+  /* ---- 標題層級 ---- */
+  h1.chapter {
+    font-size: 1.9rem; font-weight: 900; letter-spacing: -0.03em;
+    margin-bottom: 2mm; line-height: 1.15;
+  }
+  h1.chapter .num {
+    display: inline-block; background: linear-gradient(135deg, var(--blue), var(--purple));
+    color: white; font-size: 1rem; font-weight: 800;
+    padding: 4px 12px; border-radius: 8px; margin-right: 8px; vertical-align: middle;
+  }
+  .chapter-sub {
+    font-size: 0.95rem; color: var(--text-muted);
+    border-bottom: 1px solid var(--border); padding-bottom: 5mm; margin-bottom: 8mm;
+    line-height: 1.5;
+  }
+  h2.section {
+    font-size: 1.2rem; font-weight: 800; margin-top: 6mm; margin-bottom: 3mm;
+    color: var(--text);
+  }
+  h2.section .pill {
+    display: inline-block; font-size: 0.65rem; font-weight: 800; letter-spacing: 0.1em;
+    background: linear-gradient(135deg, var(--blue), var(--purple)); color: white;
+    padding: 2px 8px; border-radius: 50px; vertical-align: middle; margin-right: 6px;
+  }
+  h3.sub { font-size: 0.95rem; font-weight: 700; margin-top: 4mm; margin-bottom: 2mm; color: var(--text); }
+  p { font-size: 0.88rem; line-height: 1.7; color: var(--text); margin-bottom: 3mm; }
+  p.muted { color: var(--text-muted); }
+
+  /* ---- 通用元件 ---- */
+  .card {
+    background: white; border: 1px solid var(--border); border-radius: 10px;
+    padding: 5mm 6mm; margin-bottom: 3mm;
+  }
+  .card-title { font-size: 0.92rem; font-weight: 800; margin-bottom: 1.5mm; }
+  .card-text { font-size: 0.82rem; color: var(--text-muted); line-height: 1.65; }
+  .card-tag {
+    display: inline-block; font-size: 0.62rem; font-weight: 800; letter-spacing: 0.1em;
+    padding: 2px 8px; border-radius: 50px; background: var(--blue-light); color: var(--blue);
+    margin-bottom: 2mm;
+  }
+  .card-tag.flagship { background: linear-gradient(135deg, var(--blue), var(--purple)); color: white; }
+
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 4mm; }
+  .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4mm; }
+
+  table {
+    width: 100%; border-collapse: collapse; font-size: 0.82rem;
+    border: 1px solid var(--border); border-radius: 8px; overflow: hidden;
+    margin-bottom: 4mm;
+  }
+  th, td { padding: 3mm 4mm; text-align: left; border-bottom: 1px solid var(--border); vertical-align: top; }
+  th {
+    background: var(--bg); font-size: 0.7rem; font-weight: 800;
+    letter-spacing: 0.05em; text-transform: uppercase; color: var(--text-muted);
+  }
+  tr:last-child td { border-bottom: none; }
+  td.num { font-weight: 800; color: var(--purple); }
+  td.center { text-align: center; }
+
+  /* ---- 重點區塊 ---- */
+  .callout {
+    background: linear-gradient(135deg, var(--blue-light), var(--purple-light));
+    border-left: 4px solid var(--purple);
+    padding: 4mm 5mm; border-radius: 8px;
+    margin: 4mm 0; font-size: 0.85rem; line-height: 1.7;
+  }
+  .callout .label {
+    font-size: 0.68rem; font-weight: 800; letter-spacing: 0.1em;
+    color: var(--purple); text-transform: uppercase; margin-bottom: 1.5mm;
+  }
+
+  ul.checks { list-style: none; padding-left: 0; }
+  ul.checks li {
+    padding: 1.5mm 0 1.5mm 8mm; position: relative;
+    font-size: 0.85rem; line-height: 1.55;
+  }
+  ul.checks li::before {
+    content: '✓'; position: absolute; left: 0; top: 2mm;
+    width: 5mm; height: 5mm; background: linear-gradient(135deg, var(--blue), var(--purple));
+    color: white; border-radius: 50%; font-size: 0.65rem; font-weight: 900;
+    display: flex; align-items: center; justify-content: center;
+  }
+
+  /* ---- 流程圖 ---- */
+  .flow {
+    display: flex; align-items: stretch; gap: 2mm; margin: 4mm 0; flex-wrap: wrap;
+  }
+  .flow-step {
+    flex: 1; min-width: 24mm;
+    background: white; border: 1.5px solid var(--blue-mid);
+    border-radius: 8px; padding: 3mm; text-align: center;
+    font-size: 0.78rem; font-weight: 700; line-height: 1.3;
+  }
+  .flow-step.highlight {
+    background: linear-gradient(135deg, var(--blue), var(--purple));
+    color: white; border-color: transparent;
+  }
+  .flow-arrow {
+    display: flex; align-items: center; color: var(--text-light);
+    font-size: 1.1rem; font-weight: 700;
+  }
+
+  /* ---- 程式碼 ---- */
+  .code {
+    background: #0F172A; color: #E2E8F0; padding: 4mm 5mm;
+    border-radius: 8px; font-family: 'SF Mono', Consolas, monospace;
+    font-size: 0.78rem; line-height: 1.7; margin: 3mm 0;
+    white-space: pre-wrap;
+  }
+  .code .k { color: #93C5FD; } .code .s { color: #FCD34D; } .code .c { color: #64748B; font-style: italic; }
+  code.inline { background: #F1F5F9; padding: 1px 6px; border-radius: 4px; font-size: 0.82em; font-family: 'SF Mono', Consolas, monospace; }
+
+  /* ---- 統計 ---- */
+  .stat-row { display: flex; gap: 6mm; margin: 4mm 0; }
+  .stat-num {
+    font-size: 2.2rem; font-weight: 900; letter-spacing: -0.04em; line-height: 1;
+    background: linear-gradient(135deg, var(--blue), var(--purple));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  }
+  .stat-label { font-size: 0.75rem; color: var(--text-muted); font-weight: 600; margin-top: 1mm; }
+
+  /* ---- 對比 ---- */
+  .compare { display: grid; grid-template-columns: 1fr 1fr; gap: 3mm; }
+  .compare-col { padding: 4mm 5mm; border-radius: 10px; }
+  .compare-col.bad { background: #FEF2F2; border: 1px solid #FECACA; }
+  .compare-col.good { background: linear-gradient(135deg, #EFF6FF, #F3E8FF); border: 1px solid var(--blue-mid); }
+  .compare-col h4 { font-size: 0.9rem; font-weight: 800; margin-bottom: 2mm; }
+  .compare-col ul { list-style: none; }
+  .compare-col li { font-size: 0.78rem; padding: 1mm 0; line-height: 1.5; }
+
+  /* ---- 目錄 ---- */
+  .toc-item {
+    display: flex; align-items: baseline; padding: 2.5mm 0;
+    font-size: 0.95rem; border-bottom: 1px dotted var(--border);
+  }
+  .toc-num { color: var(--purple); font-weight: 800; min-width: 12mm; }
+  .toc-title { flex: 1; font-weight: 600; }
+  .toc-page { color: var(--text-muted); font-weight: 700; }
+
+  /* ---- 顏色卡 ---- */
+  .color-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 2mm; margin: 3mm 0; }
+  .color-cell { padding: 4mm 3mm; border-radius: 6px; text-align: center; font-size: 0.78rem; font-weight: 700; }
+
+  /* ---- 列印 ---- */
+  @media print {
+    html, body { background: white !important; }
+    .page {
+      box-shadow: none; margin: 0; width: 100%; min-height: auto;
+      padding: 16mm 14mm 18mm;
+    }
+    @page { size: A4; margin: 0; }
+  }
+  @page { size: A4; }
+</style>
+</head>
+<body>
+
+<!-- ============================================================== -->
+<!-- 封面 -->
+<!-- ============================================================== -->
+<div class="page cover">
+  <div class="cover-content">
+    <div class="cover-tag">PRODUCT SPECIFICATION REPORT</div>
+    <h1>ReStone<br>循環石材服務平台</h1>
+    <h2>以 AI 重新定義石材庫存、設計師工作流與客戶溝通的<br>完整功能規格報告</h2>
+  </div>
+  <div class="cover-meta">
+    <div>
+      <div class="label">DOCUMENT</div>
+      <div>功能規格報告 v1.0</div>
+    </div>
+    <div>
+      <div class="label">FOCUS</div>
+      <div>AI 應用為核心</div>
+    </div>
+    <div>
+      <div class="label">DATE</div>
+      <div>2026</div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================== -->
+<!-- 目錄 -->
+<!-- ============================================================== -->
+<div class="page">
+  <div class="page-header">
+    <div class="brand"><span class="brand-mark"></span> ReStone · 功能規格報告</div>
+    <div>目錄</div>
+  </div>
+
+  <h1 class="chapter" style="margin-top:10mm">目錄 <span style="font-weight:500;color:var(--text-muted);font-size:0.95rem">Contents</span></h1>
+  <div class="chapter-sub">本報告涵蓋平台之 AI 核心能力、管理功能、權限架構、技術選擇、成本結構與商業應用場景。</div>
+
+  <div class="toc-item"><span class="toc-num">01</span><span class="toc-title">執行摘要</span><span class="toc-page">3</span></div>
+  <div class="toc-item"><span class="toc-num">02</span><span class="toc-title">AI 核心 — 六大引擎全景</span><span class="toc-page">4</span></div>
+  <div class="toc-item"><span class="toc-num">03</span><span class="toc-title">AI #1 — 設計合成工具（旗艦功能）</span><span class="toc-page">5</span></div>
+  <div class="toc-item"><span class="toc-num">04</span><span class="toc-title">AI #2 — 視覺分析（LLaVA）</span><span class="toc-page">6</span></div>
+  <div class="toc-item"><span class="toc-num">05</span><span class="toc-title">AI #3 — 以圖搜圖</span><span class="toc-page">7</span></div>
+  <div class="toc-item"><span class="toc-num">06</span><span class="toc-title">AI #4 — 顏色自動偵測</span><span class="toc-page">7</span></div>
+  <div class="toc-item"><span class="toc-num">07</span><span class="toc-title">AI #5 — 三層 Prompt 工程</span><span class="toc-page">8</span></div>
+  <div class="toc-item"><span class="toc-num">08</span><span class="toc-title">AI #6 — 智能語義搜尋</span><span class="toc-page">9</span></div>
+  <div class="toc-item"><span class="toc-num">09</span><span class="toc-title">核心管理功能</span><span class="toc-page">10</span></div>
+  <div class="toc-item"><span class="toc-num">10</span><span class="toc-title">權限矩陣</span><span class="toc-page">11</span></div>
+  <div class="toc-item"><span class="toc-num">11</span><span class="toc-title">傳統網站 vs. ReStone</span><span class="toc-page">12</span></div>
+  <div class="toc-item"><span class="toc-num">12</span><span class="toc-title">技術架構</span><span class="toc-page">13</span></div>
+  <div class="toc-item"><span class="toc-num">13</span><span class="toc-title">成本結構</span><span class="toc-page">14</span></div>
+  <div class="toc-item"><span class="toc-num">14</span><span class="toc-title">商業應用場景</span><span class="toc-page">15</span></div>
+  <div class="toc-item"><span class="toc-num">15</span><span class="toc-title">未來路線圖</span><span class="toc-page">16</span></div>
+
+  <div class="page-footer"><div>2026 · ReStone 循環石材服務平台</div><div>2</div></div>
+</div>
+
+<!-- ============================================================== -->
+<!-- 01 執行摘要 -->
+<!-- ============================================================== -->
+<div class="page">
+  <div class="page-header">
+    <div class="brand"><span class="brand-mark"></span> ReStone · 功能規格報告</div>
+    <div>01 · 執行摘要</div>
+  </div>
+
+  <h1 class="chapter" style="margin-top:6mm"><span class="num">01</span>執行摘要</h1>
+  <div class="chapter-sub">本平台不是「掛一個 AI 按鈕」的資料庫，而是讓 AI 深度滲透每個工作流關鍵節點。</div>
+
+  <h2 class="section">平台一句話定位</h2>
+  <p>從<strong>找料目錄</strong>升級為<strong>AI 設計輔助工具</strong>。把石材廠商、設計師、終端客戶串在同一張視覺化的圖上溝通，讓循環經濟石材在每一個設計專案中真實「物盡其用」。</p>
+
+  <div class="stat-row">
+    <div><div class="stat-num">6</div><div class="stat-label">項 AI 核心功能</div></div>
+    <div><div class="stat-num">30s</div><div class="stat-label">AI 設計合成時間<br>（取代 PS 半小時）</div></div>
+    <div><div class="stat-num">3</div><div class="stat-label">受益角色：<br>業主 / 設計師 / 客戶</div></div>
+    <div><div class="stat-num">NT$2</div><div class="stat-label">每次完整 AI 合成<br>成本</div></div>
+  </div>
+
+  <h2 class="section">核心命題</h2>
+  <ul class="checks">
+    <li><strong>降低設計師門檻</strong>：30 秒 AI 合成取代 30 分鐘 Photoshop，讓更多石材有機會被選用。</li>
+    <li><strong>提高客戶決策信心</strong>：客戶能即時看到「家裡牆面換上後的樣子」，減少溝通落差與後悔成本。</li>
+    <li><strong>推動循環經濟</strong>：剩料、邊角料能被精準曝光、媒合到對的設計案。</li>
+    <li><strong>低營運成本</strong>：月固定支出近乎零，AI 成本與真實使用量綁定。</li>
+  </ul>
+
+  <div class="callout">
+    <div class="label">本報告強調點</div>
+    AI 在本平台不是行銷噱頭，而是基礎建設。它是讓循環經濟在設計流程中「真實可行」的關鍵。本報告將詳述六大 AI 引擎如何協同運作，並提供完整的權限、成本、技術選擇佐證。
+  </div>
+
+  <div class="page-footer"><div>2026 · ReStone 循環石材服務平台</div><div>3</div></div>
+</div>
+
+<!-- ============================================================== -->
+<!-- 02 AI 全景 -->
+<!-- ============================================================== -->
+<div class="page">
+  <div class="page-header">
+    <div class="brand"><span class="brand-mark"></span> ReStone · 功能規格報告</div>
+    <div>02 · AI 核心</div>
+  </div>
+
+  <h1 class="chapter" style="margin-top:6mm"><span class="num">02</span>AI 核心 — 六大引擎全景</h1>
+  <div class="chapter-sub">不是堆疊 AI 功能，而是讓 AI 滲透每個工作流關鍵節點，形成連續的智能輔助體驗。</div>
+
+  <div class="grid-2">
+    <div class="card">
+      <span class="card-tag flagship">FLAGSHIP</span>
+      <div class="card-title">🎨 AI 設計合成</div>
+      <div class="card-text">設計圖一鍵套用石材紋理。Replicate Flux Fill Pro 高擬真 inpainting，30 秒輸出商業級結果。</div>
+    </div>
+    <div class="card">
+      <span class="card-tag">VISION</span>
+      <div class="card-title">👁 AI 視覺分析</div>
+      <div class="card-text">LLaVA v1.6 Mistral 7B 看石材照自動產生精準描述，無需人工標註。</div>
+    </div>
+    <div class="card">
+      <span class="card-tag">SEARCH</span>
+      <div class="card-title">🔍 AI 以圖搜圖</div>
+      <div class="card-text">Perceptual Hash + RGB 距離雙軸比對，從庫存找最相似石材。</div>
+    </div>
+    <div class="card">
+      <span class="card-tag">CLASSIFY</span>
+      <div class="card-title">🌈 AI 顏色偵測</div>
+      <div class="card-text">HSV 色彩空間分類，自動為每張照片標註 8 種顏色標籤。</div>
+    </div>
+    <div class="card">
+      <span class="card-tag">ENGINEERING</span>
+      <div class="card-title">🧠 Prompt 工程</div>
+      <div class="card-text">三層備援（人工 → 視覺 AI → 模板），平衡控制與自動化。</div>
+    </div>
+    <div class="card">
+      <span class="card-tag">SEMANTIC</span>
+      <div class="card-title">💬 語義搜尋</div>
+      <div class="card-text">中英同義詞自動展開查詢，搜「marble」也能找到大理石。</div>
+    </div>
+  </div>
+
+  <h2 class="section">AI 引擎在工作流中的位置</h2>
+  <table>
+    <thead><tr><th>工作流階段</th><th>使用的 AI</th><th>解決的問題</th></tr></thead>
+    <tbody>
+      <tr><td>新增石材時</td><td>視覺分析 + 顏色偵測</td><td>免人工標註，照片即可入庫</td></tr>
+      <tr><td>設計師找料時</td><td>以圖搜圖 + 語義搜尋</td><td>多軸搜尋、不限關鍵字</td></tr>
+      <tr><td>設計師合成提案時</td><td>設計合成 + Prompt 工程</td><td>取代 PS 半小時工作</td></tr>
+      <tr><td>管理員調校品質時</td><td>Prompt 工程（三層架構）</td><td>可控、可調、可審計</td></tr>
+    </tbody>
+  </table>
+
+  <div class="page-footer"><div>2026 · ReStone 循環石材服務平台</div><div>4</div></div>
+</div>
+
+<!-- ============================================================== -->
+<!-- 03 AI #1 設計合成 -->
+<!-- ============================================================== -->
+<div class="page">
+  <div class="page-header">
+    <div class="brand"><span class="brand-mark"></span> ReStone · 功能規格報告</div>
+    <div>03 · AI 設計合成</div>
+  </div>
+
+  <h1 class="chapter" style="margin-top:6mm"><span class="num">03</span>AI #1 — 設計合成工具（旗艦）</h1>
+  <div class="chapter-sub">設計師上傳設計圖，用筆刷圈選任意表面（牆面 / 桌面 / 產品），AI 在 30 秒內合成商業級寫實圖。</div>
+
+  <h2 class="section">使用流程</h2>
+  <div class="flow">
+    <div class="flow-step">📤<br>上傳設計圖</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">🖌<br>筆刷圈選</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">◈<br>挑選石材</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step highlight">✨ AI 合成<br>15-40 秒</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">🖼<br>下載輸出</div>
+  </div>
+
+  <div class="grid-2" style="margin-top:5mm">
+    <div>
+      <h2 class="section" style="margin-top:0">技術細節</h2>
+      <ul class="checks">
+        <li><strong>Replicate Flux Fill Pro</strong>：目前商用最強的 inpainting 模型</li>
+        <li>Canvas 雙圖層：底圖 + 半透明筆跡，保留視覺參考</li>
+        <li>觸控支援：iPad / 手機可直接畫</li>
+        <li>圖片最長邊自動縮至 900px（節省 API 成本）</li>
+        <li>Prompt 即時微調（不影響資料庫設定）</li>
+        <li>🔒 僅限登入會員使用（保護 API 成本）</li>
+      </ul>
+    </div>
+    <div>
+      <h2 class="section" style="margin-top:0">商業價值</h2>
+      <ul class="checks">
+        <li>取代 30 分鐘 Photoshop 流程</li>
+        <li>客戶能即時看到家裡牆面換上後的樣子</li>
+        <li>業主、設計師、客戶用同一張圖溝通</li>
+        <li>循環石材剩料更容易被選用（看得到才會用）</li>
+        <li>降低交易摩擦，提升轉換率</li>
+      </ul>
+    </div>
+  </div>
+
+  <h2 class="section">輸入 / 輸出規格</h2>
+  <table>
+    <thead><tr><th>項目</th><th>規格</th></tr></thead>
+    <tbody>
+      <tr><td>輸入圖像</td><td>PNG / JPG / WebP，建議 1024×1024 以上</td></tr>
+      <tr><td>遮罩格式</td><td>程式自動轉換為標準黑白 PNG（白=替換、黑=保留）</td></tr>
+      <tr><td>處理時間</td><td>典型 15–25 秒，冷啟動可能 30–40 秒</td></tr>
+      <tr><td>輸出格式</td><td>JPG，可開啟原圖、下載或分享連結</td></tr>
+      <tr><td>單次成本</td><td>約 NT$1.5</td></tr>
+    </tbody>
+  </table>
+
+  <div class="page-footer"><div>2026 · ReStone 循環石材服務平台</div><div>5</div></div>
+</div>
+
+<!-- ============================================================== -->
+<!-- 04 AI #2 視覺分析 -->
+<!-- ============================================================== -->
+<div class="page">
+  <div class="page-header">
+    <div class="brand"><span class="brand-mark"></span> ReStone · 功能規格報告</div>
+    <div>04 · AI 視覺分析</div>
+  </div>
+
+  <h1 class="chapter" style="margin-top:6mm"><span class="num">04</span>AI #2 — 視覺分析（讓系統「看懂」石材）</h1>
+  <div class="chapter-sub">用 LLaVA v1.6 視覺語言模型，自動為每張石材照片產生精準的英文描述 prompt，作為設計合成的「燃料」。</div>
+
+  <h2 class="section">運作原理</h2>
+  <div class="code"><span class="c"># 上傳一張蛇紋石照片</span>
+<span class="k">input</span>: <span class="s">"gray_serpentine_004.jpg"</span>
+
+       <span style="color:#64748B">↓ LLaVA v1.6 Mistral 7B（視覺語言模型）</span>
+
+<span class="k">output</span>: <span class="s">"gray serpentine with darker veining,
+        polished glossy surface"</span>
+
+<span class="c"># 自動存入資料庫的 ai_prompt 欄位</span></div>
+
+  <p>這段描述自動存入資料庫的 <code class="inline">ai_prompt</code> 欄位，成為設計合成工具的精準引導。比起人工撰寫，AI 描述更貼近實際照片內容；比起單純的模板套用，AI 能感知細節（紋路走向、光澤度、色澤分布）。</p>
+
+  <h2 class="section">三種觸發機制</h2>
+  <div class="grid-3">
+    <div class="card">
+      <div class="card-title">① 自動執行</div>
+      <div class="card-text">新增石材時自動觸發；主照片變更時重新分析。</div>
+    </div>
+    <div class="card">
+      <div class="card-title">② 手動觸發</div>
+      <div class="card-text">編輯頁的「✨ AI 重新分析」按鈕，可即時更新單筆。</div>
+    </div>
+    <div class="card">
+      <div class="card-title">③ 批次升級</div>
+      <div class="card-text">後台首頁的「✨ 重新分析 Prompt」可一鍵升級所有舊資料。</div>
+    </div>
+  </div>
+
+  <h2 class="section">為何選 LLaVA</h2>
+  <table>
+    <thead><tr><th>模型</th><th>優點</th><th>缺點</th></tr></thead>
+    <tbody>
+      <tr><td><strong>LLaVA v1.6 (本平台選用)</strong></td><td>跑在 Replicate 上、開源、便宜（NT$0.5/張）、足夠應付描述任務</td><td>中文較弱（但我們用英文 prompt）</td></tr>
+      <tr><td>GPT-4 Vision</td><td>中英都強、推理能力強</td><td>需另開 OpenAI 帳號、貴 4–10 倍</td></tr>
+      <tr><td>Claude Sonnet Vision</td><td>質感最好、推理最強</td><td>需另開 Anthropic 帳號、貴 5 倍</td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout">
+    <div class="label">設計決策</div>
+    對於「看石材照片寫關鍵字」這種定義明確的任務，LLaVA 性價比最高。若未來要做「看設計圖自動建議搭配的石材」這類需要推理的功能，再升級到 Claude / GPT-4V。
+  </div>
+
+  <div class="page-footer"><div>2026 · ReStone 循環石材服務平台</div><div>6</div></div>
+</div>
+
+<!-- ============================================================== -->
+<!-- 05 + 06 AI #3 + #4 -->
+<!-- ============================================================== -->
+<div class="page">
+  <div class="page-header">
+    <div class="brand"><span class="brand-mark"></span> ReStone · 功能規格報告</div>
+    <div>05–06 · AI 搜尋與分類</div>
+  </div>
+
+  <h1 class="chapter" style="margin-top:6mm"><span class="num">05</span>AI #3 — 以圖搜圖</h1>
+  <div class="chapter-sub">設計師有客戶的參考圖（從 Pinterest、雜誌、競品截圖）→ 上傳後系統自動從庫存找出最相似的石材。</div>
+
+  <div class="grid-2">
+    <div>
+      <h2 class="section" style="margin-top:0">兩軸相似度</h2>
+      <div class="card">
+        <div class="card-title">📐 紋理結構</div>
+        <div class="card-text">Perceptual Hash (pHash) 64-bit — 比對圖案的整體結構與紋路走向。</div>
+      </div>
+      <div class="card">
+        <div class="card-title">🌈 整體色調</div>
+        <div class="card-text">主色 RGB 歐式距離 — 比對顏色基調的相近程度。</div>
+      </div>
+    </div>
+    <div>
+      <h2 class="section" style="margin-top:0">輸出</h2>
+      <ul class="checks">
+        <li>0–100% 相似度評分</li>
+        <li>網格 + 百分比徽章呈現</li>
+        <li>點擊直接進入該石材詳細頁</li>
+        <li>無需 ML 訓練、零延遲、零隨用成本</li>
+      </ul>
+    </div>
+  </div>
+
+  <h1 class="chapter" style="margin-top:8mm"><span class="num">06</span>AI #4 — 顏色自動偵測</h1>
+  <div class="chapter-sub">管理員上傳石材照片時，若未手動指定顏色，系統用 HSV 色彩空間自動分類。</div>
+
+  <div class="flow">
+    <div class="flow-step">📷<br>RGB 像素</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">🎨<br>HSV 色彩空間</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">🔬<br>飽和度/亮度/色相分析</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step highlight">🏷<br>顏色標籤</div>
+  </div>
+
+  <div class="color-grid">
+    <div class="color-cell" style="background:#F8FAFC;color:#64748B;border:1px solid #E2E8F0">白色系</div>
+    <div class="color-cell" style="background:#E2E8F0;color:#475569">灰色系</div>
+    <div class="color-cell" style="background:#1E293B;color:#F1F5F9">黑色系</div>
+    <div class="color-cell" style="background:#FEF3C7;color:#92400E">米色系</div>
+    <div class="color-cell" style="background:#78350F;color:#FEF3C7">棕色系</div>
+    <div class="color-cell" style="background:#D1FAE5;color:#065F46">綠色系</div>
+    <div class="color-cell" style="background:#FEE2E2;color:#991B1B">紅色系</div>
+    <div class="color-cell" style="background:#F3E8FF;color:#6D28D9">其他</div>
+  </div>
+
+  <p class="muted" style="font-size:0.8rem;margin-top:3mm">📌 針對台灣常見的蛇紋石類，特別擴展綠色 hue 範圍至 195°，涵蓋偏青藍的蛇紋。</p>
+
+  <div class="page-footer"><div>2026 · ReStone 循環石材服務平台</div><div>7</div></div>
+</div>
+
+<!-- ============================================================== -->
+<!-- 07 AI #5 Prompt 工程 -->
+<!-- ============================================================== -->
+<div class="page">
+  <div class="page-header">
+    <div class="brand"><span class="brand-mark"></span> ReStone · 功能規格報告</div>
+    <div>07 · Prompt 工程</div>
+  </div>
+
+  <h1 class="chapter" style="margin-top:6mm"><span class="num">07</span>AI #5 — 三層 Prompt 工程</h1>
+  <div class="chapter-sub">每塊石材的 AI Prompt 不是黑盒子。管理員能看、能改、能還原；設計師甚至能即時微調當次合成。</div>
+
+  <h2 class="section">套用優先順序</h2>
+
+  <div class="card" style="display:flex;align-items:center;gap:5mm">
+    <div style="font-size:2.4rem;font-weight:900;background:linear-gradient(135deg,var(--blue),var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent;min-width:14mm;text-align:center">1</div>
+    <div style="flex:1">
+      <div class="card-title">管理員手動編輯</div>
+      <div class="card-text">最高優先級。對重要石材人工撰寫精準 prompt，確保關鍵商品的合成品質。</div>
+    </div>
+  </div>
+  <div class="card" style="display:flex;align-items:center;gap:5mm">
+    <div style="font-size:2.4rem;font-weight:900;background:linear-gradient(135deg,var(--blue),var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent;min-width:14mm;text-align:center">2</div>
+    <div style="flex:1">
+      <div class="card-title">LLaVA 視覺 AI 自動生成</div>
+      <div class="card-text">未手動編輯時，AI 看照片寫描述。大幅減輕管理員負擔，新增即用。</div>
+    </div>
+  </div>
+  <div class="card" style="display:flex;align-items:center;gap:5mm">
+    <div style="font-size:2.4rem;font-weight:900;background:linear-gradient(135deg,var(--blue),var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent;min-width:14mm;text-align:center">3</div>
+    <div style="flex:1">
+      <div class="card-title">模板規則生成</div>
+      <div class="card-text">AI 服務不可用時的安全網。依「種類 + 顏色 + 拋光」組合最簡關鍵字。</div>
+    </div>
+  </div>
+
+  <div class="callout">
+    <div class="label">第四層：設計師端即時微調</div>
+    設計師在設計合成工具中還能即時編輯當次的 prompt（不影響資料庫設定），達到 4 層彈性。「可控、可改、可審計」是此架構的核心精神。
+  </div>
+
+  <h2 class="section">範例：同一塊石材的三層輸出</h2>
+  <table>
+    <thead><tr><th>層級</th><th>輸出</th></tr></thead>
+    <tbody>
+      <tr><td><strong>① 人工</strong></td><td><code class="inline">honed Italian carrara marble, fine gray veining on warm white base, matte finish</code></td></tr>
+      <tr><td><strong>② AI</strong></td><td><code class="inline">white marble with subtle gray veining, polished glossy surface</code></td></tr>
+      <tr><td><strong>③ 模板</strong></td><td><code class="inline">white marble, polished surface</code></td></tr>
+    </tbody>
+  </table>
+
+  <div class="page-footer"><div>2026 · ReStone 循環石材服務平台</div><div>8</div></div>
+</div>
+
+<!-- ============================================================== -->
+<!-- 08 AI #6 語義搜尋 -->
+<!-- ============================================================== -->
+<div class="page">
+  <div class="page-header">
+    <div class="brand"><span class="brand-mark"></span> ReStone · 功能規格報告</div>
+    <div>08 · 語義搜尋</div>
+  </div>
+
+  <h1 class="chapter" style="margin-top:6mm"><span class="num">08</span>AI #6 — 智能語義搜尋</h1>
+  <div class="chapter-sub">設計師輸入任一語言的查詢詞，系統自動展開同義詞庫，跨中英文匹配。</div>
+
+  <h2 class="section">中英文同義詞自動展開</h2>
+  <table>
+    <thead><tr><th>查詢詞</th><th>自動展開查詢</th></tr></thead>
+    <tbody>
+      <tr><td><strong>大理石</strong></td><td>marble、雲石、大理岩、marmo</td></tr>
+      <tr><td><strong>花崗岩</strong></td><td>granite、花崗石、麻石</td></tr>
+      <tr><td><strong>蛇紋石</strong></td><td>serpentine、serpentinite</td></tr>
+      <tr><td><strong>化石</strong></td><td>fossil、fossiliferous</td></tr>
+      <tr><td><strong>marble</strong></td><td>大理石、雲石、大理岩</td></tr>
+      <tr><td><strong>granite</strong></td><td>花崗岩、花崗石、麻石</td></tr>
+    </tbody>
+  </table>
+
+  <h2 class="section">為何不用 Embedding 向量搜尋？</h2>
+  <div class="callout">
+    <div class="label">設計決策</div>
+    石材種類有限（4 大類）、查詢模式可預期、追求極致回應速度。同義詞字典在這個 scope 反而比向量搜尋更精準、更快、更易維護。<br><br>
+    若未來品項擴展到上千種跨材質（木材、皮革、磁磚...），再升級到 Embedding-based semantic search 也不遲。
+  </div>
+
+  <h2 class="section">技術實作</h2>
+  <ul class="checks">
+    <li>純 Python 實作，無需任何 ML 模型</li>
+    <li>零延遲（記憶體字典 O(1) 查找）</li>
+    <li>零隨用成本</li>
+    <li>易維護：新增同義詞只需編輯 <code class="inline">SYNONYMS</code> 字典</li>
+    <li>搜尋邏輯：原查詢詞 + 所有展開詞，用 <code class="inline">OR</code> 條件 SQL <code class="inline">LIKE</code> 比對</li>
+  </ul>
+
+  <div class="page-footer"><div>2026 · ReStone 循環石材服務平台</div><div>9</div></div>
+</div>
+
+<!-- ============================================================== -->
+<!-- 09 核心管理功能 -->
+<!-- ============================================================== -->
+<div class="page">
+  <div class="page-header">
+    <div class="brand"><span class="brand-mark"></span> ReStone · 功能規格報告</div>
+    <div>09 · 核心管理</div>
+  </div>
+
+  <h1 class="chapter" style="margin-top:6mm"><span class="num">09</span>核心管理功能</h1>
+  <div class="chapter-sub">AI 是錦上添花，骨幹仍是穩固的庫存管理、會員系統、詢問訂購、Email 通知、匯出報表。</div>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title">📦 庫存管理</div>
+      <div class="card-text">石材 CRUD、3 張照片、種類下拉（大理石/蛇紋石/化石/花崗岩）、9 色標籤、AI Prompt 欄位、規格與廠商資料，全部後台可控。</div>
+    </div>
+    <div class="card">
+      <div class="card-title">👥 會員系統</div>
+      <div class="card-text">客戶註冊登入、與管理員 session 完全分離、PBKDF2-SHA256 密碼雜湊、Email 唯一性檢查。</div>
+    </div>
+    <div class="card">
+      <div class="card-title">💬 詢問訂購</div>
+      <div class="card-text">會員向廠商發送詢問、三段狀態追蹤（待回覆/已回覆/已結案）、後台統一回覆。</div>
+    </div>
+    <div class="card">
+      <div class="card-title">📧 Email 通知</div>
+      <div class="card-text">客戶收確認信、管理員收新詢問通知。環境變數驅動、未設定不影響運作（graceful degradation）。</div>
+    </div>
+    <div class="card">
+      <div class="card-title">📊 Excel 匯出</div>
+      <div class="card-text">石材庫存、詢問紀錄一鍵下載 .xlsx，方便財報、對帳、備份。使用 openpyxl 動態生成。</div>
+    </div>
+    <div class="card">
+      <div class="card-title">📐 用量計算機</div>
+      <div class="card-text">輸入空間尺寸自動算所需數量與費用，設計師快速估價，純前端 JavaScript 實作。</div>
+    </div>
+  </div>
+
+  <h2 class="section">前台公開瀏覽功能</h2>
+  <ul class="checks">
+    <li>石材列表（支援關鍵字搜尋、種類篩選、顏色篩選）</li>
+    <li>9 種顏色標籤篩選 pills</li>
+    <li>石材詳細頁（3 張照片、規格、廠商、用量計算機）</li>
+    <li>主照片 lightbox 放大檢視（支援 ESC 關閉）</li>
+    <li>AI 以圖搜圖（無需會員）</li>
+  </ul>
+
+  <h2 class="section">UI / UX 設計語言</h2>
+  <ul class="checks">
+    <li>主色：藍 (#2563EB) → 紫 (#7C3AED) 漸層</li>
+    <li>字體：Inter + Noto Sans TC（中英混排優化）</li>
+    <li>切面鑽石 LOGO，象徵循環與精煉</li>
+    <li>背景格線紋路（呼應建築 / 設計藍圖視覺）</li>
+    <li>RWD 響應式，桌機 / 平板 / 手機皆可用</li>
+  </ul>
+
+  <div class="page-footer"><div>2026 · ReStone 循環石材服務平台</div><div>10</div></div>
+</div>
+
+<!-- ============================================================== -->
+<!-- 10 權限矩陣 -->
+<!-- ============================================================== -->
+<div class="page">
+  <div class="page-header">
+    <div class="brand"><span class="brand-mark"></span> ReStone · 功能規格報告</div>
+    <div>10 · 權限矩陣</div>
+  </div>
+
+  <h1 class="chapter" style="margin-top:6mm"><span class="num">10</span>權限矩陣</h1>
+  <div class="chapter-sub">公開內容、會員專屬、管理員後台 — 嚴格分層保護 API 成本與商業資料。</div>
+
+  <table>
+    <thead>
+      <tr>
+        <th style="width:50%">功能</th>
+        <th class="center">訪客</th>
+        <th class="center">會員</th>
+        <th class="center">管理員</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>瀏覽石材列表 / 詳細頁</td><td class="center">✅</td><td class="center">✅</td><td class="center">✅</td></tr>
+      <tr><td>用量計算機</td><td class="center">✅</td><td class="center">✅</td><td class="center">✅</td></tr>
+      <tr><td>顏色 / 種類篩選</td><td class="center">✅</td><td class="center">✅</td><td class="center">✅</td></tr>
+      <tr><td>智能語義搜尋</td><td class="center">✅</td><td class="center">✅</td><td class="center">✅</td></tr>
+      <tr><td>🤖 AI 以圖搜圖</td><td class="center">✅</td><td class="center">✅</td><td class="center">✅</td></tr>
+      <tr><td>💬 詢問訂購</td><td class="center">🔒</td><td class="center">✅</td><td class="center">—</td></tr>
+      <tr><td>✨ AI 設計合成工具</td><td class="center">🔒</td><td class="center">✅</td><td class="center">✅</td></tr>
+      <tr><td>📋 我的詢問紀錄</td><td class="center">—</td><td class="center">✅</td><td class="center">—</td></tr>
+      <tr><td>📦 石材 CRUD</td><td class="center">—</td><td class="center">—</td><td class="center">✅</td></tr>
+      <tr><td>✨ Prompt 編輯 / 重新分析</td><td class="center">—</td><td class="center">—</td><td class="center">✅</td></tr>
+      <tr><td>👁 視覺 AI 批次重新分析</td><td class="center">—</td><td class="center">—</td><td class="center">✅</td></tr>
+      <tr><td>📧 詢問狀態更新</td><td class="center">—</td><td class="center">—</td><td class="center">✅</td></tr>
+      <tr><td>📊 Excel 匯出</td><td class="center">—</td><td class="center">—</td><td class="center">✅</td></tr>
+      <tr><td>🔄 重新索引照片 AI 標籤</td><td class="center">—</td><td class="center">—</td><td class="center">✅</td></tr>
+    </tbody>
+  </table>
+
+  <h2 class="section">為何鎖住 AI 設計合成？</h2>
+  <p>AI 設計合成每次成本 NT$1.5，若不限制權限，匿名訪客可能濫用 API 造成費用失控。透過會員制：</p>
+  <ul class="checks">
+    <li>使用者需先註冊（留下 Email、姓名）— 提高濫用成本</li>
+    <li>可追蹤每位會員使用量 — 異常時可介入</li>
+    <li>未來可加上「每會員每日上限」進一步保護</li>
+    <li>後端 API 雙重防護：即使前端按鈕被 bypass，後端也擋下未登入請求</li>
+  </ul>
+
+  <div class="page-footer"><div>2026 · ReStone 循環石材服務平台</div><div>11</div></div>
+</div>
+
+<!-- ============================================================== -->
+<!-- 11 Before / After -->
+<!-- ============================================================== -->
+<div class="page">
+  <div class="page-header">
+    <div class="brand"><span class="brand-mark"></span> ReStone · 功能規格報告</div>
+    <div>11 · 價值定位</div>
+  </div>
+
+  <h1 class="chapter" style="margin-top:6mm"><span class="num">11</span>傳統網站 vs. ReStone</h1>
+  <div class="chapter-sub">同樣的石材，不同的呈現方式，產生截然不同的商業價值與使用體驗。</div>
+
+  <div class="compare">
+    <div class="compare-col bad">
+      <h4>❌ 傳統石材網站</h4>
+      <ul>
+        <li>商品圖 + 規格表 + Excel</li>
+        <li>找料 → 拍照 → PS 半小時 → 寄圖給客戶</li>
+        <li>業主、設計師、客戶各自想像</li>
+        <li>純文字搜尋，搜「marble」找不到</li>
+        <li>客戶看不到實際應用，難下決定</li>
+        <li>剩料、循環石材難曝光</li>
+        <li>無法跨域應用（家具、產品設計師難用）</li>
+        <li>溝通靠 LINE 截圖 + 描述</li>
+      </ul>
+    </div>
+    <div class="compare-col good">
+      <h4>✅ ReStone 平台</h4>
+      <ul>
+        <li>商品圖 + AI 描述 + AI 設計合成 + 多軸搜尋</li>
+        <li>找料 → 圈選 → 30 秒 AI 合成 → 即時給客戶</li>
+        <li>同一張視覺化圖三方溝通</li>
+        <li>中英文同義詞 + 以圖搜圖，搜「marble」也行</li>
+        <li>客戶能看到家裡牆面換上後的樣子</li>
+        <li>循環剩料能精準曝光在對的設計案中</li>
+        <li>跨域應用：室內、家具、產品設計師都能用</li>
+        <li>視覺化提案直接做進報告</li>
+      </ul>
+    </div>
+  </div>
+
+  <h2 class="section">關鍵差異化指標</h2>
+  <table>
+    <thead><tr><th>指標</th><th>傳統做法</th><th>ReStone</th></tr></thead>
+    <tbody>
+      <tr><td>客戶從「找料」到「看到應用效果」</td><td>1–3 天</td><td><strong style="color:var(--purple)">30 秒</strong></td></tr>
+      <tr><td>設計師需要的工具</td><td>Photoshop + 圖庫</td><td>瀏覽器即可</td></tr>
+      <tr><td>客戶決策信心</td><td>靠想像</td><td>看實際合成圖</td></tr>
+      <tr><td>跨域設計師可用度</td><td>低</td><td>高（家具、產品都能用）</td></tr>
+      <tr><td>剩料曝光機會</td><td>需主動找</td><td>多軸搜尋自動匹配</td></tr>
+    </tbody>
+  </table>
+
+  <div class="page-footer"><div>2026 · ReStone 循環石材服務平台</div><div>12</div></div>
+</div>
+
+<!-- ============================================================== -->
+<!-- 12 技術架構 -->
+<!-- ============================================================== -->
+<div class="page">
+  <div class="page-header">
+    <div class="brand"><span class="brand-mark"></span> ReStone · 功能規格報告</div>
+    <div>12 · 技術架構</div>
+  </div>
+
+  <h1 class="chapter" style="margin-top:6mm"><span class="num">12</span>技術架構</h1>
+  <div class="chapter-sub">輕量、現代、可雲端、低營運成本。所有技術選擇皆考量「能跑、能擴、能維護」三大原則。</div>
+
+  <h2 class="section">後端 / 部署</h2>
+  <table>
+    <thead><tr><th>類別</th><th>技術</th><th>選擇理由</th></tr></thead>
+    <tbody>
+      <tr><td>後端框架</td><td>Python 3.9 + Flask 3.1</td><td>輕量、生態完整、Python AI 生態整合容易</td></tr>
+      <tr><td>資料庫</td><td>SQLite</td><td>零維護、單檔案部署、Railway 自動備份</td></tr>
+      <tr><td>WSGI</td><td>Gunicorn</td><td>生產級伺服器</td></tr>
+      <tr><td>部署平台</td><td>Railway</td><td>GitHub 自動部署、$5 月免費額度</td></tr>
+      <tr><td>密碼雜湊</td><td>PBKDF2-SHA256</td><td>Werkzeug 內建、業界標準</td></tr>
+    </tbody>
+  </table>
+
+  <h2 class="section">AI / 圖像處理</h2>
+  <table>
+    <thead><tr><th>用途</th><th>技術</th><th>備註</th></tr></thead>
+    <tbody>
+      <tr><td>設計合成</td><td>Replicate Flux Fill Pro</td><td>商用最強 inpainting，~NT$1.5/張</td></tr>
+      <tr><td>視覺描述</td><td>Replicate LLaVA v1.6 Mistral 7B</td><td>~NT$0.5/張</td></tr>
+      <tr><td>感知雜湊</td><td>ImageHash (pHash 64-bit)</td><td>純 Python、零成本</td></tr>
+      <tr><td>顏色分析</td><td>Pillow + colorsys (HSV)</td><td>標準函式庫</td></tr>
+      <tr><td>圖像操作</td><td>Pillow (PIL)</td><td>業界標準</td></tr>
+    </tbody>
+  </table>
+
+  <h2 class="section">通知 / 匯出 / 安全</h2>
+  <table>
+    <thead><tr><th>用途</th><th>技術</th></tr></thead>
+    <tbody>
+      <tr><td>Email 通知</td><td>Flask-Mail + Gmail SMTP（環境變數驅動）</td></tr>
+      <tr><td>Excel 匯出</td><td>openpyxl（動態生成、即時下載）</td></tr>
+      <tr><td>Session 管理</td><td>Flask Session（管理員/客戶完全分離）</td></tr>
+      <tr><td>檔案上傳</td><td>Werkzeug secure_filename + MIME 檢查</td></tr>
+      <tr><td>權限保護</td><td>自製 decorators（admin_required / customer_required）</td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout">
+    <div class="label">架構優勢</div>
+    所有 AI 能力都以 Replicate API 整合，不需自建 GPU 伺服器。可隨時更換為其他模型供應商（如 fal.ai、自部署等），降低 vendor lock-in 風險。
+  </div>
+
+  <div class="page-footer"><div>2026 · ReStone 循環石材服務平台</div><div>13</div></div>
+</div>
+
+<!-- ============================================================== -->
+<!-- 13 成本結構 -->
+<!-- ============================================================== -->
+<div class="page">
+  <div class="page-header">
+    <div class="brand"><span class="brand-mark"></span> ReStone · 功能規格報告</div>
+    <div>13 · 成本結構</div>
+  </div>
+
+  <h1 class="chapter" style="margin-top:6mm"><span class="num">13</span>成本結構 — 用多少 · 付多少</h1>
+  <div class="chapter-sub">所有 AI 成本與使用量綁定。月固定支出近乎零，只有真實價值被產生時才會發生費用。</div>
+
+  <table>
+    <thead>
+      <tr><th>項目</th><th>月固定</th><th>隨用單位成本</th><th>備註</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Railway 主機</strong></td>
+        <td class="num">NT$0</td>
+        <td>—</td>
+        <td>每月 $5 USD 免費額度內</td>
+      </tr>
+      <tr>
+        <td><strong>✨ AI 設計合成<br>（Flux Fill Pro）</strong></td>
+        <td class="num">NT$0</td>
+        <td class="num">~NT$1.5 / 張</td>
+        <td>會員觸發時才扣</td>
+      </tr>
+      <tr>
+        <td><strong>👁 AI 視覺分析<br>（LLaVA）</strong></td>
+        <td class="num">NT$0</td>
+        <td class="num">~NT$0.5 / 張</td>
+        <td>新增石材時觸發</td>
+      </tr>
+      <tr>
+        <td><strong>📧 Email 通知</strong></td>
+        <td class="num">NT$0</td>
+        <td class="num">NT$0</td>
+        <td>Gmail SMTP 免費</td>
+      </tr>
+      <tr>
+        <td><strong>💾 SQLite + 檔案儲存</strong></td>
+        <td class="num">NT$0</td>
+        <td class="num">NT$0</td>
+        <td>Railway 內建</td>
+      </tr>
+      <tr>
+        <td><strong>🌐 網域 / SSL</strong></td>
+        <td class="num">NT$0</td>
+        <td class="num">NT$0</td>
+        <td>Railway 子網域 + 自動 SSL</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="stat-row" style="margin-top:6mm">
+    <div><div class="stat-num">NT$0</div><div class="stat-label">最低月固定成本</div></div>
+    <div><div class="stat-num">NT$2</div><div class="stat-label">每次完整 AI 合成</div></div>
+    <div><div class="stat-num">100+</div><div class="stat-label">$5 USD 可跑次數</div></div>
+  </div>
+
+  <h2 class="section">情境試算</h2>
+  <table>
+    <thead><tr><th>使用情境</th><th>每月 AI 合成次數</th><th>每月成本</th></tr></thead>
+    <tbody>
+      <tr><td>內測 / 種子用戶</td><td>50 次</td><td class="num">~NT$100</td></tr>
+      <tr><td>小規模上線（10–20 設計師）</td><td>300 次</td><td class="num">~NT$600</td></tr>
+      <tr><td>中量級使用（活躍社群）</td><td>1,000 次</td><td class="num">~NT$2,000</td></tr>
+      <tr><td>大量級（考慮自建 GPU）</td><td>10,000 次</td><td class="num">~NT$20,000</td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout">
+    <div class="label">成本擴展策略</div>
+    達到月 10,000 次合成時，可考慮自建 GPU 伺服器或切換到更便宜的 fal.ai。屆時邊際成本可降至 NT$0.3–0.5 / 張，整體成本減半。
+  </div>
+
+  <div class="page-footer"><div>2026 · ReStone 循環石材服務平台</div><div>14</div></div>
+</div>
+
+<!-- ============================================================== -->
+<!-- 14 商業應用場景 -->
+<!-- ============================================================== -->
+<div class="page">
+  <div class="page-header">
+    <div class="brand"><span class="brand-mark"></span> ReStone · 功能規格報告</div>
+    <div>14 · 應用場景</div>
+  </div>
+
+  <h1 class="chapter" style="margin-top:6mm"><span class="num">14</span>商業應用場景</h1>
+  <div class="chapter-sub">六種典型角色，六種不同的價值取用方式。</div>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title">🏗 石材廠商（業主）</div>
+      <div class="card-text">
+        • 上傳剩料、循環石材<br>
+        • AI 自動寫描述、分類<br>
+        • 接收設計師詢問<br>
+        • 一鍵匯出 Excel 對帳<br>
+        • 後台統一管理多家廠商
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">🎨 室內設計師</div>
+      <div class="card-text">
+        • 多軸搜尋找料（顏色/紋路/風格）<br>
+        • 上傳客戶設計圖 → AI 合成<br>
+        • 即時給客戶看效果<br>
+        • 估價計算機快速報價<br>
+        • 追蹤所有詢問紀錄
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">🛋 產品 / 家具設計師</div>
+      <div class="card-text">
+        • 把石材紋理套到桌面、檯面<br>
+        • 跨域材質實驗（產品 + 建材）<br>
+        • 給品牌客戶看材質提案<br>
+        • 快速比較多種石材效果
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">🏠 終端消費者</div>
+      <div class="card-text">
+        • 看到自家牆面、桌面換上後的樣子<br>
+        • 跨品項比較（搭配感覺）<br>
+        • 減少溝通落差與後悔成本<br>
+        • 對材質有更具體的決策依據
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">🌱 循環經濟推動者</div>
+      <div class="card-text">
+        • 剩料、邊角料能被精準曝光<br>
+        • 提高循環材料的設計採用率<br>
+        • 量化循環經濟成效<br>
+        • 平台本身成為基礎建設
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">🏢 建材通路 / 平台商</div>
+      <div class="card-text">
+        • 模板可複製到其他建材<br>
+        • （木材、磁磚、皮革 etc.）<br>
+        • 完整解決方案授權<br>
+        • 為旗下品牌建立差異化
+      </div>
+    </div>
+  </div>
+
+  <h2 class="section">典型工作流情境</h2>
+  <div class="callout">
+    <div class="label">情境：室內設計師接到豪宅案</div>
+    1. 客戶傳來想要的「義式風格」參考圖 → 設計師上傳到 ReStone 以圖搜圖 → 系統找出庫存中 5 塊最相似石材<br>
+    2. 設計師將自己畫好的客廳 3D 渲染圖上傳到 AI 設計工具 → 圈選電視牆面 → 套用最相近的石材<br>
+    3. 30 秒後得到合成圖 → LINE 傳給客戶 → 客戶確認後送出詢問<br>
+    4. 廠商收到通知 → 後台回覆 → 客戶在「我的帳號」追蹤狀態
+  </div>
+
+  <div class="page-footer"><div>2026 · ReStone 循環石材服務平台</div><div>15</div></div>
+</div>
+
+<!-- ============================================================== -->
+<!-- 15 路線圖 + 結尾 -->
+<!-- ============================================================== -->
+<div class="page">
+  <div class="page-header">
+    <div class="brand"><span class="brand-mark"></span> ReStone · 功能規格報告</div>
+    <div>15 · 路線圖</div>
+  </div>
+
+  <h1 class="chapter" style="margin-top:6mm"><span class="num">15</span>未來 AI 升級方向</h1>
+  <div class="chapter-sub">基礎已建好，接下來可漸進式加上更深的 AI 能力。</div>
+
+  <h2 class="section"><span class="pill">短期</span>0–3 個月</h2>
+  <ul class="checks">
+    <li><strong>SAM 自動辨識</strong>：設計圖上傳後，AI 自動框出「這是牆面、那是桌面」，使用者直接點選，不用畫筆刷</li>
+    <li><strong>合成歷史紀錄</strong>：會員專屬「我的合成」頁，可重複查看、下載、分享給客戶</li>
+    <li><strong>並排比對模式</strong>：同一張圖同時套 3 塊不同石材並排顯示，客戶直接選最喜歡的</li>
+    <li><strong>合成 PDF 報告</strong>：把「原圖 → 圈選 → 合成」做成一張 PDF 設計提案</li>
+  </ul>
+
+  <h2 class="section"><span class="pill purple">中期</span>3–9 個月</h2>
+  <ul class="checks">
+    <li><strong>Claude / GPT 風格推薦</strong>：客戶上傳「想要的風格圖」→ LLM 推薦 5 塊最適合的石材並解釋為什麼</li>
+    <li><strong>多角度合成</strong>：客戶給多張照片（正面、側面、細節），AI 確保同一塊石材跨視角一致</li>
+    <li><strong>業主分析儀表板</strong>：哪塊石材被合成最多次、哪個顏色最熱、轉換率分析</li>
+    <li><strong>會員配額系統</strong>：每月免費 N 次合成，超過後需訂閱</li>
+  </ul>
+
+  <h2 class="section"><span class="pill" style="background:linear-gradient(135deg,#7C3AED,#DB2777);color:white">長期</span>9 個月以上</h2>
+  <ul class="checks">
+    <li><strong>跨材質 SaaS</strong>：同樣模板複製到木材、皮革、磁磚、布料，建立循環建材生態系</li>
+    <li><strong>3D 視角合成</strong>：不只 2D 照片，3D 模型也能套材質</li>
+    <li><strong>AR 即時預覽</strong>：手機相機對著牆面 → 即時看到不同石材的效果</li>
+    <li><strong>專業版訂閱</strong>：為設計事務所提供團隊協作、品牌客製化、API 接入</li>
+  </ul>
+
+  <div class="callout">
+    <div class="label">當前狀態</div>
+    所有基礎功能已上線並運作中。下一步重點：累積真實設計師使用數據，根據實際工作流痛點選擇優先項目。
+  </div>
+
+  <div class="page-footer"><div>2026 · ReStone 循環石材服務平台</div><div>16</div></div>
+</div>
+
+<!-- ============================================================== -->
+<!-- 封底 -->
+<!-- ============================================================== -->
+<div class="page cover">
+  <div class="cover-content">
+    <div class="cover-tag">END OF REPORT</div>
+    <h1 style="font-size:2.6rem;margin-top:60mm;margin-bottom:8mm">讓<br>每一塊石材<br>找到對的設計</h1>
+    <h2 style="opacity:0.7">AI 不是噱頭，而是讓循環經濟<br>在設計流程中真實可行的關鍵基礎建設。</h2>
+  </div>
+  <div class="cover-meta">
+    <div>
+      <div class="label">RESTONE · 2026</div>
+      <div style="opacity:0.7">循環石材服務平台</div>
+    </div>
+    <div style="text-align:right">
+      <div class="label">REPORT END</div>
+      <div style="opacity:0.7">v1.0</div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<title>資料流向圖與跨境傳輸說明 — ReStone 循環石材服務平台</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { font-size: 13px; }
+  body { font-family: 'Noto Sans TC','PingFang TC',sans-serif; color:#0F172A; line-height:1.65; background:#E5E7EB; }
+  .page { width:210mm; min-height:297mm; background:white; margin:12mm auto; padding:20mm 20mm 24mm; position:relative; page-break-after:always; box-shadow:0 4px 30px rgba(0,0,0,0.1); }
+  .page:last-child { page-break-after:auto; }
+
+  .doc-header { border-bottom:3px double #0F172A; padding-bottom:7mm; margin-bottom:7mm; }
+  .doc-title { font-size:1.7rem; font-weight:900; text-align:center; letter-spacing:0.05em; margin-bottom:3mm; }
+  .doc-subtitle { text-align:center; font-size:0.82rem; color:#475569; margin-bottom:4mm; }
+  .doc-meta { display:grid; grid-template-columns:1fr 1fr; gap:1.5mm 8mm; font-size:0.82rem; }
+  .doc-meta dt { font-weight:700; display:inline-block; min-width:6em; }
+
+  h2 { font-size:1.15rem; font-weight:800; margin-top:6mm; margin-bottom:4mm; padding-left:3mm; border-left:4px solid #0F172A; }
+  h3 { font-size:0.98rem; font-weight:800; margin-top:4mm; margin-bottom:2mm; color:#0F172A; }
+  p { font-size:0.88rem; margin-bottom:3mm; text-align:justify; }
+
+  table { width:100%; border-collapse:collapse; font-size:0.8rem; margin:3mm 0 5mm; }
+  th, td { border:1px solid #475569; padding:2.5mm 3mm; text-align:left; vertical-align:top; }
+  th { background:#F1F5F9; font-weight:800; font-size:0.76rem; }
+  td.center, th.center { text-align:center; }
+  td.flag { text-align:center; white-space:nowrap; }
+
+  /* 資料流圖 SVG 容器 */
+  .diagram-wrap {
+    background:#F8FAFC; border:1.5px solid #0F172A;
+    padding:6mm; border-radius:2mm; margin:4mm 0;
+    text-align:center;
+  }
+  .diagram-wrap svg { max-width:100%; height:auto; }
+  .diagram-caption { font-size:0.78rem; color:#475569; margin-top:3mm; font-style:italic; }
+
+  /* 圖例 */
+  .legend { display:grid; grid-template-columns:repeat(4,1fr); gap:2mm; margin-top:3mm; font-size:0.72rem; }
+  .legend-item { display:flex; align-items:center; gap:2mm; }
+  .legend-color { width:5mm; height:5mm; border-radius:1mm; border:1px solid #94A3B8; }
+
+  /* 國家分區 */
+  .region-card {
+    border:1.5px solid #0F172A; border-radius:3mm; padding:4mm 5mm; margin-bottom:3mm;
+    background:#FFFFFF;
+  }
+  .region-card .flag-row { display:flex; align-items:center; gap:3mm; margin-bottom:2mm; }
+  .region-card .flag-row .flag { font-size:1.5rem; }
+  .region-card .flag-row .name { font-weight:800; font-size:1rem; }
+  .region-card .flag-row .tag { margin-left:auto; padding:1mm 3mm; background:#065F46; color:white; border-radius:2mm; font-size:0.7rem; font-weight:700; letter-spacing:0.05em; }
+
+  .declaration {
+    background:linear-gradient(135deg,#F8FAFC,#EFF6FF);
+    border:1.5px solid #0F172A; padding:5mm 6mm; margin-top:6mm;
+  }
+
+  .sign-block { margin-top:8mm; display:grid; grid-template-columns:1fr 1fr; gap:8mm; }
+  .sign-cell { border:1px solid #94A3B8; padding:4mm; min-height:36mm; position:relative; }
+  .sign-cell .label { font-size:0.78rem; font-weight:700; color:#475569; margin-bottom:2mm; }
+  .sign-cell .field { font-size:0.85rem; padding:2mm 0; border-bottom:1px solid #CBD5E1; min-height:7mm; margin-bottom:3mm; }
+  .sign-cell .stamp { position:absolute; right:4mm; bottom:4mm; width:24mm; height:24mm; border:1.5px dashed #94A3B8; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:0.7rem; color:#94A3B8; text-align:center; }
+
+  .doc-footer { position:absolute; bottom:8mm; left:20mm; right:20mm; border-top:1px solid #CBD5E1; padding-top:3mm; display:flex; justify-content:space-between; font-size:0.7rem; color:#64748B; }
+  .page-num { position:absolute; bottom:12mm; left:0; right:0; text-align:center; font-size:0.78rem; color:#475569; }
+
+  @media print {
+    html, body { background:white !important; }
+    .page { box-shadow:none; margin:0; }
+    @page { size:A4; margin:0; }
+  }
+  @page { size:A4; }
+</style>
+</head>
+<body>
+
+<!-- ================ 第 1 頁：總覽 + 資料流圖 ================ -->
+<div class="page">
+  <div class="doc-header">
+    <div class="doc-title">資料流向圖與跨境傳輸說明</div>
+    <div class="doc-subtitle">Data Flow Diagram and Cross-Border Transfer Disclosure</div>
+    <dl class="doc-meta">
+      <div><dt>系統名稱：</dt><dd>ReStone 循環石材服務平台</dd></div>
+      <div><dt>文件編號：</dt><dd>RS-DATA-2026-001</dd></div>
+      <div><dt>製作日期：</dt><dd>中華民國 115 年 5 月 12 日</dd></div>
+      <div><dt>文件版本：</dt><dd>v1.0</dd></div>
+      <div><dt>適用法規：</dt><dd>個人資料保護法第 21 條</dd></div>
+      <div><dt>下次審查：</dt><dd>每 12 個月或新增服務時</dd></div>
+    </dl>
+  </div>
+
+  <h2>一、文件目的</h2>
+  <p>本文件揭露 ReStone 循環石材服務平台所有資料流向、儲存位置與跨境傳輸路徑，供主管機關進行個人資料保護法合規審查，並確認無資料流經中華人民共和國（含香港、澳門）地區。</p>
+
+  <h2>二、系統資料流總覽圖</h2>
+  <div class="diagram-wrap">
+    <svg viewBox="0 0 720 460" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+          <path d="M 0 0 L 10 5 L 0 10 z" fill="#0F172A"/>
+        </marker>
+        <marker id="arrow-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+          <path d="M 0 0 L 10 5 L 0 10 z" fill="#2563EB"/>
+        </marker>
+        <marker id="arrow-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+          <path d="M 0 0 L 10 5 L 0 10 z" fill="#7C3AED"/>
+        </marker>
+      </defs>
+
+      <!-- 台灣（使用者端） -->
+      <rect x="20" y="180" width="160" height="120" rx="8" fill="#FEF3C7" stroke="#92400E" stroke-width="2"/>
+      <text x="100" y="205" text-anchor="middle" font-size="14" font-weight="800" fill="#92400E">🇹🇼 中華民國（台灣）</text>
+      <text x="100" y="225" text-anchor="middle" font-size="11" fill="#92400E">使用者端</text>
+      <rect x="40" y="240" width="50" height="38" rx="4" fill="white" stroke="#92400E"/>
+      <text x="65" y="263" text-anchor="middle" font-size="10" font-weight="700">使用者</text>
+      <text x="65" y="275" text-anchor="middle" font-size="9">瀏覽器</text>
+      <rect x="110" y="240" width="50" height="38" rx="4" fill="white" stroke="#92400E"/>
+      <text x="135" y="263" text-anchor="middle" font-size="10" font-weight="700">管理員</text>
+      <text x="135" y="275" text-anchor="middle" font-size="9">瀏覽器</text>
+
+      <!-- 美國（主要伺服器） -->
+      <rect x="260" y="50" width="220" height="280" rx="8" fill="#EFF6FF" stroke="#1E40AF" stroke-width="2"/>
+      <text x="370" y="78" text-anchor="middle" font-size="14" font-weight="800" fill="#1E40AF">🇺🇸 美利堅合眾國</text>
+      <text x="370" y="98" text-anchor="middle" font-size="11" fill="#1E40AF">主要資料處理區</text>
+
+      <!-- Railway -->
+      <rect x="280" y="115" width="180" height="80" rx="6" fill="white" stroke="#1E40AF" stroke-width="1.5"/>
+      <text x="370" y="135" text-anchor="middle" font-size="11" font-weight="800" fill="#1E40AF">Railway (PaaS)</text>
+      <text x="370" y="151" text-anchor="middle" font-size="9" fill="#475569">Flask + Gunicorn</text>
+      <text x="370" y="165" text-anchor="middle" font-size="9" fill="#475569">SQLite 資料庫</text>
+      <text x="370" y="179" text-anchor="middle" font-size="9" fill="#475569">使用者上傳檔案</text>
+      <text x="370" y="190" text-anchor="middle" font-size="8" fill="#7F1D1D">US-West Region</text>
+
+      <!-- Replicate -->
+      <rect x="280" y="215" width="85" height="60" rx="6" fill="white" stroke="#7C3AED" stroke-width="1.5"/>
+      <text x="322" y="234" text-anchor="middle" font-size="10" font-weight="800" fill="#7C3AED">Replicate</text>
+      <text x="322" y="249" text-anchor="middle" font-size="8" fill="#475569">Flux Fill Pro</text>
+      <text x="322" y="261" text-anchor="middle" font-size="8" fill="#475569">LLaVA v1.6</text>
+      <text x="322" y="271" text-anchor="middle" font-size="8" fill="#475569">(AI 處理)</text>
+
+      <!-- Gmail -->
+      <rect x="375" y="215" width="85" height="60" rx="6" fill="white" stroke="#DC2626" stroke-width="1.5"/>
+      <text x="417" y="234" text-anchor="middle" font-size="10" font-weight="800" fill="#DC2626">Gmail SMTP</text>
+      <text x="417" y="249" text-anchor="middle" font-size="8" fill="#475569">Google LLC</text>
+      <text x="417" y="261" text-anchor="middle" font-size="8" fill="#475569">郵件傳輸</text>
+      <text x="417" y="271" text-anchor="middle" font-size="8" fill="#475569">(TLS 加密)</text>
+
+      <!-- GitHub -->
+      <rect x="280" y="290" width="180" height="32" rx="6" fill="white" stroke="#475569" stroke-width="1.5"/>
+      <text x="370" y="305" text-anchor="middle" font-size="10" font-weight="800" fill="#475569">GitHub (程式碼版控)</text>
+      <text x="370" y="316" text-anchor="middle" font-size="8" fill="#475569">Microsoft Corporation</text>
+
+      <!-- 全球 CDN -->
+      <rect x="540" y="160" width="160" height="100" rx="8" fill="#F3E8FF" stroke="#6D28D9" stroke-width="2"/>
+      <text x="620" y="185" text-anchor="middle" font-size="14" font-weight="800" fill="#6D28D9">🌐 全球 CDN</text>
+      <text x="620" y="205" text-anchor="middle" font-size="11" fill="#6D28D9">靜態資源</text>
+      <rect x="555" y="218" width="130" height="30" rx="4" fill="white" stroke="#6D28D9"/>
+      <text x="620" y="237" text-anchor="middle" font-size="10" font-weight="700">Google Fonts</text>
+
+      <!-- 連線箭頭 -->
+      <!-- 台灣 -> Railway (HTTPS) -->
+      <line x1="180" y1="240" x2="280" y2="155" stroke="#2563EB" stroke-width="2.5" marker-end="url(#arrow-blue)"/>
+      <text x="220" y="190" font-size="9" font-weight="700" fill="#2563EB">HTTPS / TLS 1.3</text>
+      <text x="220" y="202" font-size="9" fill="#2563EB">登入、查詢、上傳</text>
+
+      <!-- Railway -> Replicate -->
+      <line x1="350" y1="195" x2="335" y2="215" stroke="#7C3AED" stroke-width="2" marker-end="url(#arrow-purple)"/>
+      <text x="225" y="290" font-size="9" fill="#7C3AED"></text>
+
+      <!-- Railway -> Gmail -->
+      <line x1="400" y1="195" x2="405" y2="215" stroke="#DC2626" stroke-width="2" marker-end="url(#arrow)"/>
+
+      <!-- 瀏覽器 -> CDN -->
+      <line x1="180" y1="265" x2="540" y2="220" stroke="#6D28D9" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#arrow-purple)"/>
+      <text x="380" y="240" font-size="9" fill="#6D28D9">字型</text>
+
+      <!-- 大陸排除標示 -->
+      <rect x="20" y="350" width="680" height="80" rx="8" fill="#FEF2F2" stroke="#7F1D1D" stroke-width="2" stroke-dasharray="6,4"/>
+      <text x="360" y="378" text-anchor="middle" font-size="13" font-weight="800" fill="#7F1D1D">🚫 中華人民共和國（含香港、澳門）— 完全排除</text>
+      <text x="360" y="398" text-anchor="middle" font-size="10" fill="#7F1D1D">無任何資料流經、無任何中資技術組件、無任何 .cn 網域引用</text>
+      <text x="360" y="414" text-anchor="middle" font-size="9" fill="#475569">已主動稽核 TikTok、Tencent、Alibaba、Baidu、Huawei、Xiaomi、jsDelivr CN 等，皆未使用</text>
+    </svg>
+    <div class="diagram-caption">圖一：ReStone 平台資料流向總覽（含跨境傳輸路徑與排除說明）</div>
+  </div>
+
+  <div class="legend">
+    <div class="legend-item"><div class="legend-color" style="background:#FEF3C7;border-color:#92400E"></div><span>使用者來源國</span></div>
+    <div class="legend-item"><div class="legend-color" style="background:#EFF6FF;border-color:#1E40AF"></div><span>資料處理國 (US)</span></div>
+    <div class="legend-item"><div class="legend-color" style="background:#F3E8FF;border-color:#6D28D9"></div><span>全球 CDN</span></div>
+    <div class="legend-item"><div class="legend-color" style="background:#FEF2F2;border-color:#7F1D1D"></div><span>禁用區域</span></div>
+  </div>
+
+  <div class="doc-footer"><div>RS-DATA-2026-001 · 資料流向圖與跨境傳輸說明</div><div>v1.0</div></div>
+  <div class="page-num">— 1 / 3 —</div>
+</div>
+
+<!-- ================ 第 2 頁：資料分類 + 流向明細 ================ -->
+<div class="page">
+
+  <h2>三、資料類別與儲存位置明細</h2>
+  <table>
+    <thead>
+      <tr>
+        <th style="width:24%">資料類別</th>
+        <th style="width:30%">具體欄位</th>
+        <th style="width:22%">儲存位置</th>
+        <th class="center" style="width:9%">國別</th>
+        <th>加密 / 保護</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>會員身分資料</strong></td>
+        <td>姓名、Email、電話、密碼雜湊、註冊時間</td>
+        <td>Railway SQLite (US-West)</td>
+        <td class="flag">🇺🇸</td>
+        <td>密碼：PBKDF2-SHA256；傳輸：TLS</td>
+      </tr>
+      <tr>
+        <td><strong>管理員身分資料</strong></td>
+        <td>使用者名稱、密碼雜湊</td>
+        <td>Railway SQLite (US-West)</td>
+        <td class="flag">🇺🇸</td>
+        <td>密碼：PBKDF2-SHA256</td>
+      </tr>
+      <tr>
+        <td><strong>石材庫存資料</strong></td>
+        <td>石材種類、尺寸、廠商名稱、描述、照片</td>
+        <td>Railway SQLite + Volume (US-West)</td>
+        <td class="flag">🇺🇸</td>
+        <td>磁碟層級加密（PaaS 託管）</td>
+      </tr>
+      <tr>
+        <td><strong>詢問訂購紀錄</strong></td>
+        <td>會員聯絡資料、留言、狀態</td>
+        <td>Railway SQLite (US-West)</td>
+        <td class="flag">🇺🇸</td>
+        <td>同上</td>
+      </tr>
+      <tr>
+        <td><strong>AI 設計合成圖</strong></td>
+        <td>使用者上傳之設計圖、遮罩、合成結果</td>
+        <td>Replicate (US) 暫存</td>
+        <td class="flag">🇺🇸</td>
+        <td>傳輸 TLS；依 Replicate 政策保留有限時間後刪除</td>
+      </tr>
+      <tr>
+        <td><strong>AI 描述生成中介</strong></td>
+        <td>石材照片送至 LLaVA 視覺模型分析</td>
+        <td>Replicate (US) 暫存</td>
+        <td class="flag">🇺🇸</td>
+        <td>同上</td>
+      </tr>
+      <tr>
+        <td><strong>Email 通知內容</strong></td>
+        <td>詢問確認信、管理員通知信</td>
+        <td>Gmail SMTP (Google US)</td>
+        <td class="flag">🇺🇸</td>
+        <td>TLS 加密傳輸</td>
+      </tr>
+      <tr>
+        <td><strong>程式原始碼</strong></td>
+        <td>應用程式碼（無含資料）</td>
+        <td>GitHub (Microsoft US)</td>
+        <td class="flag">🇺🇸</td>
+        <td>私有儲存庫；不含使用者資料</td>
+      </tr>
+      <tr>
+        <td><strong>Web 靜態資源</strong></td>
+        <td>Google Fonts 網頁字型檔</td>
+        <td>Google 全球 CDN</td>
+        <td class="flag">🌐</td>
+        <td>單向下載；無使用者資料上傳</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>四、跨境傳輸詳細路徑</h2>
+  <table>
+    <thead>
+      <tr>
+        <th class="center" style="width:6%">序</th>
+        <th style="width:24%">觸發情境</th>
+        <th style="width:30%">資料路徑</th>
+        <th style="width:12%">傳輸協定</th>
+        <th>個資內容</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="center">①</td>
+        <td>使用者瀏覽 / 註冊 / 登入</td>
+        <td>台灣使用者 → Railway (US)</td>
+        <td class="center">HTTPS<br>(TLS 1.3)</td>
+        <td>姓名、Email、電話、密碼（密碼雙向加密 + 後端雜湊）</td>
+      </tr>
+      <tr>
+        <td class="center">②</td>
+        <td>會員送出詢問訂購</td>
+        <td>台灣使用者 → Railway (US) → Gmail (US)</td>
+        <td class="center">HTTPS + SMTPS</td>
+        <td>姓名、Email、電話、留言內容（含於郵件正文）</td>
+      </tr>
+      <tr>
+        <td class="center">③</td>
+        <td>AI 設計合成（會員）</td>
+        <td>會員 → Railway (US) → Replicate (US) → 回傳結果</td>
+        <td class="center">HTTPS</td>
+        <td>使用者上傳之設計圖（非個資；設計師作品檔案）</td>
+      </tr>
+      <tr>
+        <td class="center">④</td>
+        <td>新增 / 編輯石材（管理員）</td>
+        <td>管理員 → Railway (US) → Replicate (US, LLaVA 視覺分析)</td>
+        <td class="center">HTTPS</td>
+        <td>石材照片（非個資；無人像）</td>
+      </tr>
+      <tr>
+        <td class="center">⑤</td>
+        <td>網頁字型載入</td>
+        <td>使用者瀏覽器 → Google Fonts CDN</td>
+        <td class="center">HTTPS</td>
+        <td>無個資；僅瀏覽器 User-Agent（標準 Web 行為）</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>五、跨境傳輸法律依據</h2>
+  <p>依個人資料保護法第 21 條：「非公務機關對個人資料之國際傳輸，中央目的事業主管機關得限制之」。本平台跨境傳輸對象皆為美國境內服務商，<strong>未涉及任何限制傳輸地區（含中華人民共和國）</strong>。傳輸目的、必要性與安全措施如下：</p>
+  <ul style="padding-left:6mm;font-size:0.88rem;margin-bottom:4mm">
+    <li><strong>目的合理性：</strong>所有跨境傳輸皆為提供本系統核心服務所必須（雲端託管、AI 處理、郵件通知）</li>
+    <li><strong>傳輸安全：</strong>全程強制 TLS / HTTPS 加密，無明文傳輸</li>
+    <li><strong>對象適格性：</strong>服務商皆有公開隱私政策與安全聲明，符合主要國際資安標準（SOC 2 等）</li>
+    <li><strong>當事人同意：</strong>將於註冊頁加入個資告知與同意機制（改善計畫項目 F-1）</li>
+  </ul>
+
+  <div class="doc-footer"><div>RS-DATA-2026-001 · 資料流向圖與跨境傳輸說明</div><div>v1.0</div></div>
+  <div class="page-num">— 2 / 3 —</div>
+</div>
+
+<!-- ================ 第 3 頁：分區整理 + 排除聲明 + 簽章 ================ -->
+<div class="page">
+
+  <h2>六、依國別整理之服務商清單</h2>
+
+  <div class="region-card">
+    <div class="flag-row">
+      <span class="flag">🇹🇼</span>
+      <span class="name">中華民國（台灣）</span>
+      <span class="tag">資料來源</span>
+    </div>
+    <p style="font-size:0.85rem;margin:0">使用者所在地。本平台之終端使用者（會員、設計師、業主、訪客）主要位於台灣。本端不儲存資料於台灣境內伺服器。</p>
+  </div>
+
+  <div class="region-card">
+    <div class="flag-row">
+      <span class="flag">🇺🇸</span>
+      <span class="name">美利堅合眾國（United States）</span>
+      <span class="tag">主要資料處理</span>
+    </div>
+    <table style="margin-top:2mm">
+      <thead><tr><th style="width:25%">服務商</th><th style="width:30%">用途</th><th>合規認證</th></tr></thead>
+      <tbody>
+        <tr><td>Railway Corp.</td><td>PaaS 託管、SQLite、檔案儲存</td><td>SOC 2 Type II</td></tr>
+        <tr><td>Replicate, Inc.</td><td>AI 模型推論（Flux Fill Pro、LLaVA）</td><td>標準雲端安全實作</td></tr>
+        <tr><td>Google LLC (Gmail)</td><td>SMTP 郵件傳輸</td><td>ISO 27001、SOC 2、GDPR 合規</td></tr>
+        <tr><td>Microsoft Corp. (GitHub)</td><td>程式碼版控（無使用者資料）</td><td>ISO 27001、SOC 2</td></tr>
+        <tr><td>Google LLC (Fonts)</td><td>網頁字型 CDN（無使用者資料）</td><td>—</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="region-card">
+    <div class="flag-row">
+      <span class="flag">🇩🇪</span>
+      <span class="name">德意志聯邦共和國（Germany）</span>
+      <span class="tag">AI 模型開發</span>
+    </div>
+    <p style="font-size:0.85rem;margin:0">Black Forest Labs GmbH 為 Flux Fill Pro 模型之開發單位，模型推論服務由位於美國的 Replicate, Inc. 託管。<strong>無資料直接傳輸至德國</strong>。</p>
+  </div>
+
+  <div class="region-card" style="background:#FEF2F2;border-color:#7F1D1D">
+    <div class="flag-row">
+      <span class="flag">🚫</span>
+      <span class="name" style="color:#7F1D1D">中華人民共和國（含香港、澳門）— 完全排除</span>
+      <span class="tag" style="background:#7F1D1D">禁用區域</span>
+    </div>
+    <p style="font-size:0.85rem;margin:0;color:#7F1D1D"><strong>本平台無任何資料流向、無任何服務商、無任何技術組件涉及大陸地區。</strong>已主動稽核並排除：TikTok / 字節跳動、騰訊、阿里巴巴、百度、華為、小米、jsDelivr 中國節點、BootCDN 等所有可能來源。詳見附件 RS-COMP-2026-001。</p>
+  </div>
+
+  <h2>七、資料生命週期管理</h2>
+  <table>
+    <thead><tr><th style="width:25%">階段</th><th style="width:40%">保存期間</th><th>處理方式</th></tr></thead>
+    <tbody>
+      <tr><td>會員資料</td><td>會員存續期間，至帳號刪除止</td><td>使用者可申請刪除（規劃中：F-2 改善項目）</td></tr>
+      <tr><td>詢問紀錄</td><td>產生後 3 年（可審計）</td><td>結案後仍保留作為交易紀錄</td></tr>
+      <tr><td>石材照片</td><td>商品上架期間</td><td>下架時可選擇保留或刪除</td></tr>
+      <tr><td>AI 暫存資料</td><td>Replicate 服務商側依其政策（一般 1 小時內清除）</td><td>本端不留存中介資料</td></tr>
+      <tr><td>郵件記錄</td><td>Gmail 服務商側依其政策</td><td>本端不另存郵件副本</td></tr>
+    </tbody>
+  </table>
+
+  <h2>八、合規聲明</h2>
+  <div class="declaration">
+    <p style="font-size:0.92rem">本單位謹此聲明：ReStone 循環石材服務平台所有資料流向、儲存位置、跨境傳輸路徑皆已如實揭露於本文件中。</p>
+    <p style="font-size:0.92rem">本平台<strong>未涉及任何中華人民共和國（含香港、澳門）地區之資料儲存、處理或傳輸</strong>，符合「個人資料保護法」第 21 條、「各機關對危害國家資通安全產品限制使用原則」及經濟部產業發展署相關採購規範。</p>
+    <p style="font-size:0.92rem;margin-bottom:0">本聲明書內容如有不實或服務商所在地發生變更，本單位將於 30 日內主動更新並重新提交。</p>
+  </div>
+
+  <h2>九、簽章核可</h2>
+  <div class="sign-block">
+    <div class="sign-cell">
+      <div class="label">提交單位 / 技術負責人</div>
+      <div style="font-size:0.78rem;color:#64748B;margin-bottom:2mm">姓名</div><div class="field"></div>
+      <div style="font-size:0.78rem;color:#64748B;margin-bottom:2mm">職稱</div><div class="field"></div>
+      <div style="font-size:0.78rem;color:#64748B;margin-bottom:2mm">簽署日期</div><div class="field"></div>
+      <div class="stamp">簽 章</div>
+    </div>
+    <div class="sign-cell">
+      <div class="label">審核 / 核章</div>
+      <div style="font-size:0.78rem;color:#64748B;margin-bottom:2mm">審核人</div><div class="field"></div>
+      <div style="font-size:0.78rem;color:#64748B;margin-bottom:2mm">職稱</div><div class="field"></div>
+      <div style="font-size:0.78rem;color:#64748B;margin-bottom:2mm">核章日期</div><div class="field"></div>
+      <div class="stamp">關 防</div>
+    </div>
+  </div>
+
+  <div class="doc-footer"><div>RS-DATA-2026-001 · 資料流向圖與跨境傳輸說明</div><div>v1.0</div></div>
+  <div class="page-num">— 3 / 3 —</div>
+</div>
+
+</body>
+</html>
