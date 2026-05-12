@@ -12,8 +12,18 @@ app = Flask(__name__)
 app.secret_key = 'stone-circular-db-secret-2024'
 
 UPLOAD_FOLDER = 'static/uploads'
-ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'webp', 'heic', 'heif'}
 DB_PATH = 'stone_database.db'
+
+# 啟用 HEIC / HEIF 格式支援（iPhone 預設拍照格式）
+try:
+    from pillow_heif import register_heif_opener
+    register_heif_opener()
+    HEIC_SUPPORTED = True
+    print('[startup] HEIC / HEIF 格式支援已啟用')
+except ImportError:
+    HEIC_SUPPORTED = False
+    print('[startup] ⚠ pillow-heif 未安裝，HEIC 格式將無法上傳')
 
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['MAX_CONTENT_LENGTH'] = 32 * 1024 * 1024  # 32MB
@@ -346,7 +356,8 @@ def expand_query(query):
 
 
 def save_photo(file_field):
-    """儲存上傳照片，回傳檔名或 None（含詳細診斷）"""
+    """儲存上傳照片，回傳檔名或 None（含詳細診斷）
+    iPhone 的 HEIC 格式會自動轉成 JPG 以確保所有瀏覽器都能顯示"""
     if not file_field:
         print('[save_photo] file_field 為 None（表單未夾帶檔案）')
         return None
@@ -357,15 +368,32 @@ def save_photo(file_field):
         print(f'[save_photo] 副檔名不被允許：{file_field.filename}')
         return None
     try:
-        # secure_filename 會剝離中文字元，導致檔名只剩 .jpg
-        # 因此自行保留副檔名並補上隨機 ID
         original = file_field.filename
         ext = original.rsplit('.', 1)[1].lower() if '.' in original else 'jpg'
+        os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+
+        # HEIC / HEIF 自動轉成 JPG（瀏覽器普遍不支援 HEIC 直接顯示）
+        if ext in ('heic', 'heif'):
+            if not HEIC_SUPPORTED:
+                print('[save_photo] ✗ HEIC 格式不支援（pillow-heif 未安裝）')
+                return None
+            from PIL import Image
+            img = Image.open(file_field.stream)
+            if img.mode in ('RGBA', 'LA', 'P'):
+                img = img.convert('RGB')
+            filename = f"{secrets.token_hex(12)}.jpg"
+            full_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+            img.save(full_path, 'JPEG', quality=90, optimize=True)
+            if os.path.exists(full_path) and os.path.getsize(full_path) > 0:
+                print(f'[save_photo] ✓ HEIC → JPG 轉檔成功：{filename}（{os.path.getsize(full_path)} bytes）')
+                return filename
+            print(f'[save_photo] ⚠ HEIC 轉檔後檔案不存在或為空')
+            return None
+
+        # 一般格式直接存
         filename = f"{secrets.token_hex(12)}.{ext}"
         full_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-        os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)  # 確保資料夾存在
         file_field.save(full_path)
-        # 確認檔案真的存在且不是 0 bytes
         if os.path.exists(full_path) and os.path.getsize(full_path) > 0:
             print(f'[save_photo] ✓ 儲存成功：{filename}（{os.path.getsize(full_path)} bytes）')
             return filename
@@ -733,7 +761,7 @@ def add_stone():
         # 主照片上傳失敗時，明確告知管理員
         main_photo_attempted = bool(request.files.get('photo') and request.files.get('photo').filename)
         if main_photo_attempted and not photo:
-            flash('⚠ 主照片上傳失敗，請檢查檔案格式（PNG/JPG/JPEG/GIF/WebP）或檔案大小（≤32MB）', 'error')
+            flash('⚠ 主照片上傳失敗，請檢查檔案格式（PNG/JPG/HEIC/GIF/WebP）或檔案大小（≤32MB）', 'error')
 
         # 主照片 AI 分析：自動偵測顏色 + 計算雜湊
         image_hash, dominant_rgb = '', ''

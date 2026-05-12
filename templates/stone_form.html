@@ -268,10 +268,10 @@
                 </div>
               {% endif %}
               <div class="upload-area">
-                <input type="file" name="{{ field }}" accept="image/png,image/jpg,image/jpeg,image/gif,image/webp" onchange="previewPhoto(this, 'preview{{ i }}')" />
+                <input type="file" name="{{ field }}" accept="image/png,image/jpg,image/jpeg,image/gif,image/webp,image/heic,image/heif,.heic,.heif" onchange="previewPhoto(this, 'preview{{ i }}')" />
                 <div class="upload-icon">📷</div>
                 <div class="upload-text"><strong>點擊選擇{{ label }}</strong></div>
-                <div class="upload-hint">支援 JPG、PNG、GIF、WEBP，最大 32MB</div>
+                <div class="upload-hint">支援 JPG、PNG、HEIC（iPhone）、GIF、WEBP，最大 32MB</div>
               </div>
               <div id="preview{{ i }}" style="display:none;margin-top:0.75rem">
                 <img style="width:120px;height:120px;object-fit:cover;border-radius:8px;border:2px solid var(--blue)" src="" alt="" />
