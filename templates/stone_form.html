@@ -303,19 +303,32 @@
   }
 
   // ── 拖放上傳支援（含視覺回饋）──
+  // 用 DataTransfer 建構子重建 FileList，確保跨瀏覽器都能正確送出
+  function assignDroppedFiles(input, droppedFiles) {
+    try {
+      const dt = new DataTransfer();
+      for (const f of droppedFiles) dt.items.add(f);
+      input.files = dt.files;
+    } catch (err) {
+      // 舊瀏覽器退路：直接指派
+      input.files = droppedFiles;
+    }
+    input.dispatchEvent(new Event('change', { bubbles: true }));
+  }
+
   document.querySelectorAll('.upload-area').forEach(area => {
     const input = area.querySelector('input[type="file"]');
     if (!input) return;
-    ['dragenter','dragover','dragleave','drop'].forEach(ev => {
-      area.addEventListener(ev, e => { e.preventDefault(); e.stopPropagation(); });
+    ['dragenter','dragover'].forEach(ev => {
+      area.addEventListener(ev, e => { e.preventDefault(); e.stopPropagation(); area.classList.add('dragover'); });
     });
-    ['dragenter','dragover'].forEach(ev => area.addEventListener(ev, () => area.classList.add('dragover')));
-    ['dragleave','drop'].forEach(ev => area.addEventListener(ev, () => area.classList.remove('dragover')));
+    area.addEventListener('dragleave', e => { e.preventDefault(); area.classList.remove('dragover'); });
     area.addEventListener('drop', e => {
+      e.preventDefault(); e.stopPropagation();
+      area.classList.remove('dragover');
       const files = e.dataTransfer.files;
       if (!files || !files.length) return;
-      input.files = files;
-      input.dispatchEvent(new Event('change'));
+      assignDroppedFiles(input, files);
     });
   });
   // 防止整頁拖放時瀏覽器直接打開圖片

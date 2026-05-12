@@ -300,19 +300,26 @@
     btn.disabled = true;
   });
 
-  // ── 拖放上傳支援（含視覺回饋）──
+  // ── 拖放上傳支援（用 DataTransfer 確保檔案正確送出）──
   (() => {
     const area = document.getElementById('uploadArea');
     const input = document.getElementById('refFile');
-    ['dragenter','dragover','dragleave','drop'].forEach(ev => {
-      area.addEventListener(ev, e => { e.preventDefault(); e.stopPropagation(); });
+    ['dragenter','dragover'].forEach(ev => {
+      area.addEventListener(ev, e => { e.preventDefault(); e.stopPropagation(); area.classList.add('dragover'); });
     });
-    ['dragenter','dragover'].forEach(ev => area.addEventListener(ev, () => area.classList.add('dragover')));
-    ['dragleave','drop'].forEach(ev => area.addEventListener(ev, () => area.classList.remove('dragover')));
+    area.addEventListener('dragleave', e => { e.preventDefault(); area.classList.remove('dragover'); });
     area.addEventListener('drop', e => {
+      e.preventDefault(); e.stopPropagation();
+      area.classList.remove('dragover');
       const files = e.dataTransfer.files;
       if (!files || !files.length) return;
-      input.files = files;
+      try {
+        const dt = new DataTransfer();
+        for (const f of files) dt.items.add(f);
+        input.files = dt.files;
+      } catch (err) {
+        input.files = files;
+      }
       previewRef(input);
     });
     ['dragover','drop'].forEach(ev => window.addEventListener(ev, e => {

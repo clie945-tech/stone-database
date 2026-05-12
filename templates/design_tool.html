@@ -557,16 +557,24 @@ btnApply.addEventListener('click', async () => {
   }
 });
 
-// 拖放上傳：防止瀏覽器預設行為（直接打開圖片）+ 視覺回饋
-['dragenter','dragover','dragleave','drop'].forEach(ev => {
-  uploadZone.addEventListener(ev, e => { e.preventDefault(); e.stopPropagation(); });
+// 拖放上傳：用 DataTransfer 建構子確保檔案能正確送出
+['dragenter','dragover'].forEach(ev => {
+  uploadZone.addEventListener(ev, e => { e.preventDefault(); e.stopPropagation(); uploadZone.classList.add('dragover'); });
 });
-['dragenter','dragover'].forEach(ev => uploadZone.addEventListener(ev, () => uploadZone.classList.add('dragover')));
-['dragleave','drop'].forEach(ev => uploadZone.addEventListener(ev, () => uploadZone.classList.remove('dragover')));
+uploadZone.addEventListener('dragleave', e => { e.preventDefault(); uploadZone.classList.remove('dragover'); });
 uploadZone.addEventListener('drop', e => {
-  const f = e.dataTransfer.files[0]; if (!f) return;
-  designFile.files = e.dataTransfer.files;
-  designFile.dispatchEvent(new Event('change'));
+  e.preventDefault(); e.stopPropagation();
+  uploadZone.classList.remove('dragover');
+  const droppedFiles = e.dataTransfer.files;
+  if (!droppedFiles || !droppedFiles.length) return;
+  try {
+    const dt = new DataTransfer();
+    for (const f of droppedFiles) dt.items.add(f);
+    designFile.files = dt.files;
+  } catch (err) {
+    designFile.files = droppedFiles;
+  }
+  designFile.dispatchEvent(new Event('change', { bubbles: true }));
 });
 // 防止整頁拖放時瀏覽器直接打開圖片
 ['dragover','drop'].forEach(ev => window.addEventListener(ev, e => {
