@@ -13,7 +13,8 @@ app.secret_key = 'stone-circular-db-secret-2024'
 
 UPLOAD_FOLDER = 'static/uploads'
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'webp', 'heic', 'heif'}
-DB_PATH = 'stone_database.db'
+# 資料庫路徑：優先讀環境變數（Railway Volume 用），預設本機開發用相對路徑
+DB_PATH = os.environ.get('DB_PATH', 'stone_database.db')
 
 # 啟用 HEIC / HEIF 格式支援（iPhone 預設拍照格式）
 try:
@@ -237,6 +238,11 @@ def get_db():
 
 
 def init_db():
+    # 確保資料庫所在資料夾存在（給 Railway Volume 路徑用）
+    db_dir = os.path.dirname(DB_PATH)
+    if db_dir:
+        os.makedirs(db_dir, exist_ok=True)
+    print(f'[init_db] 使用資料庫路徑：{DB_PATH}')
     conn = get_db()
     conn.executescript('''
         CREATE TABLE IF NOT EXISTS stones (
