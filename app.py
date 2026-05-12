@@ -11,10 +11,46 @@ from functools import wraps
 app = Flask(__name__)
 app.secret_key = 'stone-circular-db-secret-2024'
 
-UPLOAD_FOLDER = 'static/uploads'
-ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'webp', 'heic', 'heif'}
-# 資料庫路徑：優先讀環境變數（Railway Volume 用），預設本機開發用相對路徑
+# 上傳資料夾與資料庫路徑：優先讀環境變數（Railway Volume 用），預設本機開發用相對路徑
+UPLOAD_FOLDER = os.environ.get('UPLOAD_FOLDER', 'static/uploads')
 DB_PATH = os.environ.get('DB_PATH', 'stone_database.db')
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'webp', 'heic', 'heif'}
+
+
+def _setup_upload_symlink():
+    """讓 /static/uploads URL 能對應到實際儲存位置（Volume 在不同路徑時用 symlink 連回）"""
+    default_path = 'static/uploads'
+    target = UPLOAD_FOLDER
+
+    # 確保實際儲存資料夾存在
+    os.makedirs(target, exist_ok=True)
+
+    # 如果 UPLOAD_FOLDER 就是預設位置，不需要 symlink
+    if os.path.abspath(target) == os.path.abspath(default_path):
+        return
+
+    # 確保 parent (static/) 存在
+    os.makedirs(os.path.dirname(default_path) or '.', exist_ok=True)
+
+    # 處理 static/uploads 既有狀態
+    if os.path.lexists(default_path):
+        if os.path.islink(default_path):
+            return  # 已是 symlink，假設正確
+        try:
+            os.rmdir(default_path)  # 只有空資料夾能移除
+        except OSError as e:
+            print(f'[setup] 無法移除 {default_path}：{e}')
+            return
+
+    # 建立 symlink
+    try:
+        os.symlink(os.path.abspath(target), default_path)
+        print(f'[setup] symlink 已建立：{default_path} → {target}')
+    except (FileExistsError, OSError) as e:
+        print(f'[setup] symlink 建立失敗：{e}')
+
+
+_setup_upload_symlink()
 
 # 啟用 HEIC / HEIF 格式支援（iPhone 預設拍照格式）
 try:
@@ -64,8 +100,6 @@ VENDORS = [
     '高陽益實業股份有限公司',
     '鎮一大理石有限公司',
 ]
-
-os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 
 # ── 圖片 AI 分析工具 ──
