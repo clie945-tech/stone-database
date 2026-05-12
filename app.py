@@ -36,11 +36,36 @@ def _setup_upload_symlink():
     if os.path.lexists(default_path):
         if os.path.islink(default_path):
             return  # 已是 symlink，假設正確
+        # 是實體資料夾：把裡面的檔案（如 .gitkeep 或舊照片）處理掉
+        import shutil
+        for name in os.listdir(default_path):
+            src = os.path.join(default_path, name)
+            if name == '.gitkeep':
+                try:
+                    os.remove(src)
+                except OSError:
+                    pass
+                continue
+            # 其他檔案搬到實際儲存位置（如果還沒在那邊）
+            dst = os.path.join(target, name)
+            try:
+                if os.path.exists(dst):
+                    os.remove(src)
+                else:
+                    shutil.move(src, dst)
+                    print(f'[setup] 搬移既有檔案：{name}')
+            except OSError as e:
+                print(f'[setup] 搬移 {name} 失敗：{e}')
+        # 移除空資料夾
         try:
-            os.rmdir(default_path)  # 只有空資料夾能移除
+            os.rmdir(default_path)
         except OSError as e:
-            print(f'[setup] 無法移除 {default_path}：{e}')
-            return
+            # 最後手段：強制遞迴刪除
+            try:
+                shutil.rmtree(default_path, ignore_errors=True)
+            except Exception:
+                print(f'[setup] 無法移除 {default_path}：{e}')
+                return
 
     # 建立 symlink
     try:
