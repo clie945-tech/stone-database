@@ -56,6 +56,14 @@ COLORS = [
 ]
 COLOR_MAP = {c[0]: c for c in COLORS}
 
+# ── 合作石材廠商清單 ──（未來新增請編輯此處）
+VENDORS = [
+    '同達大理石股份有限公司',
+    '東星名石股份有限公司',
+    '高陽益實業股份有限公司',
+    '鎮一大理石有限公司',
+]
+
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 
@@ -353,6 +361,27 @@ def expand_query(query):
         if any(t in q or q in t for t in all_terms):
             terms.update(all_terms)
     return list(terms)
+
+
+def normalize_image_to_jpg_path(file_field, max_size=2048):
+    """將上傳檔（含 HEIC）統一轉成 JPG 暫存檔，回傳路徑。
+    用於送 Replicate API 之前的格式正規化。失敗回傳 None。"""
+    if not file_field or not file_field.filename:
+        return None
+    try:
+        from PIL import Image
+        import tempfile
+        img = Image.open(file_field.stream)
+        img.thumbnail((max_size, max_size))  # 大圖縮小，省 API 流量
+        if img.mode in ('RGBA', 'LA', 'P'):
+            img = img.convert('RGB')
+        fd, path = tempfile.mkstemp(suffix='.jpg')
+        os.close(fd)
+        img.save(path, 'JPEG', quality=92, optimize=True)
+        return path
+    except Exception as e:
+        print(f'[normalize_image] 轉檔失敗：{type(e).__name__}: {e}')
+        return None
 
 
 def save_photo(file_field):
@@ -735,7 +764,7 @@ def add_stone():
         stone_type = request.form.get('stone_type', '').strip()
         if not stone_type:
             flash('石材種類為必填欄位', 'error')
-            return render_template('stone_form.html', stone=None, title='新增石材')
+            return render_template('stone_form.html', stone=None, title='新增石材', colors=COLORS, vendors=VENDORS)
 
         width       = request.form.get('width') or None
         height      = request.form.get('height') or None
@@ -798,7 +827,7 @@ def add_stone():
         flash(msg, 'success')
         return redirect(url_for('admin_dashboard'))
 
-    return render_template('stone_form.html', stone=None, title='新增石材', colors=COLORS)
+    return render_template('stone_form.html', stone=None, title='新增石材', colors=COLORS, vendors=VENDORS)
 
 
 @app.route('/admin/edit/<int:id>', methods=['GET', 'POST'])
@@ -885,7 +914,7 @@ def edit_stone(id):
         return redirect(url_for('admin_dashboard'))
 
     conn.close()
-    return render_template('stone_form.html', stone=stone, title='編輯石材', colors=COLORS)
+    return render_template('stone_form.html', stone=stone, title='編輯石材', colors=COLORS, vendors=VENDORS)
 
 
 @app.route('/admin/delete/<int:id>', methods=['POST'])
@@ -927,12 +956,26 @@ def search_by_image():
             return redirect(url_for('search_by_image'))
 
         # 讀取參考圖、分析、轉成 base64 顯示（不寫入磁碟）
+        # 統一用 Pillow 解碼後再轉成 JPG bytes，確保 HEIC 也能正常顯示
         import base64
-        ref_bytes = ref_file.read()
+        from io import BytesIO
+        try:
+            from PIL import Image
+            ref_file.stream.seek(0)
+            img = Image.open(ref_file.stream)
+            if img.mode in ('RGBA', 'LA', 'P'):
+                img = img.convert('RGB')
+            buf = BytesIO()
+            img.save(buf, 'JPEG', quality=88)
+            ref_bytes = buf.getvalue()
+        except Exception as e:
+            print(f'[search_by_image] 圖片解碼失敗：{e}')
+            flash('無法讀取此圖片，請改用 JPG 或 PNG 格式', 'error')
+            return redirect(url_for('search_by_image'))
+
         ref_b64 = base64.b64encode(ref_bytes).decode()
         ref_data_url = f'data:image/jpeg;base64,{ref_b64}'
 
-        from io import BytesIO
         ref_color, ref_hash, ref_rgb = analyze_image(BytesIO(ref_bytes))
 
         if not ref_hash:
@@ -1184,10 +1227,12 @@ def api_apply_stone():
         import replicate
         client = replicate.Client(api_token=REPLICATE_API_TOKEN)
 
-        # 將上傳檔案存成有副檔名的暫存檔（Replicate SDK 需要 name 屬性）
-        with tempfile.NamedTemporaryFile(suffix='.png', delete=False) as df:
-            design.save(df.name)
-            design_path = df.name
+        # 設計圖：用 normalize_image_to_jpg_path 統一轉成 JPG（支援 HEIC）
+        design_path = normalize_image_to_jpg_path(design, max_size=1536)
+        if not design_path:
+            return jsonify({'error': '設計圖格式無法解析（支援 JPG / PNG / HEIC / WebP）'}), 400
+
+        # 遮罩：來自 canvas 已是標準 PNG，不需轉檔
         with tempfile.NamedTemporaryFile(suffix='.png', delete=False) as mf:
             mask.save(mf.name)
             mask_path = mf.name

@@ -171,7 +171,16 @@
             </div>
             <div class="form-group">
               <label for="vendor">廠商名稱</label>
-              <input type="text" id="vendor" name="vendor" value="{{ stone.vendor if stone else '' }}" placeholder="例：台灣石材有限公司" />
+              <select id="vendor" name="vendor">
+                <option value="">請選擇廠商</option>
+                {% for v in vendors %}
+                  <option value="{{ v }}" {% if stone and stone.vendor == v %}selected{% endif %}>{{ v }}</option>
+                {% endfor %}
+                {# 舊資料相容：現有廠商不在預設清單時保留，避免遺失 #}
+                {% if stone and stone.vendor and stone.vendor not in vendors %}
+                  <option value="{{ stone.vendor }}" selected>{{ stone.vendor }}（既有資料）</option>
+                {% endif %}
+              </select>
             </div>
           </div>
 

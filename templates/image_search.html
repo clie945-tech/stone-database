@@ -146,6 +146,8 @@
       .results-grid { grid-template-columns: 1fr 1fr; gap: 0.75rem; }
     }
   </style>
+  <!-- HEIC 客戶端轉檔（Safari 原生支援，給 Chrome / Firefox 用戶）-->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/heic2any/0.0.4/heic2any.min.js" defer></script>
 </head>
 <body>
 
@@ -179,11 +181,11 @@
   <div class="upload-card">
     <form method="post" enctype="multipart/form-data" id="searchForm">
       <div class="upload-area" id="uploadArea">
-        <input type="file" name="reference" id="refFile" accept="image/*" required onchange="previewRef(this)" />
+        <input type="file" name="reference" id="refFile" accept="image/*,.heic,.heif" required onchange="previewRef(this)" />
         <div id="placeholderUI">
           <div class="upload-icon">🖼️</div>
           <div class="upload-title">點擊或拖曳上傳參考圖片</div>
-          <div class="upload-hint">支援 JPG／PNG／GIF／WEBP，最大 32MB</div>
+          <div class="upload-hint">支援 JPG／PNG／HEIC（iPhone）／GIF／WEBP，最大 32MB</div>
         </div>
         <div id="previewUI" style="display:none">
           <div class="preview-row">
@@ -270,17 +272,53 @@
 <footer>ReStone 循環石材服務平台 · ✨ Powered by AI Vision Search</footer>
 
 <script>
-  function previewRef(input) {
-    const file = input.files && input.files[0];
+  // 偵測並轉檔 HEIC（iPhone 預設格式，Chrome/Firefox 無法直接預覽）
+  async function maybeConvertHeic(file) {
+    const name = (file.name || '').toLowerCase();
+    const isHeic = name.endsWith('.heic') || name.endsWith('.heif')
+                || file.type === 'image/heic' || file.type === 'image/heif';
+    if (!isHeic) return file;
+    if (typeof heic2any === 'undefined') {
+      alert('HEIC 轉檔模組載入中，請稍候再試');
+      return null;
+    }
+    try {
+      const blob = await heic2any({ blob: file, toType: 'image/jpeg', quality: 0.9 });
+      const out = Array.isArray(blob) ? blob[0] : blob;
+      return new File([out], name.replace(/\.(heic|heif)$/i, '.jpg'), { type: 'image/jpeg' });
+    } catch (err) {
+      alert('iPhone 照片格式轉換失敗：' + err.message);
+      return null;
+    }
+  }
+
+  async function previewRef(input) {
+    const rawFile = input.files && input.files[0];
     const btn = document.getElementById('searchBtn');
     const area = document.getElementById('uploadArea');
-    if (!file) {
+    if (!rawFile) {
       btn.disabled = true;
       area.classList.remove('has-file');
       document.getElementById('placeholderUI').style.display = '';
       document.getElementById('previewUI').style.display = 'none';
       return;
     }
+
+    // HEIC 轉檔
+    btn.disabled = true;
+    btn.textContent = '⏳ 處理中...';
+    const file = await maybeConvertHeic(rawFile);
+    btn.textContent = '🔍 開始 AI 搜尋';
+    if (!file) { input.value = ''; return; }
+    // 將轉檔後的 File 寫回 input，確保 form submit 帶上轉檔後的版本
+    if (file !== rawFile) {
+      try {
+        const dt = new DataTransfer();
+        dt.items.add(file);
+        input.files = dt.files;
+      } catch (e) { /* 舊瀏覽器忽略 */ }
+    }
+
     const reader = new FileReader();
     reader.onload = (e) => {
       document.getElementById('previewImg').src = e.target.result;
