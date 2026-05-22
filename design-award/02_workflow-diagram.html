@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<title>ReStone 操作流程圖 / Workflow Diagram</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Noto+Sans+TC:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --blue: #2563EB; --blue-light: #60A5FA; --blue-dark: #1E40AF;
+    --purple: #7C3AED; --purple-light: #A78BFA; --purple-bg: #F3E8FF;
+    --gold: #F59E0B; --green: #10B981; --pink: #EC4899;
+    --text: #0F172A; --muted: #64748B; --light: #94A3B8;
+    --border: #E2E8F0; --bg: #F8FAFC; --white: #FFFFFF;
+  }
+  body {
+    font-family: 'Inter', 'Noto Sans TC', sans-serif;
+    color: var(--text); background: #F0EDE8;
+    padding: 2rem;
+  }
+
+  /* A3 橫式適用 / 簡報投影適用 */
+  .page {
+    width: 297mm; min-height: 210mm;
+    max-width: 100%;
+    margin: 0 auto;
+    background: white;
+    padding: 22mm 20mm;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.1);
+  }
+
+  /* ─── 標題區 ─── */
+  .header {
+    padding-bottom: 8mm;
+    border-bottom: 2px solid var(--border);
+    margin-bottom: 10mm;
+    display: flex; align-items: flex-end; justify-content: space-between;
+  }
+  .title-zh {
+    font-size: 26pt; font-weight: 900; color: var(--text);
+    letter-spacing: -0.02em; line-height: 1.1;
+  }
+  .title-en {
+    font-size: 12pt; color: var(--muted);
+    margin-top: 3px; letter-spacing: 0.05em; font-weight: 500;
+  }
+  .brand {
+    text-align: right;
+  }
+  .brand-name {
+    font-size: 16pt; font-weight: 900;
+    background: linear-gradient(135deg, var(--blue), var(--purple));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .brand-sub {
+    font-size: 9pt; color: var(--muted); letter-spacing: 0.15em;
+    text-transform: uppercase; margin-top: 2px;
+  }
+
+  /* ─── 主流程：5 步驟 ─── */
+  .flow {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 2mm;
+    margin-bottom: 14mm;
+    position: relative;
+  }
+  .step {
+    background: white;
+    border: 2px solid var(--border); border-radius: 4mm;
+    padding: 6mm 4mm;
+    position: relative;
+    text-align: center;
+    transition: all 0.2s;
+  }
+  /* AI 合成步驟特別強調 */
+  .step.flagship {
+    background: linear-gradient(135deg, #0F172A, #1E1B4B);
+    color: white; border-color: transparent;
+  }
+  .step.flagship .step-title { color: white; }
+  .step.flagship .step-en { color: var(--blue-light); }
+  .step.flagship .step-desc { color: rgba(255,255,255,0.7); }
+  .step.flagship .step-time { background: var(--gold); color: white; }
+
+  /* 編號圓圈 */
+  .step-num {
+    position: absolute; top: -6mm; left: 50%; transform: translateX(-50%);
+    width: 12mm; height: 12mm; border-radius: 50%;
+    background: linear-gradient(135deg, var(--blue), var(--purple));
+    color: white; display: flex; align-items: center; justify-content: center;
+    font-size: 14pt; font-weight: 900; font-family: 'Inter';
+    box-shadow: 0 4px 12px rgba(124,58,237,0.3);
+  }
+  .step.flagship .step-num {
+    background: linear-gradient(135deg, var(--gold), #DC2626);
+    box-shadow: 0 4px 12px rgba(245,158,11,0.4);
+    width: 14mm; height: 14mm; top: -7mm; font-size: 16pt;
+  }
+  .step-num::after {
+    content: '⭐'; position: absolute; top: -3mm; right: -3mm;
+    font-size: 8pt; opacity: 0;
+  }
+  .step.flagship .step-num::after { opacity: 1; }
+
+  .step-icon { font-size: 28pt; margin-top: 4mm; margin-bottom: 3mm; }
+  .step-title { font-size: 14pt; font-weight: 800; color: var(--text); margin-bottom: 2mm; line-height: 1.2; }
+  .step-en { font-size: 8pt; color: var(--purple); font-weight: 700; letter-spacing: 0.1em; margin-bottom: 4mm; text-transform: uppercase; }
+  .step-desc { font-size: 9pt; color: var(--muted); line-height: 1.5; min-height: 16mm; }
+  .step-time {
+    display: inline-block;
+    margin-top: 3mm;
+    padding: 1.5mm 3mm;
+    background: var(--bg);
+    color: var(--muted);
+    border-radius: 50px;
+    font-size: 8pt; font-weight: 700;
+    letter-spacing: 0.05em;
+  }
+
+  /* 步驟之間的箭頭 */
+  .flow::before {
+    content: ''; position: absolute;
+    top: 50%; left: 4%; right: 4%; height: 2px;
+    background: var(--border);
+    z-index: -1;
+  }
+
+  /* ─── 雙軌資訊：前台動作 vs 後台 AI ─── */
+  .tracks {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6mm;
+    margin-bottom: 10mm;
+  }
+  .track {
+    padding: 5mm 6mm;
+    border-radius: 3mm;
+  }
+  .track.front {
+    background: #EFF6FF;
+    border-left: 4px solid var(--blue);
+  }
+  .track.back {
+    background: var(--purple-bg);
+    border-left: 4px solid var(--purple);
+  }
+  .track-title {
+    font-size: 10pt; font-weight: 800; letter-spacing: 0.05em;
+    margin-bottom: 3mm;
+  }
+  .track.front .track-title { color: var(--blue-dark); }
+  .track.back .track-title { color: #6D28D9; }
+  .track-content {
+    font-size: 9pt; color: var(--text); line-height: 1.7;
+  }
+  .track-content .tag {
+    display: inline-block; padding: 1mm 2mm;
+    background: white; border-radius: 3px;
+    font-family: 'SF Mono', Consolas, monospace;
+    font-size: 8pt; color: var(--purple);
+    margin: 0 2px;
+  }
+
+  /* ─── 三方角色生態圖 ─── */
+  .ecosystem-section {
+    border-top: 2px solid var(--border);
+    padding-top: 8mm;
+  }
+  .section-label {
+    font-size: 9pt; letter-spacing: 0.3em; font-weight: 700;
+    color: var(--purple); text-transform: uppercase;
+    margin-bottom: 3mm;
+  }
+  .section-title {
+    font-size: 18pt; font-weight: 900; letter-spacing: -0.02em;
+    margin-bottom: 6mm;
+  }
+  .section-title .en {
+    font-size: 10pt; font-weight: 500; color: var(--muted);
+    margin-left: 8px;
+  }
+
+  .ecosystem {
+    position: relative;
+    height: 90mm;
+    margin: 0 auto;
+  }
+
+  .role {
+    position: absolute;
+    width: 60mm;
+    background: white;
+    border: 2px solid var(--border); border-radius: 3mm;
+    padding: 4mm 5mm;
+  }
+  .role.vendor   { left: 0;            top: 0; border-color: var(--blue); }
+  .role.platform { left: 50%; transform: translateX(-50%); top: 32mm;
+                   background: linear-gradient(135deg, #0F172A, #1E1B4B); color: white; border: none; }
+  .role.designer { right: 0;           top: 0; border-color: var(--purple); }
+  .role.client   { left: 50%; transform: translateX(-50%); top: 70mm;
+                   border-color: var(--gold); }
+
+  .role-head {
+    display: flex; align-items: center; gap: 3mm;
+    margin-bottom: 2mm;
+  }
+  .role-icon-circle {
+    width: 8mm; height: 8mm; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12pt; flex-shrink: 0;
+  }
+  .role.vendor .role-icon-circle   { background: #DBEAFE; }
+  .role.platform .role-icon-circle { background: rgba(255,255,255,0.15); }
+  .role.designer .role-icon-circle { background: var(--purple-bg); }
+  .role.client .role-icon-circle   { background: #FEF3C7; }
+
+  .role-name { font-size: 11pt; font-weight: 800; line-height: 1.1; }
+  .role-en { font-size: 7pt; opacity: 0.6; letter-spacing: 0.1em; text-transform: uppercase; margin-top: 1px; }
+  .role-action {
+    font-size: 8.5pt; color: var(--muted);
+    line-height: 1.6; margin-top: 2mm;
+  }
+  .role.platform .role-action { color: rgba(255,255,255,0.7); }
+  .role.platform .role-name { color: white; }
+
+  /* SVG 連線箭頭 */
+  .ecosystem svg {
+    position: absolute; top: 0; left: 0;
+    width: 100%; height: 100%;
+    pointer-events: none;
+  }
+  .arrow-label {
+    position: absolute;
+    background: white;
+    padding: 1mm 2mm;
+    border-radius: 3px;
+    font-size: 7.5pt;
+    font-weight: 700;
+    color: var(--muted);
+    border: 1px solid var(--border);
+  }
+
+  /* Print: 隱藏背景灰 */
+  @media print {
+    body { background: white; padding: 0; }
+    .page { box-shadow: none; }
+    @page { size: A3 landscape; margin: 10mm; }
+  }
+
+  /* 螢幕窄時 (預覽方便) */
+  @media (max-width: 800px) {
+    body { padding: 0.5rem; }
+    .page { padding: 6mm; }
+    .flow { grid-template-columns: 1fr; gap: 6mm; }
+    .flow::before { display: none; }
+    .ecosystem { height: auto; }
+    .role { position: relative !important; transform: none !important;
+            left: 0 !important; right: 0 !important; top: 0 !important;
+            width: 100% !important; margin-bottom: 4mm; }
+    .ecosystem svg { display: none; }
+    .tracks { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+
+<body>
+<div class="page">
+
+  <!-- ═══════════ 標題區 ═══════════ -->
+  <div class="header">
+    <div>
+      <div class="title-zh">設計師如何用 ReStone 完成一個案子</div>
+      <div class="title-en">How a Designer Uses ReStone — From Brief to Delivery</div>
+    </div>
+    <div class="brand">
+      <div class="brand-name">ReStone</div>
+      <div class="brand-sub">Workflow Diagram</div>
+    </div>
+  </div>
+
+  <!-- ═══════════ 主流程 5 步驟 ═══════════ -->
+  <div class="flow">
+
+    <!-- 1 -->
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-icon">📋</div>
+      <div class="step-title">接到委託</div>
+      <div class="step-en">Brief</div>
+      <div class="step-desc">客戶需要選石材，<br>傳來空間照片或<br>風格參考圖。</div>
+      <div class="step-time">即時 · Instant</div>
+    </div>
+
+    <!-- 2 -->
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-icon">🔍</div>
+      <div class="step-title">智能找料</div>
+      <div class="step-en">Search</div>
+      <div class="step-desc">關鍵字、顏色篩選、<br>或直接上傳客戶<br>參考圖以圖搜圖。</div>
+      <div class="step-time">~ 1 分鐘 · 1 min</div>
+    </div>
+
+    <!-- 3 (旗艦) -->
+    <div class="step flagship">
+      <div class="step-num">3</div>
+      <div class="step-icon">✨</div>
+      <div class="step-title">AI 設計合成</div>
+      <div class="step-en">AI Synthesis</div>
+      <div class="step-desc">上傳設計圖、<br>筆刷圈選表面、<br>選石材、AI 合成。</div>
+      <div class="step-time">30 秒 · 30 sec</div>
+    </div>
+
+    <!-- 4 -->
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-icon">💬</div>
+      <div class="step-title">客戶提案</div>
+      <div class="step-en">Pitch</div>
+      <div class="step-desc">合成圖直接傳給<br>客戶，看見實際<br>應用效果。</div>
+      <div class="step-time">即時 · Instant</div>
+    </div>
+
+    <!-- 5 -->
+    <div class="step">
+      <div class="step-num">5</div>
+      <div class="step-icon">📦</div>
+      <div class="step-title">下單成交</div>
+      <div class="step-en">Order</div>
+      <div class="step-desc">會員平台送出詢價，<br>廠商即時通知，<br>三方完成交易。</div>
+      <div class="step-time">~ 1 天 · 1 day</div>
+    </div>
+
+  </div>
+
+  <!-- ═══════════ 雙軌：前台 vs 後台 AI ═══════════ -->
+  <div class="tracks">
+
+    <div class="track front">
+      <div class="track-title">👤 設計師看見的（前台）</div>
+      <div class="track-content">
+        在瀏覽器內完成：<strong>搜尋 → 圈選 → 預覽 → 下載</strong>。
+        無需安裝任何軟體，不用 Photoshop、不用學新工具。
+        手機 / iPad / 電腦皆可操作。
+      </div>
+    </div>
+
+    <div class="track back">
+      <div class="track-title">🤖 AI 在背後做的（後台）</div>
+      <div class="track-content">
+        <span class="tag">LLaVA</span> 看石材照寫描述
+        <span class="tag">pHash</span> 紋理比對
+        <span class="tag">HSV</span> 顏色分類
+        <span class="tag">Flux Fill Pro</span> 影像合成。
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ═══════════ 三方角色生態圖 ═══════════ -->
+  <div class="ecosystem-section">
+    <div class="section-label">ECOSYSTEM · 四方角色關係</div>
+    <div class="section-title">平台連結三方<span class="en">/ How the platform connects vendors, designers, and clients</span></div>
+
+    <div class="ecosystem">
+
+      <!-- SVG 連線 -->
+      <svg viewBox="0 0 800 220" preserveAspectRatio="none">
+        <defs>
+          <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M 0 0 L 10 5 L 0 10 z" fill="#94A3B8"/>
+          </marker>
+        </defs>
+        <!-- 廠商 → 平台 -->
+        <line x1="170" y1="50" x2="350" y2="115" stroke="#94A3B8" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#arr)"/>
+        <!-- 平台 → 設計師 -->
+        <line x1="450" y1="115" x2="630" y2="50" stroke="#94A3B8" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#arr)"/>
+        <!-- 設計師 → 客戶 -->
+        <line x1="630" y1="80" x2="450" y2="195" stroke="#94A3B8" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#arr)"/>
+        <!-- 客戶 → 平台（詢價） -->
+        <line x1="350" y1="195" x2="400" y2="165" stroke="#94A3B8" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#arr)"/>
+        <!-- 平台 → 廠商（通知）-->
+        <line x1="350" y1="115" x2="170" y2="80" stroke="#94A3B8" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#arr)"/>
+      </svg>
+
+      <!-- 角色卡片 -->
+      <div class="role vendor">
+        <div class="role-head">
+          <div class="role-icon-circle">🏗</div>
+          <div>
+            <div class="role-name">石材廠商</div>
+            <div class="role-en" style="color:var(--blue-dark)">Vendors</div>
+          </div>
+        </div>
+        <div class="role-action">上架剩料、AI 自動寫描述、接收詢價、出貨</div>
+      </div>
+
+      <div class="role platform">
+        <div class="role-head">
+          <div class="role-icon-circle">◈</div>
+          <div>
+            <div class="role-name">ReStone 平台</div>
+            <div class="role-en">AI Hub</div>
+          </div>
+        </div>
+        <div class="role-action">六大 AI 引擎中介、合規資料保護、媒合三方角色</div>
+      </div>
+
+      <div class="role designer">
+        <div class="role-head">
+          <div class="role-icon-circle">🎨</div>
+          <div>
+            <div class="role-name">室內設計師</div>
+            <div class="role-en" style="color:#6D28D9">Designers</div>
+          </div>
+        </div>
+        <div class="role-action">找料、AI 合成、提案、會員身份送詢價</div>
+      </div>
+
+      <div class="role client">
+        <div class="role-head">
+          <div class="role-icon-circle">🏠</div>
+          <div>
+            <div class="role-name">終端客戶</div>
+            <div class="role-en" style="color:#92400E">End Clients</div>
+          </div>
+        </div>
+        <div class="role-action">看見實際合成圖、安心下決定、線上完成詢問</div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

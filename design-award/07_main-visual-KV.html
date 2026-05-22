@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<title>ReStone · 主視覺 KV / Key Visual</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Noto+Sans+TC:wght@400;500;700;800;900&family=Noto+Serif+TC:wght@500;700;900&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --blue: #2563EB; --blue-light: #60A5FA; --blue-dark: #1E40AF;
+    --purple: #7C3AED; --purple-light: #A78BFA; --purple-deep: #4C1D95;
+    --gold: #F59E0B; --gold-light: #FCD34D;
+    --navy-deep: #050714; --navy: #0A0E1A; --navy-mid: #1E1B4B;
+  }
+  body {
+    font-family: 'Inter', 'Noto Sans TC', sans-serif;
+    background: #1A1A1A; padding: 1.5rem;
+  }
+
+  /* ─── A1 直式 KV：594 × 841 mm ─── */
+  .kv {
+    width: 594mm; height: 841mm;
+    max-width: 100%;
+    margin: 0 auto;
+    position: relative;
+    overflow: hidden;
+    background: radial-gradient(ellipse at center, var(--navy-mid) 0%, var(--navy) 50%, var(--navy-deep) 100%);
+    box-shadow: 0 30px 100px rgba(0,0,0,0.8);
+    color: white;
+  }
+
+  /* ─── 背景：細密六角形格紋 ─── */
+  .kv::before {
+    content: ''; position: absolute; inset: 0;
+    background-image:
+      linear-gradient(rgba(124,58,237,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(124,58,237,0.04) 1px, transparent 1px);
+    background-size: 30mm 30mm;
+    pointer-events: none;
+  }
+  /* 大角落鑽石（極淡裝飾）*/
+  .kv::after {
+    content: '◈';
+    position: absolute;
+    right: -80mm; bottom: -100mm;
+    font-size: 800pt;
+    color: rgba(124,58,237,0.06);
+    line-height: 1; font-weight: 100;
+    pointer-events: none;
+  }
+
+  /* ─── 頂部 eyebrow（最小、最克制）─── */
+  .top-strip {
+    position: absolute; top: 0; left: 0; right: 0;
+    padding: 28mm 36mm 0;
+    display: flex; justify-content: space-between; align-items: center;
+    z-index: 5;
+  }
+  .top-left {
+    font-size: 9pt; letter-spacing: 0.3em;
+    color: rgba(255,255,255,0.4);
+    font-weight: 600; text-transform: uppercase;
+  }
+  .top-left strong { color: rgba(255,255,255,0.7); font-weight: 800; }
+  .top-right {
+    font-size: 9pt; letter-spacing: 0.3em;
+    color: rgba(96,165,250,0.6);
+    font-weight: 600; text-transform: uppercase;
+  }
+  .top-right .dot { display: inline-block; width: 4px; height: 4px; background: var(--blue-light); border-radius: 50%; margin: 0 8px 1px; vertical-align: middle; }
+
+  /* ─── 中央鑽石（主角）─── */
+  .diamond-stage {
+    position: absolute;
+    left: 50%; top: 50%;
+    transform: translate(-50%, -50%);
+    width: 320mm; height: 320mm;
+    display: flex; align-items: center; justify-content: center;
+  }
+
+  /* 外圈光暈 */
+  .glow {
+    position: absolute;
+    width: 100%; height: 100%;
+    background: radial-gradient(circle, rgba(124,58,237,0.4) 0%, rgba(37,99,235,0.2) 30%, transparent 60%);
+    filter: blur(40px);
+    animation: breathe 8s ease-in-out infinite;
+  }
+  @keyframes breathe {
+    0%, 100% { opacity: 0.7; transform: scale(1); }
+    50%      { opacity: 1.0; transform: scale(1.08); }
+  }
+
+  /* 軌道環 */
+  .orbit-ring {
+    position: absolute;
+    border-radius: 50%;
+    border: 1px solid rgba(124,58,237,0.15);
+  }
+  .orbit-1 { width: 360mm; height: 360mm; }
+  .orbit-2 { width: 420mm; height: 420mm; border-color: rgba(96,165,250,0.08); }
+  .orbit-3 { width: 480mm; height: 480mm; border-color: rgba(124,58,237,0.05); border-style: dashed; }
+
+  /* 軌道上的小圓點（6 個 AI 引擎象徵）*/
+  .orbit-dot {
+    position: absolute;
+    width: 7mm; height: 7mm;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--blue-light), var(--purple-light));
+    box-shadow: 0 0 18mm rgba(124,58,237,0.6);
+    left: 50%; top: 50%;
+    transform-origin: center;
+  }
+  .orbit-dot.d1 { transform: translate(-50%, -50%) rotate(0deg) translateY(-180mm); }
+  .orbit-dot.d2 { transform: translate(-50%, -50%) rotate(60deg) translateY(-180mm); }
+  .orbit-dot.d3 { transform: translate(-50%, -50%) rotate(120deg) translateY(-180mm); }
+  .orbit-dot.d4 { transform: translate(-50%, -50%) rotate(180deg) translateY(-180mm); }
+  .orbit-dot.d5 { transform: translate(-50%, -50%) rotate(240deg) translateY(-180mm); }
+  .orbit-dot.d6 { transform: translate(-50%, -50%) rotate(300deg) translateY(-180mm); }
+
+  /* 中央鑽石 SVG 容器 */
+  .diamond-svg {
+    width: 220mm; height: 220mm;
+    position: relative; z-index: 2;
+    filter: drop-shadow(0 0 30mm rgba(124,58,237,0.5));
+  }
+  .diamond-svg svg { width: 100%; height: 100%; display: block; }
+
+  .frame-shape   { animation: lbreath 6s ease-in-out infinite; transform-origin: 50px 50px; }
+  .core-shape    { animation: lspin 8s ease-in-out infinite alternate; transform-origin: 50px 50px; }
+  .top-facet     { animation: lpulse 4s ease-in-out infinite; }
+  .rays-group    { animation: lrays 5s ease-in-out infinite; }
+  @keyframes lbreath { 0%,100% { transform: scale(1); } 50% { transform: scale(1.025); } }
+  @keyframes lspin   { 0% { transform: rotate(-4deg); } 100% { transform: rotate(4deg); } }
+  @keyframes lpulse  { 0%,100% { opacity: 0.30; } 50% { opacity: 0.55; } }
+  @keyframes lrays   { 0%,100% { opacity: 0.5; } 50% { opacity: 0.9; } }
+
+  /* ─── 中段：標語 ─── */
+  .tagline {
+    position: absolute;
+    left: 0; right: 0;
+    top: 545mm;
+    text-align: center;
+    z-index: 5;
+  }
+  .tagline-zh {
+    font-family: 'Noto Serif TC', serif;
+    font-size: 56pt; font-weight: 900;
+    line-height: 1.2; letter-spacing: 0.15em;
+    color: white;
+    margin-bottom: 8mm;
+  }
+  .tagline-zh .accent {
+    background: linear-gradient(135deg, var(--blue-light) 0%, white 50%, var(--purple-light) 100%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .tagline-en {
+    font-family: 'Inter';
+    font-size: 16pt; font-weight: 400;
+    letter-spacing: 0.18em;
+    color: rgba(96, 165, 250, 0.75);
+    font-style: italic;
+  }
+
+  /* ─── 底部：品牌與資訊 ─── */
+  .footer {
+    position: absolute;
+    bottom: 28mm; left: 36mm; right: 36mm;
+    z-index: 5;
+  }
+  .brand-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding-bottom: 8mm;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    margin-bottom: 8mm;
+  }
+  .brand-name {
+    font-family: 'Inter';
+    font-size: 36pt; font-weight: 900;
+    letter-spacing: -0.02em;
+    background: linear-gradient(135deg, var(--blue-light), white, var(--purple-light));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+    line-height: 1;
+  }
+  .brand-sub {
+    text-align: right;
+  }
+  .brand-zh {
+    font-size: 13pt; font-weight: 700;
+    color: white;
+    letter-spacing: 0.05em;
+  }
+  .brand-en {
+    font-size: 9pt; color: rgba(255,255,255,0.5);
+    letter-spacing: 0.25em; text-transform: uppercase;
+    margin-top: 2mm; font-style: italic;
+  }
+
+  /* 底部資訊列 */
+  .info-row {
+    display: flex; justify-content: space-between; align-items: flex-end;
+    font-size: 9pt;
+  }
+  .info-left {
+    color: rgba(255,255,255,0.5);
+  }
+  .info-left .sdg-badges {
+    display: flex; gap: 3mm; margin-top: 3mm;
+  }
+  .sdg-mini {
+    padding: 1mm 3mm; border-radius: 3px;
+    font-size: 8pt; font-weight: 800;
+    font-family: 'Inter'; letter-spacing: 0.05em;
+  }
+  .sdg-mini.s9  { background: rgba(253,157,36,0.2); color: #FCD34D; border: 1px solid rgba(253,157,36,0.4); }
+  .sdg-mini.s12 { background: rgba(191,139,46,0.2); color: #FCD34D; border: 1px solid rgba(191,139,46,0.4); }
+  .sdg-mini.s17 { background: rgba(25,72,106,0.4); color: #93C5FD; border: 1px solid rgba(96,165,250,0.4); }
+
+  .info-right {
+    text-align: right;
+    color: rgba(96,165,250,0.65);
+    font-family: 'SF Mono', Consolas, monospace;
+    letter-spacing: 0.04em;
+    line-height: 1.6;
+  }
+  .info-right .url { font-weight: 600; }
+  .info-right .meta {
+    color: rgba(255,255,255,0.35);
+    font-family: 'Inter';
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    font-size: 8pt;
+    margin-top: 1mm;
+  }
+
+  @media print {
+    body { background: white; padding: 0; }
+    .kv { box-shadow: none; margin: 0; }
+    @page { size: A1 portrait; margin: 0; }
+    .glow, .frame-shape, .core-shape, .top-facet, .rays-group { animation: none; }
+    .glow { opacity: 0.85; }
+  }
+  @media (max-width: 800px) {
+    body { padding: 0.5rem; }
+    .kv { width: 100%; height: auto; aspect-ratio: 594 / 841; }
+  }
+</style>
+</head>
+
+<body>
+<div class="kv">
+
+  <!-- ─── TOP: eyebrow ─── -->
+  <div class="top-strip">
+    <div class="top-left">
+      <strong>RESTONE</strong>
+      <span class="dot" style="background: rgba(255,255,255,0.4); width: 3px; height: 3px; display: inline-block; border-radius: 50%; margin: 0 8px 2px; vertical-align: middle;"></span>
+      Circular Stone Service Platform
+    </div>
+    <div class="top-right">
+      AI <span class="dot"></span> Circular <span class="dot"></span> Made in Taiwan
+    </div>
+  </div>
+
+  <!-- ─── DIAMOND CENTER ─── -->
+  <div class="diamond-stage">
+    <!-- 軌道環 -->
+    <div class="orbit-ring orbit-3"></div>
+    <div class="orbit-ring orbit-2"></div>
+    <div class="orbit-ring orbit-1"></div>
+
+    <!-- 軌道上 6 個 AI 引擎象徵點 -->
+    <div class="orbit-dot d1"></div>
+    <div class="orbit-dot d2"></div>
+    <div class="orbit-dot d3"></div>
+    <div class="orbit-dot d4"></div>
+    <div class="orbit-dot d5"></div>
+    <div class="orbit-dot d6"></div>
+
+    <!-- 光暈 -->
+    <div class="glow"></div>
+
+    <!-- 中央切面鑽石 -->
+    <div class="diamond-svg">
+      <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="kv-frame" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#60A5FA"/>
+            <stop offset="50%" stop-color="#3B82F6"/>
+            <stop offset="100%" stop-color="#1E40AF"/>
+          </linearGradient>
+          <linearGradient id="kv-core" x1="0" y1="1" x2="1" y2="0">
+            <stop offset="0%" stop-color="#7C3AED"/>
+            <stop offset="100%" stop-color="#C4B5FD"/>
+          </linearGradient>
+          <radialGradient id="kv-shine" cx="0.3" cy="0.3" r="0.7">
+            <stop offset="0%" stop-color="white" stop-opacity="0.4"/>
+            <stop offset="100%" stop-color="white" stop-opacity="0"/>
+          </radialGradient>
+        </defs>
+
+        <g class="frame-shape">
+          <!-- 外框六角形（主） -->
+          <polygon points="50,8 92,30 92,70 50,92 8,70 8,30" fill="url(#kv-frame)"/>
+
+          <!-- 上半部白色 facet -->
+          <polygon class="top-facet" points="50,8 92,30 50,50 8,30" fill="white" opacity="0.35"/>
+
+          <!-- 內部小鑽石 -->
+          <g class="core-shape">
+            <polygon points="50,28 70,50 50,72 30,50" fill="url(#kv-core)"/>
+            <polygon points="50,28 70,50 50,50" fill="white" opacity="0.45"/>
+          </g>
+
+          <!-- 切面射線（白光） -->
+          <g class="rays-group" stroke="white" stroke-width="0.8" fill="none">
+            <line x1="50" y1="8"  x2="50" y2="92"/>
+            <line x1="8"  y1="30" x2="92" y2="70"/>
+            <line x1="92" y1="30" x2="8"  y2="70"/>
+          </g>
+
+          <!-- 光澤 overlay -->
+          <polygon points="50,8 92,30 92,70 50,92 8,70 8,30" fill="url(#kv-shine)"/>
+        </g>
+      </svg>
+    </div>
+  </div>
+
+  <!-- ─── TAGLINE ─── -->
+  <div class="tagline">
+    <div class="tagline-zh">
+      讓<span class="accent">每一塊石材</span>，<br>
+      找到對的設計
+    </div>
+    <div class="tagline-en">Let Every Stone Find Its Design</div>
+  </div>
+
+  <!-- ─── FOOTER ─── -->
+  <div class="footer">
+
+    <div class="brand-row">
+      <div class="brand-name">ReStone</div>
+      <div class="brand-sub">
+        <div class="brand-zh">循環石材服務平台</div>
+        <div class="brand-en">AI-Powered Design Workflow</div>
+      </div>
+    </div>
+
+    <div class="info-row">
+      <div class="info-left">
+        Aligned with UN Sustainable Development Goals
+        <div class="sdg-badges">
+          <span class="sdg-mini s9">SDG 9</span>
+          <span class="sdg-mini s12">SDG 12</span>
+          <span class="sdg-mini s17">SDG 17</span>
+        </div>
+      </div>
+      <div class="info-right">
+        <div class="url">stone-database-production.up.railway.app</div>
+        <div class="meta">Golden Pin Design Award · 2026</div>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+</body>
+</html>

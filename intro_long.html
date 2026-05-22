@@ -1,0 +1,861 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ReStone — 60 秒完整介紹 / 60-sec Product Tour</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Noto+Sans+TC:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --blue: #3B82F6; --blue-light: #60A5FA; --blue-dark: #1E40AF;
+    --purple: #7C3AED; --purple-light: #A78BFA;
+    --pink: #EC4899; --gold: #F59E0B; --green: #10B981;
+    --bg-dark: #0A0E1A; --bg-mid: #1E1B4B;
+  }
+  html, body {
+    width: 100%; height: 100%; overflow: hidden;
+    background: var(--bg-dark);
+    font-family: 'Inter', 'Noto Sans TC', sans-serif;
+    color: white;
+  }
+
+  .stage {
+    width: 100vw; height: 100vh;
+    position: relative; overflow: hidden;
+    background: radial-gradient(ellipse at center, var(--bg-mid) 0%, var(--bg-dark) 70%);
+  }
+  .stage::before {
+    content: ''; position: absolute; inset: 0;
+    background-image:
+      linear-gradient(rgba(124,58,237,0.06) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(124,58,237,0.06) 1px, transparent 1px);
+    background-size: 60px 60px;
+    pointer-events: none;
+  }
+
+  .scene {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    flex-direction: column; padding: 4vw;
+    opacity: 0;
+  }
+
+  /* Particles */
+  .particles { position: absolute; inset: 0; pointer-events: none; z-index: 1; }
+  .particles span {
+    position: absolute; width: 4px; height: 4px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--blue-light), var(--purple-light));
+    opacity: 0.3;
+    animation: float linear infinite;
+  }
+  .particles span:nth-child(1) { left: 10%; top: 80%; animation-duration: 28s; animation-delay: -2s; }
+  .particles span:nth-child(2) { left: 25%; top: 90%; animation-duration: 32s; animation-delay: -8s; }
+  .particles span:nth-child(3) { left: 40%; top: 85%; animation-duration: 26s; animation-delay: -4s; width: 6px; height: 6px; }
+  .particles span:nth-child(4) { left: 55%; top: 95%; animation-duration: 30s; animation-delay: -12s; }
+  .particles span:nth-child(5) { left: 70%; top: 88%; animation-duration: 34s; animation-delay: -6s; width: 5px; height: 5px; }
+  .particles span:nth-child(6) { left: 85%; top: 92%; animation-duration: 27s; animation-delay: -10s; }
+  .particles span:nth-child(7) { left: 15%; top: 110%; animation-duration: 29s; animation-delay: 0s; }
+  .particles span:nth-child(8) { left: 50%; top: 105%; animation-duration: 31s; animation-delay: -14s; width: 5px; height: 5px; }
+  @keyframes float {
+    from { transform: translateY(0); opacity: 0; }
+    10% { opacity: 0.5; }
+    90% { opacity: 0.5; }
+    to { transform: translateY(-130vh); opacity: 0; }
+  }
+
+  /* ============================================================
+     60-SECOND TIMELINE (infinite loop)
+     S1 Title:        0   - 5s    (8.3%)
+     S2 Problem:      5   - 12s   (11.7%)
+     S3 Home tour:    12  - 22s   (16.7%)
+     S4 Stone page:   22  - 32s   (16.7%)
+     S5 Design tool:  32  - 42s   (16.7%)
+     S6 AI features:  42  - 50s   (13.3%)
+     S7 Admin:        50  - 55s   (8.3%)
+     S8 Outro:        55  - 60s   (8.3%)
+     ============================================================ */
+
+  /* ============ Scene 1: Title (0-5s) ============ */
+  .s1 { animation: s1 60s linear infinite; }
+  @keyframes s1 {
+    0%   { opacity: 0; transform: scale(0.95); }
+    2%   { opacity: 1; transform: scale(1); }
+    7%   { opacity: 1; }
+    9%   { opacity: 0; transform: scale(1.04); }
+    100% { opacity: 0; }
+  }
+  .s1 .logo-big {
+    width: 160px; height: 160px;
+    filter: drop-shadow(0 0 50px rgba(124,58,237,0.55));
+    margin-bottom: 1.8rem;
+  }
+  .s1 .brand-name {
+    font-size: 5.5rem; font-weight: 900; letter-spacing: -0.04em; line-height: 1;
+    background: linear-gradient(135deg, var(--blue-light) 0%, white 50%, var(--purple-light) 100%);
+    background-size: 200% 200%;
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: shimmer-text 4s linear infinite;
+  }
+  @keyframes shimmer-text { 0% { background-position: 0% 0; } 100% { background-position: 200% 0; } }
+  .s1 .tagline { margin-top: 0.6rem; font-size: 1.4rem; font-weight: 500; opacity: 0.75; letter-spacing: 0.05em; }
+  .s1 .tagline-en { font-size: 0.85rem; letter-spacing: 0.3em; opacity: 0.4; margin-top: 8px; text-transform: uppercase; font-weight: 600; }
+  .s1 .badges { display: flex; gap: 1rem; margin-top: 2rem; }
+  .s1 .badge {
+    padding: 6px 14px;
+    background: rgba(255,255,255,0.06); backdrop-filter: blur(8px);
+    border: 1px solid rgba(255,255,255,0.12); border-radius: 50px;
+    font-size: 0.78rem; letter-spacing: 0.05em;
+  }
+
+  /* ============ Scene 2: Problem (5-12s) ============ */
+  .s2 { animation: s2 60s linear infinite; flex-direction: column; }
+  @keyframes s2 {
+    0%, 7% { opacity: 0; }
+    10%    { opacity: 1; }
+    19%    { opacity: 1; }
+    21%    { opacity: 0; }
+    100%   { opacity: 0; }
+  }
+  .s2 .problem-title {
+    font-size: 0.85rem; letter-spacing: 0.4em; opacity: 0.6;
+    color: var(--pink); font-weight: 700; text-transform: uppercase;
+    margin-bottom: 2rem;
+  }
+  .s2 .problem-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; width: min(1000px, 90vw); }
+  .pain-card {
+    background: rgba(236,72,153,0.08);
+    border: 1px solid rgba(236,72,153,0.2);
+    border-radius: 16px; padding: 1.6rem;
+    text-align: left; opacity: 0;
+    animation: pain-in 60s linear infinite;
+  }
+  .pain-card:nth-child(1) { animation-delay: -53.5s; }
+  .pain-card:nth-child(2) { animation-delay: -53s; }
+  .pain-card:nth-child(3) { animation-delay: -52.5s; }
+  @keyframes pain-in {
+    0%, 10% { opacity: 0; transform: translateY(20px); }
+    13%     { opacity: 1; transform: translateY(0); }
+    19%     { opacity: 1; }
+    21%     { opacity: 0; }
+    100%    { opacity: 0; }
+  }
+  .pain-card .ico { font-size: 2rem; margin-bottom: 0.8rem; }
+  .pain-card .zh { font-size: 1.2rem; font-weight: 800; margin-bottom: 0.4rem; line-height: 1.3; }
+  .pain-card .en { font-size: 0.78rem; opacity: 0.5; line-height: 1.5; }
+
+  /* ============ Scene 3: Homepage Tour (12-22s) ============ */
+  .s3 { animation: s3 60s linear infinite; }
+  @keyframes s3 {
+    0%, 19% { opacity: 0; }
+    22%     { opacity: 1; }
+    35%     { opacity: 1; }
+    37%     { opacity: 0; }
+    100%    { opacity: 0; }
+  }
+  .scene-caption {
+    position: absolute; top: 5vh; left: 50%; transform: translateX(-50%);
+    text-align: center; z-index: 10;
+  }
+  .scene-caption .label {
+    font-size: 0.75rem; letter-spacing: 0.35em;
+    color: var(--blue-light); font-weight: 700; text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+  .scene-caption .zh { font-size: 2.2rem; font-weight: 900; letter-spacing: -0.02em; }
+  .scene-caption .en { font-size: 0.95rem; opacity: 0.5; margin-top: 4px; letter-spacing: 0.08em; }
+
+  .screenshot-frame {
+    width: 76vw; max-width: 1200px; aspect-ratio: 16/9;
+    background: white; border-radius: 14px; overflow: hidden;
+    box-shadow: 0 40px 100px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.05);
+    position: relative;
+  }
+  .browser-bar {
+    height: 36px; background: #E5E7EB;
+    display: flex; align-items: center; gap: 10px; padding: 0 14px;
+    border-bottom: 1px solid #D1D5DB;
+  }
+  .browser-bar .dots { display: flex; gap: 6px; }
+  .browser-bar .dots span { width: 11px; height: 11px; border-radius: 50%; }
+  .browser-bar .dots span:nth-child(1) { background: #FF5F57; }
+  .browser-bar .dots span:nth-child(2) { background: #FEBC2E; }
+  .browser-bar .dots span:nth-child(3) { background: #28C840; }
+  .browser-bar .url {
+    flex: 1; background: white; border-radius: 6px;
+    padding: 4px 12px; font-size: 0.72rem; color: #6B7280;
+    font-family: 'SF Mono', Consolas, monospace;
+  }
+  .screenshot-area {
+    width: 100%; height: calc(100% - 36px);
+    background: #F1F5F9;
+    position: relative; overflow: hidden;
+  }
+  .screenshot-area img {
+    width: 100%; height: 100%; object-fit: cover; object-position: top center;
+    display: block;
+  }
+  .screenshot-placeholder {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    flex-direction: column; gap: 12px;
+    background: linear-gradient(135deg, #EFF6FF 0%, #F3E8FF 100%);
+    color: #475569;
+  }
+  .screenshot-placeholder.hidden { display: none; }
+  .screenshot-placeholder .ph-icon {
+    width: 80px; height: 80px;
+    background: linear-gradient(135deg, var(--blue), var(--purple));
+    border-radius: 20px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 2.5rem; color: white;
+  }
+  .screenshot-placeholder .ph-text { font-size: 1.1rem; font-weight: 700; color: #334155; }
+  .screenshot-placeholder .ph-file { font-family: 'SF Mono', Consolas, monospace; font-size: 0.78rem; opacity: 0.5; }
+
+  /* Annotation pins on screenshots */
+  .pin {
+    position: absolute;
+    background: white; color: #0F172A;
+    padding: 6px 12px; border-radius: 8px;
+    font-size: 0.75rem; font-weight: 700;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+    opacity: 0;
+    animation: pin-in 60s linear infinite;
+    white-space: nowrap;
+  }
+  .pin::before {
+    content: ''; position: absolute;
+    width: 12px; height: 12px;
+    background: var(--blue); border-radius: 50%;
+    box-shadow: 0 0 0 4px rgba(59,130,246,0.3);
+  }
+  .pin .en { font-size: 0.65rem; font-weight: 500; opacity: 0.6; display: block; margin-top: 1px; }
+
+  /* Scene 3 pins */
+  .s3 .pin1 { top: 18%; left: 14%; animation-delay: -36s; }
+  .s3 .pin1::before { left: -22px; top: 50%; transform: translateY(-50%); }
+  .s3 .pin2 { top: 42%; left: 50%; animation-delay: -35s; }
+  .s3 .pin2::before { top: -22px; left: 50%; transform: translateX(-50%); }
+  .s3 .pin3 { top: 28%; right: 10%; animation-delay: -34s; }
+  .s3 .pin3::before { right: -22px; top: 50%; transform: translateY(-50%); }
+  @keyframes pin-in {
+    0%, 24% { opacity: 0; transform: scale(0.5); }
+    27%     { opacity: 1; transform: scale(1); }
+    35%     { opacity: 1; }
+    37%     { opacity: 0; }
+    100%    { opacity: 0; }
+  }
+
+  /* ============ Scene 4: Stone Detail (22-32s) ============ */
+  .s4 { animation: s4 60s linear infinite; }
+  @keyframes s4 {
+    0%, 35% { opacity: 0; }
+    38%     { opacity: 1; }
+    52%     { opacity: 1; }
+    54%     { opacity: 0; }
+    100%    { opacity: 0; }
+  }
+  .s4 .pin1 { top: 25%; left: 8%; animation-delay: -23s; }
+  .s4 .pin1::before { right: -22px; left: auto; top: 50%; transform: translateY(-50%); }
+  .s4 .pin2 { top: 50%; right: 8%; animation-delay: -22s; }
+  .s4 .pin2::before { left: -22px; top: 50%; transform: translateY(-50%); }
+  .s4 .pin3 { bottom: 18%; left: 30%; animation-delay: -21s; }
+  .s4 .pin3::before { top: -22px; left: 50%; transform: translateX(-50%); }
+
+  /* ============ Scene 5: AI Design Tool (32-42s) — STAR FEATURE ============ */
+  .s5 { animation: s5 60s linear infinite; }
+  @keyframes s5 {
+    0%, 52% { opacity: 0; }
+    55%     { opacity: 1; }
+    69%     { opacity: 1; }
+    71%     { opacity: 0; }
+    100%    { opacity: 0; }
+  }
+  .s5 .star-badge {
+    position: absolute; top: 12vh; left: 50%; transform: translateX(-50%);
+    background: linear-gradient(135deg, var(--gold), #DC2626);
+    color: white; padding: 4px 14px; border-radius: 50px;
+    font-size: 0.7rem; font-weight: 800; letter-spacing: 0.15em;
+    text-transform: uppercase;
+    box-shadow: 0 8px 24px rgba(245,158,11,0.4);
+    z-index: 11;
+  }
+  /* Split view: before / after */
+  .s5 .compare-frame {
+    width: 76vw; max-width: 1200px; aspect-ratio: 16/9;
+    display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;
+  }
+  .compare-side {
+    background: white; border-radius: 14px; overflow: hidden;
+    box-shadow: 0 30px 70px rgba(0,0,0,0.4);
+    position: relative;
+  }
+  .compare-side .browser-bar { height: 28px; }
+  .compare-side .browser-bar .dots span { width: 9px; height: 9px; }
+  .compare-side .browser-bar .url { font-size: 0.65rem; }
+  .compare-side .screenshot-area { height: calc(100% - 28px); }
+  .compare-label {
+    position: absolute; top: 38px; left: 14px; z-index: 5;
+    padding: 4px 10px;
+    background: rgba(15,23,42,0.85); backdrop-filter: blur(8px);
+    color: white; border-radius: 6px;
+    font-size: 0.7rem; font-weight: 800; letter-spacing: 0.1em;
+  }
+  .compare-label.after { background: linear-gradient(135deg, var(--blue), var(--purple)); }
+  .compare-arrow {
+    position: absolute; left: 50%; top: 50%;
+    transform: translate(-50%, -50%);
+    background: linear-gradient(135deg, var(--blue), var(--purple));
+    color: white; width: 64px; height: 64px;
+    border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    font-size: 1.4rem; font-weight: 900;
+    box-shadow: 0 12px 36px rgba(124,58,237,0.5);
+    z-index: 12; opacity: 0;
+    animation: arrow-pop 60s linear infinite;
+  }
+  @keyframes arrow-pop {
+    0%, 55% { opacity: 0; transform: translate(-50%, -50%) scale(0.5); }
+    57%     { opacity: 1; transform: translate(-50%, -50%) scale(1.1); }
+    59%     { transform: translate(-50%, -50%) scale(1); }
+    69%     { opacity: 1; }
+    71%     { opacity: 0; }
+    100%    { opacity: 0; }
+  }
+  .s5 .feature-bullet {
+    position: absolute; bottom: 8vh; left: 50%; transform: translateX(-50%);
+    display: flex; gap: 2rem;
+    z-index: 11;
+  }
+  .feature-bullet .item {
+    background: rgba(255,255,255,0.06); backdrop-filter: blur(10px);
+    border: 1px solid rgba(255,255,255,0.12);
+    padding: 8px 16px; border-radius: 50px;
+    font-size: 0.85rem; font-weight: 700;
+  }
+  .feature-bullet .item .num {
+    color: var(--gold); font-weight: 900; margin-right: 4px;
+  }
+
+  /* ============ Scene 6: AI Features (42-50s) ============ */
+  .s6 { animation: s6 60s linear infinite; }
+  @keyframes s6 {
+    0%, 69% { opacity: 0; }
+    71%     { opacity: 1; }
+    82%     { opacity: 1; }
+    84%     { opacity: 0; }
+    100%    { opacity: 0; }
+  }
+  .s6 .feat-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.2rem;
+    width: min(1000px, 90vw); margin-top: 3rem;
+  }
+  .feat-card-large {
+    background: rgba(255,255,255,0.05);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 16px; padding: 1.5rem;
+    opacity: 0;
+    animation: feat-large-in 60s linear infinite;
+  }
+  .feat-card-large:nth-child(1) { animation-delay: -17.6s; }
+  .feat-card-large:nth-child(2) { animation-delay: -17.5s; }
+  .feat-card-large:nth-child(3) { animation-delay: -17.4s; }
+  .feat-card-large:nth-child(4) { animation-delay: -17.3s; }
+  .feat-card-large:nth-child(5) { animation-delay: -17.2s; }
+  .feat-card-large:nth-child(6) { animation-delay: -17.1s; }
+  @keyframes feat-large-in {
+    0%, 70% { opacity: 0; transform: translateY(20px); }
+    73%     { opacity: 1; transform: translateY(0); }
+    82%     { opacity: 1; }
+    84%     { opacity: 0; }
+    100%    { opacity: 0; }
+  }
+  .feat-card-large .ico-row { display: flex; align-items: center; gap: 12px; margin-bottom: 0.8rem; }
+  .feat-card-large .ico {
+    width: 44px; height: 44px;
+    background: linear-gradient(135deg, var(--blue), var(--purple));
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.4rem;
+  }
+  .feat-card-large .num {
+    font-size: 0.7rem; letter-spacing: 0.15em; opacity: 0.5;
+    font-weight: 700;
+  }
+  .feat-card-large .zh { font-size: 1.05rem; font-weight: 800; margin-bottom: 4px; }
+  .feat-card-large .en { font-size: 0.75rem; opacity: 0.5; letter-spacing: 0.05em; }
+  .feat-card-large .desc { font-size: 0.78rem; opacity: 0.6; line-height: 1.5; margin-top: 0.5rem; }
+
+  /* ============ Scene 7: Admin Backend (50-55s) ============ */
+  .s7 { animation: s7 60s linear infinite; }
+  @keyframes s7 {
+    0%, 82% { opacity: 0; }
+    84%     { opacity: 1; }
+    91%     { opacity: 1; }
+    93%     { opacity: 0; }
+    100%    { opacity: 0; }
+  }
+  .s7 .admin-grid {
+    display: grid; grid-template-columns: 2fr 1fr; gap: 1.2rem;
+    width: 76vw; max-width: 1200px;
+  }
+  .s7 .admin-grid .main { aspect-ratio: 16/9; }
+  .s7 .admin-grid .side { display: flex; flex-direction: column; gap: 1.2rem; }
+  .s7 .admin-grid .side .screenshot-frame { aspect-ratio: 16/9; }
+  .s7 .feature-tags {
+    position: absolute; bottom: 8vh; left: 50%; transform: translateX(-50%);
+    display: flex; gap: 0.8rem; flex-wrap: wrap; justify-content: center;
+    max-width: 80vw; z-index: 11;
+  }
+  .feature-tag {
+    padding: 6px 14px;
+    background: rgba(16,185,129,0.15);
+    border: 1px solid rgba(16,185,129,0.3);
+    color: var(--green); border-radius: 50px;
+    font-size: 0.78rem; font-weight: 700;
+  }
+
+  /* ============ Scene 8: Outro (55-60s) ============ */
+  .s8 { animation: s8 60s linear infinite; }
+  @keyframes s8 {
+    0%, 91% { opacity: 0; }
+    93%     { opacity: 1; }
+    99%     { opacity: 1; }
+    100%    { opacity: 0; }
+  }
+  .s8 .outro-logo {
+    width: 140px; height: 140px;
+    filter: drop-shadow(0 0 40px rgba(124,58,237,0.5));
+    margin-bottom: 1.5rem;
+  }
+  .s8 .outro-brand {
+    font-size: 5rem; font-weight: 900; letter-spacing: -0.04em; line-height: 1;
+    background: linear-gradient(135deg, var(--blue-light), white, var(--purple-light));
+    background-size: 200% 200%;
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: shimmer-text 4s linear infinite;
+  }
+  .s8 .outro-zh { font-size: 1.3rem; opacity: 0.8; margin-top: 0.8rem; letter-spacing: 0.04em; }
+  .s8 .outro-en { font-size: 0.85rem; opacity: 0.45; letter-spacing: 0.3em; margin-top: 6px; text-transform: uppercase; }
+  .s8 .outro-cta {
+    margin-top: 2.2rem;
+    display: flex; flex-direction: column; align-items: center; gap: 12px;
+  }
+  .s8 .outro-url {
+    padding: 10px 24px;
+    background: linear-gradient(135deg, var(--blue), var(--purple));
+    border-radius: 50px;
+    font-size: 1rem; letter-spacing: 0.04em;
+    font-family: 'SF Mono', Consolas, monospace;
+    color: white; font-weight: 700;
+    box-shadow: 0 12px 36px rgba(124,58,237,0.4);
+  }
+  .s8 .outro-tag { font-size: 0.75rem; opacity: 0.4; letter-spacing: 0.2em; text-transform: uppercase; }
+
+  /* ========== Progress & Controls ========== */
+  .progress {
+    position: fixed; bottom: 0; left: 0; right: 0;
+    height: 3px; background: rgba(255,255,255,0.05); z-index: 50;
+  }
+  .progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, var(--blue), var(--purple), var(--pink));
+    width: 0;
+    animation: progress 60s linear infinite;
+  }
+  @keyframes progress { from { width: 0; } to { width: 100%; } }
+
+  .scene-indicator {
+    position: fixed; bottom: 12px; left: 50%; transform: translateX(-50%);
+    display: flex; gap: 8px; z-index: 51;
+    font-size: 0.7rem; letter-spacing: 0.2em; opacity: 0.4;
+  }
+
+  .controls {
+    position: fixed; top: 16px; right: 16px;
+    display: flex; gap: 8px; z-index: 51;
+    opacity: 0; transition: opacity 0.3s;
+  }
+  body:hover .controls { opacity: 1; }
+  .ctrl-btn {
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.12);
+    color: white; cursor: pointer;
+    padding: 6px 12px; font-size: 0.75rem; font-weight: 600;
+    border-radius: 6px; backdrop-filter: blur(8px);
+  }
+  .ctrl-btn:hover { background: rgba(255,255,255,0.18); }
+  .paused * { animation-play-state: paused !important; }
+
+  /* Logo SVG */
+  .logo-svg { width: 100%; height: 100%; overflow: visible; }
+  .logo-svg .frame { transform-origin: 50px 50px; animation: lbreath 6s ease-in-out infinite; }
+  .logo-svg .core { transform-origin: 50px 50px; animation: lspin 8s ease-in-out infinite alternate; }
+  .logo-svg .top { animation: lpulse 3.5s ease-in-out infinite; }
+  .logo-svg .rays { animation: lrays 4s ease-in-out infinite; }
+  @keyframes lbreath { 0%,100%{transform:scale(1)} 50%{transform:scale(1.03)} }
+  @keyframes lspin { 0%{transform:rotate(-4deg)} 100%{transform:rotate(4deg)} }
+  @keyframes lpulse { 0%,100%{opacity:0.25} 50%{opacity:0.5} }
+  @keyframes lrays { 0%,100%{opacity:0.5} 50%{opacity:0.85} }
+</style>
+</head>
+
+<body>
+<div class="stage" id="stage">
+  <div class="particles">
+    <span></span><span></span><span></span><span></span>
+    <span></span><span></span><span></span><span></span>
+  </div>
+
+  <!-- ============ S1: Title Hero (0-5s) ============ -->
+  <section class="scene s1">
+    <div class="logo-big">
+      <svg class="logo-svg" viewBox="0 0 100 100">
+        <defs>
+          <linearGradient id="lg1a" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#60A5FA"/><stop offset="100%" stop-color="#1E40AF"/>
+          </linearGradient>
+          <linearGradient id="lg1b" x1="0" y1="1" x2="1" y2="0">
+            <stop offset="0%" stop-color="#3B82F6"/><stop offset="100%" stop-color="#93C5FD"/>
+          </linearGradient>
+        </defs>
+        <g class="frame">
+          <polygon points="50,8 92,30 92,70 50,92 8,70 8,30" fill="url(#lg1a)"/>
+          <polygon class="top" points="50,8 92,30 50,50 8,30" fill="white"/>
+          <g class="core">
+            <polygon points="50,28 70,50 50,72 30,50" fill="url(#lg1b)"/>
+            <polygon points="50,28 70,50 50,50" fill="white" opacity="0.3"/>
+          </g>
+          <g class="rays" stroke="white" stroke-width="1" fill="none">
+            <line x1="50" y1="8" x2="50" y2="92"/>
+            <line x1="8" y1="30" x2="92" y2="70"/>
+            <line x1="92" y1="30" x2="8" y2="70"/>
+          </g>
+        </g>
+      </svg>
+    </div>
+    <div class="brand-name">ReStone</div>
+    <div class="tagline">循環石材服務平台</div>
+    <div class="tagline-en">Circular Stone Service Platform</div>
+    <div class="badges">
+      <div class="badge">✨ AI-Powered</div>
+      <div class="badge">🌱 永續設計 · Sustainable</div>
+      <div class="badge">🇹🇼 Made in Taiwan</div>
+    </div>
+  </section>
+
+  <!-- ============ S2: Problem (5-12s) ============ -->
+  <section class="scene s2">
+    <div class="problem-title">THE CHALLENGE · 業界痛點</div>
+    <div class="problem-grid">
+      <div class="pain-card">
+        <div class="ico">⏱</div>
+        <div class="zh">提案改了七版</div>
+        <div class="en">Seven revisions and still uncertain.<br>30 mins per Photoshop edit.</div>
+      </div>
+      <div class="pain-card">
+        <div class="ico">📊</div>
+        <div class="zh">客戶看不懂規格表</div>
+        <div class="en">Spec sheets don't sell.<br>Clients can't visualize materials.</div>
+      </div>
+      <div class="pain-card">
+        <div class="ico">📦</div>
+        <div class="zh">剩料賣不掉</div>
+        <div class="en">Circular stones sit in warehouses,<br>unseen by designers.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ S3: Homepage Tour (12-22s) ============ -->
+  <section class="scene s3">
+    <div class="scene-caption">
+      <div class="label">PUBLIC INVENTORY · 即時庫存</div>
+      <div class="zh">設計師的找料起點</div>
+      <div class="en">Where designers discover stones</div>
+    </div>
+
+    <div class="screenshot-frame" style="margin-top: 4vh;">
+      <div class="browser-bar">
+        <div class="dots"><span></span><span></span><span></span></div>
+        <div class="url">restone.app · 首頁 Homepage</div>
+      </div>
+      <div class="screenshot-area">
+        <img src="screenshots/01-home.png" alt="Homepage" onerror="this.style.display='none';this.nextElementSibling.classList.remove('hidden')">
+        <div class="screenshot-placeholder hidden">
+          <div class="ph-icon">🏠</div>
+          <div class="ph-text">首頁 Homepage Screenshot</div>
+          <div class="ph-file">screenshots/01-home.png</div>
+        </div>
+      </div>
+      <!-- Annotation pins -->
+      <div class="pin pin1">🌈 顏色篩選<span class="en">Color filter</span></div>
+      <div class="pin pin2">📷 以圖搜圖<span class="en">AI image search</span></div>
+      <div class="pin pin3">🔍 同義詞搜尋<span class="en">Smart search</span></div>
+    </div>
+  </section>
+
+  <!-- ============ S4: Stone Detail (22-32s) ============ -->
+  <section class="scene s4">
+    <div class="scene-caption">
+      <div class="label">STONE DETAIL · 詳細規格</div>
+      <div class="zh">每塊石材的完整資訊</div>
+      <div class="en">Complete specs at a glance</div>
+    </div>
+
+    <div class="screenshot-frame" style="margin-top: 4vh;">
+      <div class="browser-bar">
+        <div class="dots"><span></span><span></span><span></span></div>
+        <div class="url">restone.app/stone/1 · 石材詳細頁</div>
+      </div>
+      <div class="screenshot-area">
+        <img src="screenshots/02-stone-detail.png" alt="Stone Detail" onerror="this.style.display='none';this.nextElementSibling.classList.remove('hidden')">
+        <div class="screenshot-placeholder hidden">
+          <div class="ph-icon">◈</div>
+          <div class="ph-text">石材詳細頁 Stone Detail Screenshot</div>
+          <div class="ph-file">screenshots/02-stone-detail.png</div>
+        </div>
+      </div>
+      <div class="pin pin1">🖼 3 張高清照片<span class="en">3 hi-res photos</span></div>
+      <div class="pin pin2">📐 用量計算機<span class="en">Quantity calc</span></div>
+      <div class="pin pin3">💬 會員詢價<span class="en">Member inquiry</span></div>
+    </div>
+  </section>
+
+  <!-- ============ S5: AI Design Tool (32-42s) — STAR ============ -->
+  <section class="scene s5">
+    <div class="star-badge">⭐ FLAGSHIP FEATURE · 旗艦功能</div>
+    <div class="scene-caption" style="top: 17vh;">
+      <div class="label">AI DESIGN TOOL · AI 設計工具</div>
+      <div class="zh">30 秒，把石材套上設計圖</div>
+      <div class="en">Apply any stone to your design — in 30 seconds</div>
+    </div>
+
+    <div class="compare-frame" style="margin-top: 3vh;">
+      <div class="compare-side">
+        <div class="browser-bar">
+          <div class="dots"><span></span><span></span><span></span></div>
+          <div class="url">原始設計圖</div>
+        </div>
+        <div class="compare-label">BEFORE · 原圖</div>
+        <div class="screenshot-area">
+          <img src="screenshots/03-design-tool.png" alt="Design Tool Input" onerror="this.style.display='none';this.nextElementSibling.classList.remove('hidden')">
+          <div class="screenshot-placeholder hidden">
+            <div class="ph-icon">🖼</div>
+            <div class="ph-text">設計工具操作畫面</div>
+            <div class="ph-file">screenshots/03-design-tool.png</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="compare-arrow">→</div>
+
+      <div class="compare-side">
+        <div class="browser-bar">
+          <div class="dots"><span></span><span></span><span></span></div>
+          <div class="url">AI 合成結果</div>
+        </div>
+        <div class="compare-label after">AFTER · AI 合成</div>
+        <div class="screenshot-area">
+          <img src="screenshots/04-design-result.png" alt="Design Tool Result" onerror="this.style.display='none';this.nextElementSibling.classList.remove('hidden')">
+          <div class="screenshot-placeholder hidden">
+            <div class="ph-icon">✨</div>
+            <div class="ph-text">AI 合成結果</div>
+            <div class="ph-file">screenshots/04-design-result.png</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="feature-bullet">
+      <div class="item"><span class="num">30s</span>合成時間</div>
+      <div class="item"><span class="num">Flux Pro</span>商業級寫實</div>
+      <div class="item"><span class="num">∞</span>可重試</div>
+    </div>
+  </section>
+
+  <!-- ============ S6: 6 AI Features (42-50s) ============ -->
+  <section class="scene s6">
+    <div class="scene-caption" style="top: 8vh;">
+      <div class="label">AI ENGINES · 六大 AI 引擎</div>
+      <div class="zh">AI 深度整合每個工作流</div>
+      <div class="en">AI deeply embedded in every workflow</div>
+    </div>
+
+    <div class="feat-grid">
+      <div class="feat-card-large">
+        <div class="ico-row"><div class="ico">🎨</div><div><div class="zh">AI 設計合成</div><div class="en">Flux Fill Pro</div></div></div>
+        <div class="desc">設計圖一鍵套用石材紋理，30 秒輸出商業級寫實圖</div>
+      </div>
+      <div class="feat-card-large">
+        <div class="ico-row"><div class="ico">👁</div><div><div class="zh">視覺分析</div><div class="en">LLaVA v1.6</div></div></div>
+        <div class="desc">AI 自動「看」石材照片，產生精準英文描述</div>
+      </div>
+      <div class="feat-card-large">
+        <div class="ico-row"><div class="ico">🔍</div><div><div class="zh">以圖搜圖</div><div class="en">Perceptual Hash</div></div></div>
+        <div class="desc">上傳參考圖，秒找出最相似的庫存石材</div>
+      </div>
+      <div class="feat-card-large">
+        <div class="ico-row"><div class="ico">🌈</div><div><div class="zh">顏色偵測</div><div class="en">HSV Auto-tag</div></div></div>
+        <div class="desc">HSV 色彩空間自動分類 8 種顏色標籤</div>
+      </div>
+      <div class="feat-card-large">
+        <div class="ico-row"><div class="ico">🧠</div><div><div class="zh">Prompt 工程</div><div class="en">3-Tier System</div></div></div>
+        <div class="desc">三層 fallback：人工 → 視覺 AI → 模板</div>
+      </div>
+      <div class="feat-card-large">
+        <div class="ico-row"><div class="ico">💬</div><div><div class="zh">語義搜尋</div><div class="en">Synonym Match</div></div></div>
+        <div class="desc">中英同義詞自動展開，搜「marble」也能找到大理石</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ S7: Admin Backend (50-55s) ============ -->
+  <section class="scene s7">
+    <div class="scene-caption">
+      <div class="label">ADMIN BACKEND · 後台管理</div>
+      <div class="zh">完整的庫存、會員、詢價管理</div>
+      <div class="en">Stone inventory · Members · Inquiries</div>
+    </div>
+
+    <div class="admin-grid" style="margin-top: 6vh;">
+      <div class="screenshot-frame main">
+        <div class="browser-bar">
+          <div class="dots"><span></span><span></span><span></span></div>
+          <div class="url">restone.app/admin · 庫存管理</div>
+        </div>
+        <div class="screenshot-area">
+          <img src="screenshots/06-admin.png" alt="Admin" onerror="this.style.display='none';this.nextElementSibling.classList.remove('hidden')">
+          <div class="screenshot-placeholder hidden">
+            <div class="ph-icon">⚙</div>
+            <div class="ph-text">後台首頁 Admin Dashboard</div>
+            <div class="ph-file">screenshots/06-admin.png</div>
+          </div>
+        </div>
+      </div>
+      <div class="side">
+        <div class="screenshot-frame">
+          <div class="browser-bar">
+            <div class="dots"><span></span><span></span><span></span></div>
+            <div class="url">restone.app/admin/add</div>
+          </div>
+          <div class="screenshot-area">
+            <img src="screenshots/07-add-stone.png" alt="Add Stone" onerror="this.style.display='none';this.nextElementSibling.classList.remove('hidden')">
+            <div class="screenshot-placeholder hidden">
+              <div class="ph-icon">＋</div>
+              <div class="ph-text">新增石材表單</div>
+              <div class="ph-file">screenshots/07-add-stone.png</div>
+            </div>
+          </div>
+        </div>
+        <div class="screenshot-frame">
+          <div class="browser-bar">
+            <div class="dots"><span></span><span></span><span></span></div>
+            <div class="url">restone.app/admin/inquiries</div>
+          </div>
+          <div class="screenshot-area">
+            <img src="screenshots/08-inquiries.png" alt="Inquiries" onerror="this.style.display='none';this.nextElementSibling.classList.remove('hidden')">
+            <div class="screenshot-placeholder hidden">
+              <div class="ph-icon">💬</div>
+              <div class="ph-text">詢價管理</div>
+              <div class="ph-file">screenshots/08-inquiries.png</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="feature-tags">
+      <div class="feature-tag">📊 Excel 匯出</div>
+      <div class="feature-tag">📧 Email 通知</div>
+      <div class="feature-tag">🔒 PBKDF2-SHA256</div>
+      <div class="feature-tag">🏢 4 家合作廠商</div>
+      <div class="feature-tag">📱 HEIC 支援</div>
+      <div class="feature-tag">💾 Persistent Volume</div>
+    </div>
+  </section>
+
+  <!-- ============ S8: Outro (55-60s) ============ -->
+  <section class="scene s8">
+    <div class="outro-logo">
+      <svg class="logo-svg" viewBox="0 0 100 100">
+        <defs>
+          <linearGradient id="lg2a" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#60A5FA"/><stop offset="100%" stop-color="#1E40AF"/>
+          </linearGradient>
+          <linearGradient id="lg2b" x1="0" y1="1" x2="1" y2="0">
+            <stop offset="0%" stop-color="#3B82F6"/><stop offset="100%" stop-color="#93C5FD"/>
+          </linearGradient>
+        </defs>
+        <g class="frame">
+          <polygon points="50,8 92,30 92,70 50,92 8,70 8,30" fill="url(#lg2a)"/>
+          <polygon class="top" points="50,8 92,30 50,50 8,30" fill="white"/>
+          <g class="core">
+            <polygon points="50,28 70,50 50,72 30,50" fill="url(#lg2b)"/>
+            <polygon points="50,28 70,50 50,50" fill="white" opacity="0.3"/>
+          </g>
+          <g class="rays" stroke="white" stroke-width="1" fill="none">
+            <line x1="50" y1="8" x2="50" y2="92"/>
+            <line x1="8" y1="30" x2="92" y2="70"/>
+            <line x1="92" y1="30" x2="8" y2="70"/>
+          </g>
+        </g>
+      </svg>
+    </div>
+    <div class="outro-brand">ReStone</div>
+    <div class="outro-zh">循環石材服務平台</div>
+    <div class="outro-en">Circular Stone Service Platform</div>
+    <div class="outro-cta">
+      <div class="outro-url">stone-database-production.up.railway.app</div>
+      <div class="outro-tag">— Made for Sustainable Design —</div>
+    </div>
+  </section>
+
+  <div class="progress"><div class="progress-bar"></div></div>
+
+  <div class="controls">
+    <button class="ctrl-btn" id="btn-pause">⏸ 暫停</button>
+    <button class="ctrl-btn" id="btn-restart">↻ 重播</button>
+    <button class="ctrl-btn" id="btn-fullscreen">⛶ 全螢幕</button>
+  </div>
+</div>
+
+<script>
+  const btnPause = document.getElementById('btn-pause');
+  const btnRestart = document.getElementById('btn-restart');
+  const btnFs = document.getElementById('btn-fullscreen');
+  let paused = false;
+
+  btnPause.addEventListener('click', () => {
+    paused = !paused;
+    document.body.classList.toggle('paused', paused);
+    btnPause.textContent = paused ? '▶ 播放' : '⏸ 暫停';
+  });
+
+  btnRestart.addEventListener('click', () => {
+    document.querySelectorAll('*').forEach(el => {
+      const cs = getComputedStyle(el);
+      if (cs.animationName && cs.animationName !== 'none') {
+        el.style.animation = 'none';
+        el.offsetHeight;
+        el.style.animation = '';
+      }
+    });
+  });
+
+  btnFs.addEventListener('click', () => {
+    if (!document.fullscreenElement) document.documentElement.requestFullscreen();
+    else document.exitFullscreen();
+  });
+
+  document.addEventListener('keydown', e => {
+    if (e.key === ' ') { e.preventDefault(); btnPause.click(); }
+    if (e.key === 'r' || e.key === 'R') btnRestart.click();
+    if (e.key === 'f' || e.key === 'F') btnFs.click();
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<title>ReStone AI 引擎流程圖 / AI Engine Flow</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Noto+Sans+TC:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --blue: #2563EB; --blue-light: #60A5FA; --blue-dark: #1E40AF;
+    --blue-bg: #EFF6FF;
+    --purple: #7C3AED; --purple-light: #A78BFA; --purple-bg: #F3E8FF;
+    --gold: #F59E0B; --gold-bg: #FEF3C7;
+    --green: #10B981; --green-bg: #D1FAE5;
+    --pink: #EC4899; --pink-bg: #FCE7F3;
+    --text: #0F172A; --muted: #64748B; --light: #94A3B8;
+    --border: #E2E8F0; --bg: #F8FAFC; --white: #FFFFFF;
+  }
+  body {
+    font-family: 'Inter', 'Noto Sans TC', sans-serif;
+    color: var(--text); background: #F0EDE8;
+    padding: 2rem;
+  }
+  .page {
+    width: 297mm; min-height: 210mm;
+    max-width: 100%;
+    margin: 0 auto;
+    background: white;
+    padding: 16mm 18mm 14mm;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.1);
+  }
+
+  /* ─── 標題 ─── */
+  .header {
+    padding-bottom: 5mm;
+    border-bottom: 2px solid var(--border);
+    margin-bottom: 8mm;
+    display: flex; align-items: flex-end; justify-content: space-between;
+  }
+  .title-zh {
+    font-size: 22pt; font-weight: 900; color: var(--text);
+    letter-spacing: -0.02em; line-height: 1.1;
+  }
+  .title-en {
+    font-size: 11pt; color: var(--muted);
+    margin-top: 3px; letter-spacing: 0.05em; font-weight: 500;
+  }
+  .brand-name {
+    font-size: 14pt; font-weight: 900;
+    background: linear-gradient(135deg, var(--blue), var(--purple));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-align: right;
+  }
+  .brand-sub {
+    font-size: 8pt; color: var(--muted); letter-spacing: 0.15em;
+    text-transform: uppercase; margin-top: 2px; text-align: right;
+  }
+
+  /* ─── 三大時刻區塊 ─── */
+  .moments {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 4mm;
+    margin-bottom: 8mm;
+  }
+  .moment {
+    border: 2px solid var(--border);
+    border-radius: 4mm;
+    padding: 5mm 4mm 4mm;
+    position: relative;
+  }
+  .moment.m1 { border-color: var(--blue); background: linear-gradient(180deg, var(--blue-bg) 0%, white 30%); }
+  .moment.m2 { border-color: var(--green); background: linear-gradient(180deg, var(--green-bg) 0%, white 30%); }
+  .moment.m3 { border-color: var(--gold); background: linear-gradient(180deg, var(--gold-bg) 0%, white 30%); }
+
+  .moment-head {
+    display: flex; align-items: center; gap: 3mm;
+    margin-bottom: 4mm;
+  }
+  .moment-num {
+    width: 9mm; height: 9mm; border-radius: 50%;
+    color: white; display: flex; align-items: center; justify-content: center;
+    font-size: 12pt; font-weight: 900; font-family: 'Inter'; flex-shrink: 0;
+  }
+  .m1 .moment-num { background: var(--blue); }
+  .m2 .moment-num { background: var(--green); }
+  .m3 .moment-num { background: var(--gold); }
+
+  .moment-title {
+    font-size: 12pt; font-weight: 800; line-height: 1.2;
+  }
+  .moment-en {
+    font-size: 7pt; font-weight: 700; letter-spacing: 0.1em;
+    text-transform: uppercase; margin-top: 1px;
+  }
+  .m1 .moment-en { color: var(--blue-dark); }
+  .m2 .moment-en { color: #065F46; }
+  .m3 .moment-en { color: #92400E; }
+
+  .moment-actor {
+    font-size: 8.5pt; color: var(--muted);
+    margin-bottom: 4mm; line-height: 1.5;
+    padding: 2mm 3mm;
+    background: rgba(255,255,255,0.7);
+    border-radius: 2mm;
+  }
+
+  /* ─── AI 引擎卡片（在每個 moment 內） ─── */
+  .ai-card {
+    background: white;
+    border: 1.5px solid var(--border);
+    border-radius: 3mm;
+    padding: 3.5mm 4mm;
+    margin-bottom: 3mm;
+    display: flex; align-items: center; gap: 3mm;
+  }
+  .ai-card:last-child { margin-bottom: 0; }
+
+  .ai-icon {
+    width: 11mm; height: 11mm; border-radius: 2.5mm;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16pt; color: white;
+    background: linear-gradient(135deg, var(--blue), var(--purple));
+    flex-shrink: 0;
+  }
+  .ai-card.flagship .ai-icon {
+    background: linear-gradient(135deg, var(--gold), #DC2626);
+  }
+
+  .ai-info { flex: 1; min-width: 0; }
+  .ai-name {
+    font-size: 10pt; font-weight: 800;
+    line-height: 1.2;
+  }
+  .ai-tech {
+    font-size: 7.5pt; color: var(--purple); font-weight: 700;
+    letter-spacing: 0.05em; margin-top: 0.5mm;
+  }
+  .ai-flow {
+    font-size: 8pt; color: var(--muted); margin-top: 1.5mm;
+    line-height: 1.5;
+  }
+  .ai-flow .in   { background: #DBEAFE; color: var(--blue-dark); padding: 0.5mm 1.5mm; border-radius: 2px; font-weight: 600; }
+  .ai-flow .out  { background: var(--green-bg); color: #065F46; padding: 0.5mm 1.5mm; border-radius: 2px; font-weight: 600; }
+  .ai-flow .arr  { color: var(--light); margin: 0 1mm; }
+
+  .ai-meta {
+    font-size: 7pt; color: var(--light);
+    text-align: right;
+    flex-shrink: 0;
+    line-height: 1.4;
+    min-width: 16mm;
+  }
+  .ai-meta .cost {
+    font-weight: 800; color: var(--text);
+    font-family: 'Inter';
+  }
+  .ai-meta .cost.free { color: var(--green); }
+  .ai-meta .cost.paid { color: var(--gold); }
+
+  /* 旗艦標籤 */
+  .flagship-tag {
+    position: absolute; top: -3mm; right: 4mm;
+    background: linear-gradient(135deg, var(--gold), #DC2626);
+    color: white; font-size: 7pt; font-weight: 800;
+    padding: 1mm 3mm; border-radius: 2mm;
+    letter-spacing: 0.1em;
+    box-shadow: 0 2px 8px rgba(220,38,38,0.3);
+  }
+
+  /* ─── 底部總結 ─── */
+  .summary {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 4mm;
+    padding: 5mm 6mm;
+    background: linear-gradient(135deg, #0F172A, #1E1B4B);
+    border-radius: 4mm;
+    color: white;
+  }
+  .stat {
+    text-align: center;
+  }
+  .stat-num {
+    font-size: 28pt; font-weight: 900;
+    background: linear-gradient(135deg, var(--blue-light), var(--purple-light));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+    line-height: 1; font-family: 'Inter';
+  }
+  .stat-label {
+    font-size: 8pt; color: rgba(255,255,255,0.7);
+    margin-top: 2mm; letter-spacing: 0.05em; line-height: 1.4;
+  }
+  .stat-en {
+    font-size: 6.5pt; color: rgba(255,255,255,0.4);
+    margin-top: 1mm; letter-spacing: 0.1em; text-transform: uppercase;
+  }
+
+  /* ─── 設計哲學標語 ─── */
+  .philosophy {
+    margin-top: 6mm;
+    padding: 4mm;
+    text-align: center;
+    font-size: 11pt; color: var(--text); font-weight: 600;
+    line-height: 1.5;
+  }
+  .philosophy .quote {
+    color: var(--purple); font-style: italic;
+    font-size: 12pt; font-weight: 700;
+  }
+  .philosophy .en {
+    font-size: 8.5pt; color: var(--muted);
+    margin-top: 2mm; font-weight: 500; font-style: italic;
+  }
+
+  @media print {
+    body { background: white; padding: 0; }
+    .page { box-shadow: none; }
+    @page { size: A3 landscape; margin: 8mm; }
+  }
+  @media (max-width: 800px) {
+    body { padding: 0.5rem; }
+    .page { padding: 6mm; }
+    .moments { grid-template-columns: 1fr; }
+    .summary { grid-template-columns: 1fr 1fr; }
+  }
+</style>
+</head>
+
+<body>
+<div class="page">
+
+  <!-- ═══════════ 標題 ═══════════ -->
+  <div class="header">
+    <div>
+      <div class="title-zh">六大 AI 引擎 · 三個關鍵時刻</div>
+      <div class="title-en">Six AI Engines, Three Critical Moments — How AI Powers ReStone</div>
+    </div>
+    <div>
+      <div class="brand-name">ReStone</div>
+      <div class="brand-sub">AI Flow Diagram</div>
+    </div>
+  </div>
+
+  <!-- ═══════════ 三大時刻 ═══════════ -->
+  <div class="moments">
+
+    <!-- ═══ 時刻 1：廠商上架 ═══ -->
+    <div class="moment m1">
+      <div class="moment-head">
+        <div class="moment-num">1</div>
+        <div>
+          <div class="moment-title">廠商上架石材時</div>
+          <div class="moment-en">When Vendor Uploads</div>
+        </div>
+      </div>
+      <div class="moment-actor">🏗 <strong>觸發者</strong>：石材廠商上傳一張照片，AI 自動完成描述、分類、索引。</div>
+
+      <!-- AI #1: LLaVA -->
+      <div class="ai-card">
+        <div class="ai-icon">👁</div>
+        <div class="ai-info">
+          <div class="ai-name">視覺分析</div>
+          <div class="ai-tech">LLaVA v1.6 Vision</div>
+          <div class="ai-flow">
+            <span class="in">石材照片</span><span class="arr">→</span><span class="out">英文描述</span>
+          </div>
+        </div>
+        <div class="ai-meta">
+          <div class="cost paid">NT$0.5</div>
+          <div>/張</div>
+        </div>
+      </div>
+
+      <!-- AI #2: HSV -->
+      <div class="ai-card">
+        <div class="ai-icon">🌈</div>
+        <div class="ai-info">
+          <div class="ai-name">顏色偵測</div>
+          <div class="ai-tech">HSV Color Space</div>
+          <div class="ai-flow">
+            <span class="in">RGB 像素</span><span class="arr">→</span><span class="out">8 色標籤</span>
+          </div>
+        </div>
+        <div class="ai-meta">
+          <div class="cost free">免費</div>
+          <div>Free</div>
+        </div>
+      </div>
+
+      <!-- AI #3: pHash -->
+      <div class="ai-card">
+        <div class="ai-icon">🔢</div>
+        <div class="ai-info">
+          <div class="ai-name">紋理雜湊索引</div>
+          <div class="ai-tech">Perceptual Hash</div>
+          <div class="ai-flow">
+            <span class="in">影像紋理</span><span class="arr">→</span><span class="out">64-bit 索引</span>
+          </div>
+        </div>
+        <div class="ai-meta">
+          <div class="cost free">免費</div>
+          <div>Free</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ 時刻 2：設計師搜尋 ═══ -->
+    <div class="moment m2">
+      <div class="moment-head">
+        <div class="moment-num">2</div>
+        <div>
+          <div class="moment-title">設計師找料時</div>
+          <div class="moment-en">When Designer Searches</div>
+        </div>
+      </div>
+      <div class="moment-actor">🎨 <strong>觸發者</strong>：設計師關鍵字、顏色、或上傳參考圖找石材，AI 處理查詢與相似度比對。</div>
+
+      <!-- AI #4: Synonym -->
+      <div class="ai-card">
+        <div class="ai-icon">💬</div>
+        <div class="ai-info">
+          <div class="ai-name">語義搜尋</div>
+          <div class="ai-tech">Synonym Dictionary</div>
+          <div class="ai-flow">
+            <span class="in">「marble」</span><span class="arr">→</span><span class="out">大理石+雲石+marmo</span>
+          </div>
+        </div>
+        <div class="ai-meta">
+          <div class="cost free">免費</div>
+          <div>Free</div>
+        </div>
+      </div>
+
+      <!-- AI #5: pHash Match -->
+      <div class="ai-card">
+        <div class="ai-icon">🔍</div>
+        <div class="ai-info">
+          <div class="ai-name">以圖搜圖</div>
+          <div class="ai-tech">pHash + RGB Distance</div>
+          <div class="ai-flow">
+            <span class="in">參考圖</span><span class="arr">→</span><span class="out">相似度 0–100%</span>
+          </div>
+        </div>
+        <div class="ai-meta">
+          <div class="cost free">免費</div>
+          <div>Free</div>
+        </div>
+      </div>
+
+      <!-- 留白：與時刻 1 與 3 視覺平衡 -->
+      <div class="ai-card" style="background: rgba(255,255,255,0.4); border-style: dashed; opacity: 0.7;">
+        <div class="ai-icon" style="background: var(--bg); color: var(--muted)">🔄</div>
+        <div class="ai-info">
+          <div class="ai-name" style="color: var(--muted)">即時比對 · 零延遲</div>
+          <div class="ai-tech" style="color: var(--light)">In-Memory Lookup</div>
+          <div class="ai-flow" style="color: var(--light)">
+            無需 API · 純 Python 計算
+          </div>
+        </div>
+        <div class="ai-meta">
+          <div class="cost free">免費</div>
+          <div>Free</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ 時刻 3：設計師合成 ═══ -->
+    <div class="moment m3">
+      <div class="flagship-tag">⭐ FLAGSHIP</div>
+      <div class="moment-head">
+        <div class="moment-num">3</div>
+        <div>
+          <div class="moment-title">設計師合成時</div>
+          <div class="moment-en">When Designer Generates</div>
+        </div>
+      </div>
+      <div class="moment-actor">✨ <strong>觸發者</strong>：上傳設計圖、圈選表面、選石材，AI 30 秒輸出寫實合成圖。</div>
+
+      <!-- AI #6: Prompt Engineering -->
+      <div class="ai-card">
+        <div class="ai-icon">🧠</div>
+        <div class="ai-info">
+          <div class="ai-name">Prompt 工程</div>
+          <div class="ai-tech">3-Tier Prompt System</div>
+          <div class="ai-flow">
+            <span class="in">石材屬性</span><span class="arr">→</span><span class="out">精準英文 prompt</span>
+          </div>
+        </div>
+        <div class="ai-meta">
+          <div class="cost free">免費</div>
+          <div>Local</div>
+        </div>
+      </div>
+
+      <!-- AI #7: Flux Fill Pro (Flagship) -->
+      <div class="ai-card flagship">
+        <div class="ai-icon">✨</div>
+        <div class="ai-info">
+          <div class="ai-name">AI 設計合成</div>
+          <div class="ai-tech">Flux Fill Pro Inpainting</div>
+          <div class="ai-flow">
+            <span class="in">設計圖+遮罩+prompt</span><span class="arr">→</span><span class="out">合成圖</span>
+          </div>
+        </div>
+        <div class="ai-meta">
+          <div class="cost paid">NT$1.5</div>
+          <div>/張</div>
+        </div>
+      </div>
+
+      <!-- 補一個資訊 -->
+      <div class="ai-card" style="background: linear-gradient(135deg, var(--gold-bg), white); border-color: var(--gold);">
+        <div class="ai-icon" style="background: linear-gradient(135deg, var(--gold), #DC2626);">⏱</div>
+        <div class="ai-info">
+          <div class="ai-name">商業級寫實品質</div>
+          <div class="ai-tech" style="color: var(--gold)">30-second Output</div>
+          <div class="ai-flow">
+            取代 30 分鐘 PS 流程 · <strong style="color:var(--gold)">速度提升 60×</strong>
+          </div>
+        </div>
+        <div class="ai-meta">
+          <div class="cost paid">30s</div>
+          <div>output</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ═══════════ 底部總結數據 ═══════════ -->
+  <div class="summary">
+    <div class="stat">
+      <div class="stat-num">6</div>
+      <div class="stat-label">AI 引擎深度整合</div>
+      <div class="stat-en">AI Engines Integrated</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num">4 / 6</div>
+      <div class="stat-label">本機處理 · 零 API 費用</div>
+      <div class="stat-en">Free Local Processing</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num">~NT$2</div>
+      <div class="stat-label">完整合成單次成本</div>
+      <div class="stat-en">Cost per Full Cycle</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num">30s</div>
+      <div class="stat-label">取代 30 分鐘 PS 工作</div>
+      <div class="stat-en">vs. 30-min Photoshop</div>
+    </div>
+  </div>
+
+  <!-- ═══════════ 設計哲學 ═══════════ -->
+  <div class="philosophy">
+    <span class="quote">「AI 是設計副手，不是設計取代者」</span>
+    <div class="en">"AI is a design collaborator, not a replacement."</div>
+  </div>
+
+</div>
+</body>
+</html>

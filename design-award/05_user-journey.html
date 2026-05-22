@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<title>ReStone 使用者旅程地圖 / User Journey Map</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Noto+Sans+TC:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --blue: #2563EB; --blue-light: #60A5FA; --blue-dark: #1E40AF; --blue-bg: #EFF6FF;
+    --purple: #7C3AED; --purple-light: #A78BFA; --purple-bg: #F3E8FF;
+    --gold: #F59E0B; --gold-bg: #FEF3C7;
+    --green: #10B981; --green-bg: #D1FAE5; --green-dark: #065F46;
+    --pink: #EC4899; --red: #DC2626; --red-bg: #FEF2F2; --red-light: #F87171;
+    --text: #0F172A; --muted: #64748B; --light: #94A3B8;
+    --border: #E2E8F0; --bg: #F8FAFC; --white: #FFFFFF;
+  }
+  body {
+    font-family: 'Inter', 'Noto Sans TC', sans-serif;
+    color: var(--text); background: #F0EDE8;
+    padding: 2rem;
+  }
+  .page {
+    width: 420mm; min-height: 297mm; max-width: 100%;
+    margin: 0 auto; background: white;
+    padding: 12mm 14mm 10mm;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.1);
+  }
+
+  /* ─── 標題 ─── */
+  .header {
+    padding-bottom: 4mm; border-bottom: 2px solid var(--border);
+    margin-bottom: 6mm;
+    display: flex; align-items: flex-end; justify-content: space-between;
+  }
+  .title-zh { font-size: 22pt; font-weight: 900; letter-spacing: -0.02em; line-height: 1.1; }
+  .title-en { font-size: 11pt; color: var(--muted); margin-top: 3px; letter-spacing: 0.05em; font-weight: 500; }
+  .persona {
+    text-align: right; padding: 2mm 4mm;
+    background: var(--purple-bg); border-radius: 2mm;
+    font-size: 8pt;
+  }
+  .persona .who { font-weight: 800; color: #6D28D9; font-size: 9.5pt; }
+  .persona .desc { color: var(--muted); margin-top: 1px; }
+
+  /* ─── 圖例 ─── */
+  .legend {
+    display: flex; gap: 8mm; justify-content: center;
+    padding: 3mm 4mm;
+    background: var(--bg); border-radius: 2mm;
+    margin-bottom: 5mm;
+  }
+  .legend-item { display: flex; align-items: center; gap: 2mm; font-size: 9pt; font-weight: 700; }
+  .legend-dot { width: 4mm; height: 4mm; border-radius: 50%; }
+  .legend-dot.trad { background: var(--red); }
+  .legend-dot.us { background: linear-gradient(135deg, var(--blue), var(--purple)); }
+  .legend-line {
+    width: 12mm; height: 2px;
+  }
+  .legend-line.trad { background: var(--red); }
+  .legend-line.us { background: var(--purple); }
+
+  /* ─── 情緒曲線圖 ─── */
+  .chart-wrap {
+    position: relative;
+    margin-bottom: 6mm;
+    background: linear-gradient(180deg, #ECFDF5 0%, white 50%, #FEF2F2 100%);
+    border-radius: 3mm;
+    border: 1px solid var(--border);
+    padding: 6mm 4mm 2mm;
+  }
+  .chart-wrap svg {
+    width: 100%; height: auto;
+    display: block;
+  }
+  /* 情緒區帶標籤 */
+  .emotion-zones {
+    position: absolute; left: 6mm; top: 6mm; bottom: 30mm;
+    display: flex; flex-direction: column; justify-content: space-between;
+    font-size: 7.5pt; font-weight: 800; letter-spacing: 0.08em; pointer-events: none;
+  }
+  .zone { padding: 0.5mm 2mm; border-radius: 2px; }
+  .zone.delight    { background: var(--green-bg); color: var(--green-dark); }
+  .zone.confident  { background: var(--blue-bg); color: var(--blue-dark); }
+  .zone.neutral    { background: var(--bg); color: var(--muted); }
+  .zone.concerned  { background: var(--gold-bg); color: #92400E; }
+  .zone.frustrated { background: var(--red-bg); color: #991B1B; }
+
+  /* ─── 階段卡片 ─── */
+  .stages {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 2mm;
+    margin-bottom: 6mm;
+  }
+  .stage {
+    border: 1.5px solid var(--border);
+    border-radius: 3mm;
+    overflow: hidden;
+  }
+  .stage-head {
+    background: linear-gradient(135deg, var(--blue), var(--purple));
+    color: white;
+    padding: 3mm 3mm 2mm;
+    text-align: center;
+  }
+  .stage-num {
+    font-size: 9pt; font-weight: 800; opacity: 0.7;
+    letter-spacing: 0.1em; margin-bottom: 0.5mm;
+    font-family: 'Inter';
+  }
+  .stage-title { font-size: 11pt; font-weight: 800; line-height: 1.1; }
+  .stage-en {
+    font-size: 7pt; font-weight: 500; opacity: 0.7;
+    margin-top: 1mm; letter-spacing: 0.05em;
+  }
+  .stage-icon { font-size: 18pt; margin-top: 1mm; }
+
+  .stage-body {
+    padding: 3mm 3mm 0;
+    font-size: 7.5pt; line-height: 1.5;
+  }
+  .stage-section {
+    margin-bottom: 3mm;
+  }
+  .stage-section:last-child { margin-bottom: 3mm; }
+  .stage-section-label {
+    font-size: 6.5pt; font-weight: 800; letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 1.5mm;
+  }
+  .trad-section .stage-section-label { color: var(--red); }
+  .us-section .stage-section-label { color: var(--purple); }
+  .stage-text { color: var(--text); }
+  .stage-text strong { font-weight: 700; }
+  .trad-section .stage-text { color: #7F1D1D; }
+  .us-section .stage-text { color: var(--green-dark); }
+  .stage-section.trad-section { background: var(--red-bg); padding: 2mm 2.5mm; border-radius: 2mm; }
+  .stage-section.us-section { background: var(--green-bg); padding: 2mm 2.5mm; border-radius: 2mm; }
+
+  /* ─── 關鍵洞察 ─── */
+  .insights {
+    border-top: 2px solid var(--border);
+    padding-top: 5mm;
+  }
+  .section-label {
+    font-size: 8pt; letter-spacing: 0.3em; font-weight: 700;
+    color: var(--purple); text-transform: uppercase;
+    margin-bottom: 2mm;
+  }
+  .section-title {
+    font-size: 14pt; font-weight: 900; letter-spacing: -0.02em;
+    margin-bottom: 4mm;
+  }
+  .section-title .en {
+    font-size: 9pt; font-weight: 500; color: var(--muted);
+    margin-left: 6px;
+  }
+  .insight-grid {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 4mm;
+  }
+  .insight-card {
+    padding: 4mm;
+    border-radius: 3mm;
+    border-left: 4px solid;
+    background: var(--bg);
+  }
+  .insight-card.peak { border-color: var(--green); }
+  .insight-card.trough { border-color: var(--red); }
+  .insight-card.delta { border-color: var(--gold); }
+  .insight-card.principle { border-color: var(--purple); }
+  .insight-label {
+    font-size: 7pt; font-weight: 800; letter-spacing: 0.15em;
+    text-transform: uppercase; margin-bottom: 2mm;
+  }
+  .insight-card.peak .insight-label { color: var(--green-dark); }
+  .insight-card.trough .insight-label { color: #991B1B; }
+  .insight-card.delta .insight-label { color: #92400E; }
+  .insight-card.principle .insight-label { color: #6D28D9; }
+  .insight-title { font-size: 10pt; font-weight: 800; margin-bottom: 1mm; line-height: 1.2; }
+  .insight-en { font-size: 7pt; color: var(--muted); margin-bottom: 2mm; font-style: italic; }
+  .insight-text { font-size: 8pt; color: var(--text); line-height: 1.6; }
+  .insight-text strong { color: var(--purple); }
+
+  @media print {
+    body { background: white; padding: 0; }
+    .page { box-shadow: none; }
+    @page { size: A3 landscape; margin: 5mm; }
+  }
+  @media (max-width: 1000px) {
+    body { padding: 0.5rem; }
+    .page { padding: 6mm; width: 100%; }
+    .stages { grid-template-columns: 1fr 1fr; }
+    .insight-grid { grid-template-columns: 1fr 1fr; }
+    .emotion-zones { font-size: 6pt; }
+  }
+</style>
+</head>
+
+<body>
+<div class="page">
+
+  <!-- 標題 -->
+  <div class="header">
+    <div>
+      <div class="title-zh">設計師使用者旅程地圖 · 情緒曲線</div>
+      <div class="title-en">Designer User Journey Map — Emotional Curve, Before vs After ReStone</div>
+    </div>
+    <div class="persona">
+      <div class="who">👤 主要使用者　Persona</div>
+      <div class="desc">室內設計師 / 30-45 歲 / 接案中型工作室<br>每月 3-5 個案、每案需 1-3 種石材建議</div>
+    </div>
+  </div>
+
+  <!-- 圖例 -->
+  <div class="legend">
+    <div class="legend-item">
+      <div class="legend-line trad"></div>
+      <span style="color:var(--red)">傳統流程</span>
+      <span style="color:var(--muted); font-weight:500; font-style:italic">Traditional</span>
+    </div>
+    <div class="legend-item">
+      <div class="legend-line us"></div>
+      <span style="color:var(--purple)">ReStone 流程</span>
+      <span style="color:var(--muted); font-weight:500; font-style:italic">With ReStone</span>
+    </div>
+    <div class="legend-item">
+      <div class="legend-dot trad"></div>
+      <span style="font-size:7.5pt; color:var(--muted)">情緒節點 / Emotional touchpoint</span>
+    </div>
+  </div>
+
+  <!-- ═══════ 情緒曲線圖 ═══════ -->
+  <div class="chart-wrap">
+    <!-- 左側情緒帶標籤 -->
+    <div class="emotion-zones">
+      <div class="zone delight">😍 興奮 / Delight</div>
+      <div class="zone confident">😊 順利 / Confident</div>
+      <div class="zone neutral">😐 中性 / Neutral</div>
+      <div class="zone concerned">😟 擔憂 / Concerned</div>
+      <div class="zone frustrated">😩 沮喪 / Frustrated</div>
+    </div>
+
+    <!-- SVG 曲線圖 -->
+    <svg viewBox="0 0 1200 280" preserveAspectRatio="none" style="margin-left:30mm; width:calc(100% - 30mm);">
+
+      <!-- 水平輔助線（淡） -->
+      <line x1="0" y1="30"  x2="1200" y2="30"  stroke="#E2E8F0" stroke-width="1" stroke-dasharray="3,3"/>
+      <line x1="0" y1="85"  x2="1200" y2="85"  stroke="#E2E8F0" stroke-width="1" stroke-dasharray="3,3"/>
+      <line x1="0" y1="140" x2="1200" y2="140" stroke="#94A3B8" stroke-width="1.5"/>
+      <line x1="0" y1="195" x2="1200" y2="195" stroke="#E2E8F0" stroke-width="1" stroke-dasharray="3,3"/>
+      <line x1="0" y1="250" x2="1200" y2="250" stroke="#E2E8F0" stroke-width="1" stroke-dasharray="3,3"/>
+
+      <!-- 垂直分隔線（每個 stage） -->
+      <g stroke="#F1F5F9" stroke-width="1">
+        <line x1="90"   y1="0" x2="90"   y2="280"/>
+        <line x1="260"  y1="0" x2="260"  y2="280"/>
+        <line x1="430"  y1="0" x2="430"  y2="280"/>
+        <line x1="600"  y1="0" x2="600"  y2="280"/>
+        <line x1="770"  y1="0" x2="770"  y2="280"/>
+        <line x1="940"  y1="0" x2="940"  y2="280"/>
+        <line x1="1110" y1="0" x2="1110" y2="280"/>
+      </g>
+
+      <!-- 傳統流程曲線（紅色，由高漸低後回升）-->
+      <!-- 點位：(90,85) (260,140) (430,195) (600,225) (770,250) (940,180) (1110,110) -->
+      <path d="M 90 85 C 175 95, 175 140, 260 140
+               C 345 140, 345 195, 430 195
+               C 515 195, 515 225, 600 225
+               C 685 225, 685 250, 770 250
+               C 855 250, 855 180, 940 180
+               C 1025 180, 1025 110, 1110 110"
+            fill="none" stroke="#DC2626" stroke-width="3.5" stroke-linecap="round"/>
+      <!-- 傳統流程點 -->
+      <g fill="#DC2626">
+        <circle cx="90"   cy="85"  r="6"/>
+        <circle cx="260"  cy="140" r="6"/>
+        <circle cx="430"  cy="195" r="6"/>
+        <circle cx="600"  cy="225" r="6"/>
+        <circle cx="770"  cy="250" r="7"/>  <!-- 谷底放大 -->
+        <circle cx="940"  cy="180" r="6"/>
+        <circle cx="1110" cy="110" r="6"/>
+      </g>
+
+      <!-- ReStone 曲線（紫藍漸層感，全程偏高）-->
+      <!-- 點位：(90,85) (260,75) (430,40) (600,40) (770,80) (940,40) (1110,75) -->
+      <defs>
+        <linearGradient id="us-line" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0%" stop-color="#2563EB"/>
+          <stop offset="50%" stop-color="#7C3AED"/>
+          <stop offset="100%" stop-color="#2563EB"/>
+        </linearGradient>
+      </defs>
+      <path d="M 90 85 C 175 85, 175 75, 260 75
+               C 345 75, 345 40, 430 40
+               C 515 40, 515 40, 600 40
+               C 685 40, 685 80, 770 80
+               C 855 80, 855 40, 940 40
+               C 1025 40, 1025 75, 1110 75"
+            fill="none" stroke="url(#us-line)" stroke-width="3.5" stroke-linecap="round"/>
+      <!-- ReStone 點 -->
+      <g fill="#7C3AED">
+        <circle cx="90"   cy="85"  r="6"/>
+        <circle cx="260"  cy="75"  r="6"/>
+        <circle cx="430"  cy="40"  r="8"/>  <!-- 峰值放大 -->
+        <circle cx="600"  cy="40"  r="6"/>
+        <circle cx="770"  cy="80"  r="6"/>
+        <circle cx="940"  cy="40"  r="8"/>  <!-- 確認峰值 -->
+        <circle cx="1110" cy="75"  r="6"/>
+      </g>
+
+      <!-- 標註：峰值 -->
+      <g font-family="Noto Sans TC" font-weight="800">
+        <!-- 峰值 1: AI 合成 -->
+        <line x1="430" y1="40" x2="430" y2="0" stroke="#10B981" stroke-width="1.5" stroke-dasharray="3,3"/>
+        <text x="430" y="-4" text-anchor="middle" font-size="10" fill="#10B981" dy="14">🎯 AI 合成峰值</text>
+        <text x="430" y="-4" text-anchor="middle" font-size="8" fill="#10B981" dy="26" font-weight="500">AI Synthesis Peak</text>
+
+        <!-- 谷底: 傳統反覆修改 -->
+        <line x1="770" y1="250" x2="770" y2="278" stroke="#DC2626" stroke-width="1.5" stroke-dasharray="3,3"/>
+        <text x="770" y="278" text-anchor="middle" font-size="10" fill="#DC2626" dy="-58">⚠ 傳統痛苦谷底</text>
+        <text x="770" y="278" text-anchor="middle" font-size="8" fill="#DC2626" dy="-46" font-weight="500">Traditional Pain Trough</text>
+      </g>
+
+      <!-- 0 軸標籤 -->
+      <text x="1190" y="138" text-anchor="end" font-size="8" fill="#94A3B8" font-weight="700">情緒中線 Neutral</text>
+    </svg>
+  </div>
+
+  <!-- ═══════ 七個階段卡片 ═══════ -->
+  <div class="stages">
+
+    <!-- 階段 1 -->
+    <div class="stage">
+      <div class="stage-head">
+        <div class="stage-num">STAGE 1</div>
+        <div class="stage-title">接到委託</div>
+        <div class="stage-en">Brief</div>
+        <div class="stage-icon">📋</div>
+      </div>
+      <div class="stage-body">
+        <div class="stage-section trad-section">
+          <div class="stage-section-label">😊 傳統</div>
+          <div class="stage-text">客戶來談，記下需求。<strong>有點興奮</strong>。</div>
+        </div>
+        <div class="stage-section us-section">
+          <div class="stage-section-label">😊 ReStone</div>
+          <div class="stage-text">同樣興奮，並能<strong>立刻打開平台</strong>查料。</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 階段 2 -->
+    <div class="stage">
+      <div class="stage-head">
+        <div class="stage-num">STAGE 2</div>
+        <div class="stage-title">找料尋訪</div>
+        <div class="stage-en">Sourcing</div>
+        <div class="stage-icon">🔍</div>
+      </div>
+      <div class="stage-body">
+        <div class="stage-section trad-section">
+          <div class="stage-section-label">😐 傳統</div>
+          <div class="stage-text">翻 Excel、找廠商、看實體樣品。<strong>耗時 2-3 天</strong>。</div>
+        </div>
+        <div class="stage-section us-section">
+          <div class="stage-section-label">😄 ReStone</div>
+          <div class="stage-text">關鍵字、顏色、以圖搜圖。<strong>5 分鐘鎖定候選</strong>。</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 階段 3（峰值）-->
+    <div class="stage">
+      <div class="stage-head" style="background:linear-gradient(135deg,#10B981,#047857)">
+        <div class="stage-num">STAGE 3 ⭐</div>
+        <div class="stage-title">製作提案</div>
+        <div class="stage-en">Proposal</div>
+        <div class="stage-icon">🎨</div>
+      </div>
+      <div class="stage-body">
+        <div class="stage-section trad-section">
+          <div class="stage-section-label">😟 傳統</div>
+          <div class="stage-text">花 30 分鐘 PS 合成 <strong>一張</strong>圖。心虛。</div>
+        </div>
+        <div class="stage-section us-section">
+          <div class="stage-section-label">🤩 ReStone</div>
+          <div class="stage-text">30 秒合成 <strong>多種方案</strong>。當天提案就完成。</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 階段 4 -->
+    <div class="stage">
+      <div class="stage-head">
+        <div class="stage-num">STAGE 4</div>
+        <div class="stage-title">客戶會議</div>
+        <div class="stage-en">Client Meeting</div>
+        <div class="stage-icon">💬</div>
+      </div>
+      <div class="stage-body">
+        <div class="stage-section trad-section">
+          <div class="stage-section-label">😞 傳統</div>
+          <div class="stage-text">客戶看規格表想像不出來。<strong>「再給我看幾張」</strong>。</div>
+        </div>
+        <div class="stage-section us-section">
+          <div class="stage-section-label">😎 ReStone</div>
+          <div class="stage-text">直接看到自家牆面樣貌。<strong>當場討論細節</strong>。</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 階段 5（谷底）-->
+    <div class="stage">
+      <div class="stage-head" style="background:linear-gradient(135deg,#DC2626,#991B1B)">
+        <div class="stage-num">STAGE 5 ⚠</div>
+        <div class="stage-title">修改回饋</div>
+        <div class="stage-en">Revisions</div>
+        <div class="stage-icon">🔄</div>
+      </div>
+      <div class="stage-body">
+        <div class="stage-section trad-section">
+          <div class="stage-section-label">😩 傳統</div>
+          <div class="stage-text">第 3、4、5、6、7 版... <strong>每版半小時 PS</strong>。崩潰。</div>
+        </div>
+        <div class="stage-section us-section">
+          <div class="stage-section-label">😊 ReStone</div>
+          <div class="stage-text">每次微調 <strong>30 秒換一張</strong>。輕鬆對應。</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 階段 6 -->
+    <div class="stage">
+      <div class="stage-head" style="background:linear-gradient(135deg,#10B981,#047857)">
+        <div class="stage-num">STAGE 6 ⭐</div>
+        <div class="stage-title">確認下單</div>
+        <div class="stage-en">Confirmation</div>
+        <div class="stage-icon">✅</div>
+      </div>
+      <div class="stage-body">
+        <div class="stage-section trad-section">
+          <div class="stage-section-label">😅 傳統</div>
+          <div class="stage-text">第 7 版終於確認。<strong>累壞了</strong>，但案子總算定。</div>
+        </div>
+        <div class="stage-section us-section">
+          <div class="stage-section-label">🥳 ReStone</div>
+          <div class="stage-text">第 2 版就確認。<strong>客戶滿意度大幅提升</strong>。</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 階段 7 -->
+    <div class="stage">
+      <div class="stage-head">
+        <div class="stage-num">STAGE 7</div>
+        <div class="stage-title">完成交付</div>
+        <div class="stage-en">Delivery</div>
+        <div class="stage-icon">🎁</div>
+      </div>
+      <div class="stage-body">
+        <div class="stage-section trad-section">
+          <div class="stage-section-label">😊 傳統</div>
+          <div class="stage-text">交件。但下個案子又要重來一遍。</div>
+        </div>
+        <div class="stage-section us-section">
+          <div class="stage-section-label">😄 ReStone</div>
+          <div class="stage-text">交件 + <strong>累積石材偏好資料</strong>。下次更快。</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ═══════ 關鍵洞察 ═══════ -->
+  <div class="insights">
+    <div class="section-label">KEY INSIGHTS · 四大設計洞察</div>
+    <div class="section-title">差距發生的地方<span class="en">/ Where the design intervention matters most</span></div>
+
+    <div class="insight-grid">
+
+      <div class="insight-card peak">
+        <div class="insight-label">⭐ 驚喜峰值</div>
+        <div class="insight-title">AI 合成的「魔法時刻」</div>
+        <div class="insight-en">The Magic Moment of AI Synthesis</div>
+        <div class="insight-text">
+          階段 3 提案時，傳統流程設計師是<strong>心虛狀態</strong>（怕客戶看不懂）。
+          ReStone 讓設計師<strong>主動秀方案</strong>。情緒從 -1 拉升到 +2。
+        </div>
+      </div>
+
+      <div class="insight-card trough">
+        <div class="insight-label">⚠ 痛苦谷底</div>
+        <div class="insight-title">第 5-7 版反覆修改的地獄</div>
+        <div class="insight-en">The Revision Hell</div>
+        <div class="insight-text">
+          階段 5 是傳統流程<strong>情緒最低點 (-2)</strong>。
+          每版 30 分鐘 PS、客戶意見不明確、設計師體力與耐心同時耗盡。
+          這是 ReStone 介入價值最大的階段。
+        </div>
+      </div>
+
+      <div class="insight-card delta">
+        <div class="insight-label">📊 整體落差</div>
+        <div class="insight-title">情緒平均提升 +3.2 級</div>
+        <div class="insight-en">Average +3.2 Emotional Level</div>
+        <div class="insight-text">
+          全程 7 個階段累積情緒分數：<br>
+          傳統 <strong>-3</strong>　vs　ReStone <strong>+11</strong>。
+          整體體驗從「<strong>消耗戰</strong>」變成「<strong>創作之旅</strong>」。
+        </div>
+      </div>
+
+      <div class="insight-card principle">
+        <div class="insight-label">💡 設計原則</div>
+        <div class="insight-title">把高摩擦時刻自動化</div>
+        <div class="insight-en">Automate the High-Friction Moments</div>
+        <div class="insight-text">
+          設計介入的關鍵不是「全自動化」，
+          而是<strong>精準找出 pain trough</strong>（提案、修改）
+          並用 AI 抹平。<strong>讓人類專注在創造價值的部分</strong>。
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,729 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<title>ReStone · A1 競賽展板 / Competition Board</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Noto+Sans+TC:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --blue: #2563EB; --blue-light: #60A5FA; --blue-dark: #1E40AF; --blue-bg: #EFF6FF;
+    --purple: #7C3AED; --purple-light: #A78BFA; --purple-bg: #F3E8FF;
+    --gold: #F59E0B; --gold-bg: #FEF3C7;
+    --green: #10B981; --green-bg: #D1FAE5; --green-dark: #065F46;
+    --pink: #EC4899; --red: #DC2626; --red-bg: #FEF2F2;
+    --text: #0F172A; --muted: #64748B; --light: #94A3B8;
+    --border: #E2E8F0; --bg: #F8FAFC; --white: #FFFFFF;
+    --navy: #0A0E1A;
+  }
+  body {
+    font-family: 'Inter', 'Noto Sans TC', sans-serif;
+    color: var(--text);
+    background: #1A1A1A;
+    padding: 1.5rem;
+  }
+
+  /* ─── A1 板尺寸：594 × 841 mm ─── */
+  .board {
+    width: 594mm; height: 841mm;
+    max-width: 100%;
+    margin: 0 auto;
+    background: white;
+    box-shadow: 0 30px 100px rgba(0,0,0,0.5);
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* ═══════════════════════════════════════════════════ */
+  /*  區段 1: HERO（頂部 ~250mm）                          */
+  /* ═══════════════════════════════════════════════════ */
+  .hero {
+    background: linear-gradient(135deg, var(--navy) 0%, #1E1B4B 100%);
+    color: white;
+    padding: 28mm 30mm 22mm;
+    position: relative;
+    overflow: hidden;
+    height: 250mm;
+  }
+  /* 鑽石裝飾 */
+  .hero::before {
+    content: '';
+    position: absolute;
+    right: -30mm; top: -40mm;
+    width: 240mm; height: 240mm;
+    background: radial-gradient(circle, rgba(124,58,237,0.25) 0%, transparent 65%);
+    pointer-events: none;
+  }
+  .hero::after {
+    content: '◈';
+    position: absolute;
+    right: 20mm; top: 50mm;
+    font-size: 360pt;
+    color: rgba(124,58,237,0.12);
+    line-height: 1; font-weight: 100;
+    pointer-events: none;
+  }
+
+  .hero-tag {
+    display: inline-block;
+    padding: 2mm 6mm;
+    background: rgba(255,255,255,0.1);
+    backdrop-filter: blur(10px);
+    border-radius: 50px;
+    font-size: 11pt; font-weight: 700;
+    letter-spacing: 0.25em;
+    color: var(--blue-light);
+    margin-bottom: 14mm;
+    border: 1px solid rgba(255,255,255,0.15);
+    position: relative; z-index: 2;
+  }
+
+  .hero-brand {
+    font-size: 110pt;
+    font-weight: 900;
+    letter-spacing: -0.05em;
+    line-height: 0.9;
+    background: linear-gradient(135deg, var(--blue-light) 0%, white 40%, var(--purple-light) 100%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 8mm;
+    position: relative; z-index: 2;
+    font-family: 'Inter';
+  }
+
+  .hero-title {
+    font-size: 38pt; font-weight: 900;
+    letter-spacing: -0.02em;
+    line-height: 1.15;
+    color: white;
+    margin-bottom: 5mm;
+    position: relative; z-index: 2;
+  }
+  .hero-subtitle {
+    font-size: 18pt;
+    color: var(--blue-light);
+    line-height: 1.4;
+    font-weight: 600;
+    margin-bottom: 12mm;
+    position: relative; z-index: 2;
+  }
+  .hero-subtitle-en {
+    font-size: 12pt;
+    color: rgba(255,255,255,0.55);
+    font-style: italic;
+    letter-spacing: 0.05em;
+    margin-top: -8mm;
+    margin-bottom: 12mm;
+    position: relative; z-index: 2;
+  }
+
+  .hero-meta {
+    display: flex; gap: 6mm; flex-wrap: wrap;
+    position: relative; z-index: 2;
+  }
+  .meta-badge {
+    padding: 2.5mm 5mm;
+    background: rgba(255,255,255,0.08);
+    backdrop-filter: blur(8px);
+    border-radius: 8px;
+    border: 1px solid rgba(255,255,255,0.12);
+    font-size: 10pt;
+    font-weight: 600;
+  }
+  .meta-badge .num {
+    color: var(--gold);
+    font-weight: 900;
+    font-family: 'Inter';
+    margin-right: 4px;
+  }
+
+  /* ═══════════════════════════════════════════════════ */
+  /*  區段 2: PROBLEM + SOLUTION（中段 1） ~140mm          */
+  /* ═══════════════════════════════════════════════════ */
+  .story-band {
+    display: grid; grid-template-columns: 1fr 1fr;
+    height: 140mm;
+  }
+
+  .story-half {
+    padding: 16mm 18mm 12mm;
+    position: relative;
+  }
+  .story-half.problem {
+    background: linear-gradient(180deg, #FEF2F2 0%, white 100%);
+  }
+  .story-half.solution {
+    background: linear-gradient(180deg, #EFF6FF 0%, #F3E8FF 100%);
+  }
+
+  .story-label {
+    font-size: 9pt; letter-spacing: 0.35em; font-weight: 800;
+    text-transform: uppercase; margin-bottom: 3mm;
+  }
+  .problem .story-label { color: var(--red); }
+  .solution .story-label { color: var(--purple); }
+
+  .story-headline {
+    font-size: 24pt; font-weight: 900; letter-spacing: -0.02em;
+    line-height: 1.15; margin-bottom: 2mm;
+  }
+  .story-headline-en {
+    font-size: 11pt; font-style: italic; color: var(--muted);
+    letter-spacing: 0.04em; margin-bottom: 10mm;
+  }
+  .story-points {
+    display: flex; flex-direction: column; gap: 5mm;
+  }
+  .story-point {
+    display: flex; align-items: flex-start; gap: 5mm;
+  }
+  .story-point .ico {
+    width: 14mm; height: 14mm;
+    border-radius: 3mm;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18pt; flex-shrink: 0;
+  }
+  .problem .story-point .ico { background: var(--red-bg); }
+  .solution .story-point .ico {
+    background: linear-gradient(135deg, var(--blue), var(--purple));
+    color: white;
+  }
+  .point-text { line-height: 1.4; }
+  .point-zh { font-size: 13pt; font-weight: 700; color: var(--text); }
+  .point-en { font-size: 9pt; color: var(--muted); margin-top: 1mm; font-style: italic; }
+
+  /* ═══════════════════════════════════════════════════ */
+  /*  區段 3: AI 引擎流程（中段 2） ~130mm                 */
+  /* ═══════════════════════════════════════════════════ */
+  .ai-section {
+    padding: 14mm 30mm 14mm;
+    background: white;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    height: 130mm;
+  }
+  .section-head {
+    display: flex; align-items: baseline; justify-content: space-between;
+    margin-bottom: 8mm;
+  }
+  .section-head .lt .lbl {
+    font-size: 9pt; letter-spacing: 0.35em; font-weight: 800;
+    color: var(--purple); text-transform: uppercase; margin-bottom: 2mm;
+  }
+  .section-head .lt .ttl {
+    font-size: 24pt; font-weight: 900; letter-spacing: -0.02em;
+    line-height: 1.1;
+  }
+  .section-head .lt .ttl-en {
+    font-size: 10pt; color: var(--muted); font-style: italic;
+    margin-top: 1.5mm; letter-spacing: 0.05em;
+  }
+  .section-head .rt {
+    font-size: 9pt; color: var(--muted); text-align: right;
+    padding: 2mm 5mm; background: var(--bg); border-radius: 50px;
+    font-weight: 600;
+  }
+
+  .ai-grid {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 4mm;
+  }
+  .ai-cell {
+    padding: 5mm 4mm;
+    border-radius: 3mm;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    text-align: center;
+    position: relative;
+  }
+  .ai-cell.flagship {
+    background: linear-gradient(135deg, var(--gold-bg), white);
+    border-color: var(--gold);
+  }
+  .ai-cell.flagship::before {
+    content: '⭐';
+    position: absolute; top: -3mm; right: -2mm;
+    font-size: 14pt;
+  }
+  .ai-cell-icon {
+    width: 12mm; height: 12mm; margin: 0 auto 3mm;
+    background: linear-gradient(135deg, var(--blue), var(--purple));
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16pt; color: white;
+  }
+  .ai-cell.flagship .ai-cell-icon {
+    background: linear-gradient(135deg, var(--gold), #DC2626);
+  }
+  .ai-cell-name { font-size: 10pt; font-weight: 800; line-height: 1.2; margin-bottom: 1mm; }
+  .ai-cell-tech { font-size: 7.5pt; color: var(--purple); font-weight: 700; letter-spacing: 0.04em; }
+  .ai-cell-cost {
+    margin-top: 2.5mm;
+    font-size: 7.5pt;
+    color: var(--green-dark);
+    font-weight: 700;
+  }
+  .ai-cell-cost.paid { color: var(--gold); }
+
+  .ai-philosophy {
+    margin-top: 8mm;
+    text-align: center;
+    font-size: 13pt; font-weight: 700;
+    color: var(--purple); font-style: italic;
+  }
+  .ai-philosophy .en {
+    font-size: 10pt; color: var(--muted); display: block;
+    margin-top: 1mm; font-weight: 500;
+  }
+
+  /* ═══════════════════════════════════════════════════ */
+  /*  區段 4: 使用者旅程（中段 3） ~150mm                   */
+  /* ═══════════════════════════════════════════════════ */
+  .journey-section {
+    padding: 14mm 30mm 12mm;
+    background: linear-gradient(180deg, white 0%, var(--bg) 100%);
+    height: 150mm;
+  }
+
+  .journey-chart {
+    background: linear-gradient(180deg, var(--green-bg) 0%, white 50%, var(--red-bg) 100%);
+    border-radius: 3mm;
+    border: 1px solid var(--border);
+    padding: 6mm 4mm 4mm;
+    margin-top: 6mm;
+    position: relative;
+  }
+  .journey-legend {
+    display: flex; gap: 8mm; justify-content: center;
+    margin-bottom: 3mm; font-size: 9pt; font-weight: 700;
+  }
+  .jl-item { display: flex; align-items: center; gap: 2mm; }
+  .jl-line {
+    width: 12mm; height: 2.5px; border-radius: 2px;
+  }
+  .jl-line.trad { background: var(--red); }
+  .jl-line.us { background: var(--purple); }
+
+  .journey-chart svg {
+    width: 100%; height: auto;
+    display: block;
+  }
+  .journey-stages {
+    display: grid; grid-template-columns: repeat(7, 1fr);
+    gap: 2mm;
+    margin-top: 2mm;
+  }
+  .js-cell {
+    text-align: center;
+    font-size: 8pt; font-weight: 700; color: var(--text);
+    padding: 2mm 1mm;
+    line-height: 1.2;
+  }
+  .js-cell .num {
+    font-size: 7pt; color: var(--muted);
+    font-weight: 800; margin-bottom: 0.5mm; font-family: 'Inter';
+  }
+  .js-cell .en {
+    font-size: 6.5pt; color: var(--light); margin-top: 0.5mm;
+    font-style: italic; font-weight: 500;
+  }
+
+  /* ═══════════════════════════════════════════════════ */
+  /*  區段 5: IMPACT STATS（底段） ~140mm                  */
+  /* ═══════════════════════════════════════════════════ */
+  .impact-section {
+    padding: 14mm 30mm 14mm;
+    background: var(--navy);
+    color: white;
+    height: 130mm;
+  }
+  .impact-head { margin-bottom: 8mm; }
+  .impact-head .lbl {
+    font-size: 9pt; letter-spacing: 0.35em; font-weight: 800;
+    color: var(--blue-light); text-transform: uppercase; margin-bottom: 2mm;
+  }
+  .impact-head .ttl {
+    font-size: 24pt; font-weight: 900; letter-spacing: -0.02em;
+    color: white;
+  }
+  .impact-head .ttl-en {
+    font-size: 10pt; color: rgba(255,255,255,0.5); font-style: italic;
+    margin-top: 1.5mm; letter-spacing: 0.05em;
+  }
+
+  .impact-grid {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 5mm;
+  }
+  .stat-block {
+    padding: 5mm 4mm;
+    background: rgba(255,255,255,0.04);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 3mm;
+    text-align: center;
+  }
+  .stat-num {
+    font-size: 44pt; font-weight: 900;
+    background: linear-gradient(135deg, var(--blue-light), var(--purple-light));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+    line-height: 1; font-family: 'Inter';
+    margin-bottom: 3mm;
+  }
+  .stat-label {
+    font-size: 10pt; font-weight: 800;
+    color: white; line-height: 1.3;
+    margin-bottom: 1mm;
+  }
+  .stat-en {
+    font-size: 7.5pt; color: rgba(255,255,255,0.5);
+    letter-spacing: 0.05em; font-style: italic;
+  }
+
+  /* SDGs 列 */
+  .sdg-row {
+    display: flex; gap: 4mm; justify-content: center;
+    margin-top: 8mm;
+    flex-wrap: wrap;
+  }
+  .sdg-badge {
+    padding: 3mm 6mm;
+    border-radius: 8px;
+    font-size: 10pt; font-weight: 800;
+    display: flex; align-items: center; gap: 3mm;
+  }
+  .sdg-badge .num {
+    font-family: 'Inter'; font-weight: 900; font-size: 12pt;
+  }
+  .sdg-9  { background: #FD9D24; color: white; }
+  .sdg-12 { background: #BF8B2E; color: white; }
+  .sdg-17 { background: #19486A; color: white; }
+
+  /* ═══════════════════════════════════════════════════ */
+  /*  FOOTER                                              */
+  /* ═══════════════════════════════════════════════════ */
+  .footer {
+    padding: 8mm 30mm;
+    background: var(--navy);
+    border-top: 1px solid rgba(255,255,255,0.1);
+    color: rgba(255,255,255,0.55);
+    display: flex; justify-content: space-between; align-items: center;
+    height: 40mm;
+  }
+  .footer-left .name {
+    font-size: 14pt; font-weight: 900; color: white;
+    background: linear-gradient(135deg, var(--blue-light), var(--purple-light));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .footer-left .tag {
+    font-size: 9pt; color: rgba(255,255,255,0.5);
+    margin-top: 1mm; letter-spacing: 0.05em;
+  }
+  .footer-right {
+    text-align: right;
+    font-size: 9pt;
+    line-height: 1.6;
+  }
+  .footer-right .url {
+    color: var(--blue-light); font-family: 'SF Mono', Consolas, monospace;
+    font-size: 9.5pt; font-weight: 600;
+  }
+  .footer-right .cat {
+    color: rgba(255,255,255,0.4); font-size: 8pt;
+    letter-spacing: 0.2em; text-transform: uppercase;
+    margin-top: 1mm;
+  }
+
+  @media print {
+    body { background: white; padding: 0; }
+    .board { box-shadow: none; margin: 0; }
+    @page { size: A1 portrait; margin: 0; }
+  }
+  @media (max-width: 800px) {
+    body { padding: 0.5rem; }
+    .board { width: 100%; height: auto; }
+  }
+</style>
+</head>
+<body>
+
+<div class="board">
+
+  <!-- ═══════════ HERO ═══════════ -->
+  <section class="hero">
+    <div class="hero-tag">⭐ INTEGRATION DESIGN · AI × CIRCULAR ECONOMY</div>
+    <div class="hero-brand">ReStone</div>
+    <div class="hero-title">讓每一塊石材，<br>找到對的設計</div>
+    <div class="hero-subtitle">為循環石材產業打造的 AI 設計工作流平台</div>
+    <div class="hero-subtitle-en">Let Every Stone Find Its Design — AI-Powered Design Workflow for Circular Materials</div>
+
+    <div class="hero-meta">
+      <div class="meta-badge"><span class="num">6</span>AI 引擎深度整合</div>
+      <div class="meta-badge"><span class="num">30s</span>取代 30 分鐘 PS</div>
+      <div class="meta-badge"><span class="num">4</span>家合作廠商實際營運</div>
+      <div class="meta-badge"><span class="num">NT$0</span>月固定成本</div>
+    </div>
+  </section>
+
+  <!-- ═══════════ PROBLEM + SOLUTION ═══════════ -->
+  <section class="story-band">
+
+    <div class="story-half problem">
+      <div class="story-label">⚠ The Challenge · 業界痛點</div>
+      <div class="story-headline">看不見的浪費</div>
+      <div class="story-headline-en">The Invisible Waste</div>
+      <div class="story-points">
+        <div class="story-point">
+          <div class="ico">📊</div>
+          <div class="point-text">
+            <div class="point-zh">石材加工三成廢料</div>
+            <div class="point-en">~30% of stone discarded as "too small, irregular"</div>
+          </div>
+        </div>
+        <div class="story-point">
+          <div class="ico">⏱</div>
+          <div class="point-text">
+            <div class="point-zh">提案改 7 版，PS 半小時 / 張</div>
+            <div class="point-en">Seven revisions, 30 min per Photoshop edit</div>
+          </div>
+        </div>
+        <div class="story-point">
+          <div class="ico">📦</div>
+          <div class="point-text">
+            <div class="point-zh">剩料堆置、設計師看不見</div>
+            <div class="point-en">Circular stones sit unseen by designers</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="story-half solution">
+      <div class="story-label">✓ The Solution · ReStone 解法</div>
+      <div class="story-headline">把不能想像，<br>變成 30 秒看見</div>
+      <div class="story-headline-en">Turning "Imagine" into "See" in 30 Seconds</div>
+      <div class="story-points">
+        <div class="story-point">
+          <div class="ico">📤</div>
+          <div class="point-text">
+            <div class="point-zh">廠商：一張照片 30 秒上架</div>
+            <div class="point-en">Vendor: One photo, 30-second listing via AI</div>
+          </div>
+        </div>
+        <div class="story-point">
+          <div class="ico">✨</div>
+          <div class="point-text">
+            <div class="point-zh">設計師：圈選 → AI 30 秒合成</div>
+            <div class="point-en">Designer: Mask → AI synthesis in 30 sec</div>
+          </div>
+        </div>
+        <div class="story-point">
+          <div class="ico">🏠</div>
+          <div class="point-text">
+            <div class="point-zh">客戶：看到完成的樣子</div>
+            <div class="point-en">Client: See the actual result before deciding</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- ═══════════ AI 引擎 ═══════════ -->
+  <section class="ai-section">
+    <div class="section-head">
+      <div class="lt">
+        <div class="lbl">AI ENGINES · 六大 AI 引擎</div>
+        <div class="ttl">深度整合的 AI 工作流</div>
+        <div class="ttl-en">Six AI engines, deeply integrated across the entire workflow</div>
+      </div>
+      <div class="rt">廠商上架 · 設計師找料 · 設計師合成</div>
+    </div>
+
+    <div class="ai-grid">
+      <div class="ai-cell flagship">
+        <div class="ai-cell-icon">✨</div>
+        <div class="ai-cell-name">AI 設計合成</div>
+        <div class="ai-cell-tech">Flux Fill Pro</div>
+        <div class="ai-cell-cost paid">~NT$1.5 / 張</div>
+      </div>
+      <div class="ai-cell">
+        <div class="ai-cell-icon">👁</div>
+        <div class="ai-cell-name">視覺分析</div>
+        <div class="ai-cell-tech">LLaVA v1.6</div>
+        <div class="ai-cell-cost paid">~NT$0.5 / 張</div>
+      </div>
+      <div class="ai-cell">
+        <div class="ai-cell-icon">🔍</div>
+        <div class="ai-cell-name">以圖搜圖</div>
+        <div class="ai-cell-tech">Perceptual Hash</div>
+        <div class="ai-cell-cost">免費 Free</div>
+      </div>
+      <div class="ai-cell">
+        <div class="ai-cell-icon">🌈</div>
+        <div class="ai-cell-name">顏色偵測</div>
+        <div class="ai-cell-tech">HSV Color Space</div>
+        <div class="ai-cell-cost">免費 Free</div>
+      </div>
+      <div class="ai-cell">
+        <div class="ai-cell-icon">🧠</div>
+        <div class="ai-cell-name">Prompt 工程</div>
+        <div class="ai-cell-tech">3-Tier System</div>
+        <div class="ai-cell-cost">免費 Free</div>
+      </div>
+      <div class="ai-cell">
+        <div class="ai-cell-icon">💬</div>
+        <div class="ai-cell-name">語義搜尋</div>
+        <div class="ai-cell-tech">Synonym Match</div>
+        <div class="ai-cell-cost">免費 Free</div>
+      </div>
+    </div>
+
+    <div class="ai-philosophy">
+      「AI 是設計副手，不是設計取代者」
+      <span class="en">"AI is a design collaborator, not a replacement."</span>
+    </div>
+  </section>
+
+  <!-- ═══════════ 使用者旅程 ═══════════ -->
+  <section class="journey-section">
+    <div class="section-head">
+      <div class="lt">
+        <div class="lbl">USER JOURNEY · 設計師情緒曲線</div>
+        <div class="ttl">從消耗戰，變成創作之旅</div>
+        <div class="ttl-en">From a War of Attrition to a Journey of Creation</div>
+      </div>
+      <div class="rt">情緒提升 +3.2 級 · Emotional uplift +3.2</div>
+    </div>
+
+    <div class="journey-chart">
+      <div class="journey-legend">
+        <div class="jl-item"><div class="jl-line trad"></div><span style="color:var(--red)">傳統流程</span><span style="color:var(--light);font-weight:500;font-style:italic">Traditional</span></div>
+        <div class="jl-item"><div class="jl-line us"></div><span style="color:var(--purple)">ReStone 流程</span><span style="color:var(--light);font-weight:500;font-style:italic">With ReStone</span></div>
+      </div>
+
+      <svg viewBox="0 0 1400 240" preserveAspectRatio="none">
+        <!-- 輔助線 -->
+        <line x1="0" y1="120" x2="1400" y2="120" stroke="#94A3B8" stroke-width="1.5"/>
+        <line x1="0" y1="30"  x2="1400" y2="30"  stroke="#E2E8F0" stroke-width="1" stroke-dasharray="3,3"/>
+        <line x1="0" y1="75"  x2="1400" y2="75"  stroke="#E2E8F0" stroke-width="1" stroke-dasharray="3,3"/>
+        <line x1="0" y1="165" x2="1400" y2="165" stroke="#E2E8F0" stroke-width="1" stroke-dasharray="3,3"/>
+        <line x1="0" y1="210" x2="1400" y2="210" stroke="#E2E8F0" stroke-width="1" stroke-dasharray="3,3"/>
+
+        <!-- 傳統曲線 -->
+        <path d="M 100 75 C 200 85, 200 120, 300 120
+                 C 400 120, 400 165, 500 165
+                 C 600 165, 600 195, 700 195
+                 C 800 195, 800 215, 900 215
+                 C 1000 215, 1000 155, 1100 155
+                 C 1200 155, 1200 90, 1300 90"
+              fill="none" stroke="#DC2626" stroke-width="3.5" stroke-linecap="round"/>
+        <g fill="#DC2626">
+          <circle cx="100"  cy="75"  r="6"/>
+          <circle cx="300"  cy="120" r="6"/>
+          <circle cx="500"  cy="165" r="6"/>
+          <circle cx="700"  cy="195" r="6"/>
+          <circle cx="900"  cy="215" r="8"/>
+          <circle cx="1100" cy="155" r="6"/>
+          <circle cx="1300" cy="90"  r="6"/>
+        </g>
+
+        <!-- ReStone 曲線 -->
+        <defs>
+          <linearGradient id="us-grad" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0%" stop-color="#2563EB"/>
+            <stop offset="50%" stop-color="#7C3AED"/>
+            <stop offset="100%" stop-color="#2563EB"/>
+          </linearGradient>
+        </defs>
+        <path d="M 100 75 C 200 75, 200 65, 300 65
+                 C 400 65, 400 30, 500 30
+                 C 600 30, 600 30, 700 30
+                 C 800 30, 800 70, 900 70
+                 C 1000 70, 1000 30, 1100 30
+                 C 1200 30, 1200 65, 1300 65"
+              fill="none" stroke="url(#us-grad)" stroke-width="3.5" stroke-linecap="round"/>
+        <g fill="#7C3AED">
+          <circle cx="100"  cy="75"  r="6"/>
+          <circle cx="300"  cy="65"  r="6"/>
+          <circle cx="500"  cy="30"  r="9"/>
+          <circle cx="700"  cy="30"  r="6"/>
+          <circle cx="900"  cy="70"  r="6"/>
+          <circle cx="1100" cy="30"  r="9"/>
+          <circle cx="1300" cy="65"  r="6"/>
+        </g>
+
+        <!-- 峰值標籤 -->
+        <text x="500" y="22" text-anchor="middle" font-size="11" font-weight="800" fill="#10B981" font-family="Noto Sans TC">⭐ AI 合成峰值</text>
+        <!-- 谷底標籤 -->
+        <text x="900" y="232" text-anchor="middle" font-size="11" font-weight="800" fill="#DC2626" font-family="Noto Sans TC">⚠ 修改地獄谷底</text>
+      </svg>
+
+      <div class="journey-stages">
+        <div class="js-cell"><div class="num">01</div>接到委託<div class="en">Brief</div></div>
+        <div class="js-cell"><div class="num">02</div>找料尋訪<div class="en">Sourcing</div></div>
+        <div class="js-cell"><div class="num">03</div>製作提案<div class="en">Proposal</div></div>
+        <div class="js-cell"><div class="num">04</div>客戶會議<div class="en">Meeting</div></div>
+        <div class="js-cell"><div class="num">05</div>修改回饋<div class="en">Revisions</div></div>
+        <div class="js-cell"><div class="num">06</div>確認下單<div class="en">Confirm</div></div>
+        <div class="js-cell"><div class="num">07</div>完成交付<div class="en">Delivery</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════ IMPACT STATS ═══════════ -->
+  <section class="impact-section">
+    <div class="impact-head">
+      <div class="lbl">IMPACT · 量化影響</div>
+      <div class="ttl">數據驗證的設計力</div>
+      <div class="ttl-en">Quantified Impact, Validated Design</div>
+    </div>
+
+    <div class="impact-grid">
+      <div class="stat-block">
+        <div class="stat-num">60×</div>
+        <div class="stat-label">設計提案速度</div>
+        <div class="stat-en">Faster proposals · vs 30-min PS</div>
+      </div>
+      <div class="stat-block">
+        <div class="stat-num">99%</div>
+        <div class="stat-label">合成成本降低</div>
+        <div class="stat-en">Cheaper · NT$1.5 vs NT$200+</div>
+      </div>
+      <div class="stat-block">
+        <div class="stat-num">70%</div>
+        <div class="stat-label">客戶決策週期縮短</div>
+        <div class="stat-en">Faster decisions · 2 vs 7 revisions</div>
+      </div>
+      <div class="stat-block">
+        <div class="stat-num">100%</div>
+        <div class="stat-label">資安合規</div>
+        <div class="stat-en">No Chinese tech · MOEA aligned</div>
+      </div>
+    </div>
+
+    <div class="sdg-row">
+      <div class="sdg-badge sdg-9"><span class="num">SDG 9</span><span>產業創新 Industry Innovation</span></div>
+      <div class="sdg-badge sdg-12"><span class="num">SDG 12</span><span>負責任消費 Responsible Production</span></div>
+      <div class="sdg-badge sdg-17"><span class="num">SDG 17</span><span>夥伴關係 Partnerships</span></div>
+    </div>
+  </section>
+
+  <!-- ═══════════ FOOTER ═══════════ -->
+  <section class="footer">
+    <div class="footer-left">
+      <div class="name">◈ ReStone</div>
+      <div class="tag">循環石材服務平台 · Circular Stone Service Platform</div>
+    </div>
+    <div class="footer-right">
+      <div class="url">stone-database-production.up.railway.app</div>
+      <div class="cat">Golden Pin Design Award · 2026 · Integration Design</div>
+    </div>
+  </section>
+
+</div>
+
+</body>
+</html>
