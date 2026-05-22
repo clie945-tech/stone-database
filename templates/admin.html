@@ -203,14 +203,16 @@
               <tr>
                 <td>
                   {% if s.photo %}
-                    <img class="thumb" src="/static/uploads/{{ s.photo }}" alt="{{ s.stone_type }}" />
+                    <img class="thumb" src="/static/uploads/{{ s.photo }}" alt="{{ s.stone_name or s.stone_type }}" />
                   {% else %}
                     <div class="thumb-placeholder">◈</div>
                   {% endif %}
                 </td>
                 <td>
-                  <div class="name-strong">{{ s.stone_type }}</div>
-                  {% if s.description %}<div class="name-sub">{{ s.description[:35] }}{% if s.description|length > 35 %}...{% endif %}</div>{% endif %}
+                  <div class="name-strong">{{ s.stone_name or s.stone_type }}</div>
+                  <div class="name-sub" style="color:var(--text-muted);font-size:0.75rem;margin-top:2px">
+                    {{ s.stone_type }}{% if s.description %} · {{ s.description[:30] }}{% if s.description|length > 30 %}...{% endif %}{% endif %}
+                  </div>
                 </td>
                 <td>
                   {% if s.width or s.height %}
@@ -229,7 +231,7 @@
                 <td>
                   <div class="actions">
                     <a href="/admin/edit/{{ s.id }}" class="btn btn-secondary btn-sm">編輯</a>
-                    <button onclick="confirmDelete({{ s.id }}, '{{ s.stone_type }}')" class="btn btn-danger btn-sm">刪除</button>
+                    <button onclick="confirmDelete({{ s.id }}, '{{ s.stone_name or s.stone_type }}')" class="btn btn-danger btn-sm">刪除</button>
                   </div>
                 </td>
               </tr>

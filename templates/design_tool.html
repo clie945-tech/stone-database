@@ -280,14 +280,14 @@
         <div class="stone-grid">
           {% for s in stones %}
           <div class="stone-card {% if selected_id == s.id %}selected{% endif %}"
-               data-id="{{ s.id }}" data-name="{{ s.stone_type }}"
+               data-id="{{ s.id }}" data-name="{{ s.stone_name or s.stone_type }}"
                data-prompt="{{ s.ai_prompt or '' }}">
             {% if s.photo %}
-              <img src="/static/uploads/{{ s.photo }}" alt="{{ s.stone_type }}">
+              <img src="/static/uploads/{{ s.photo }}" alt="{{ s.stone_name or s.stone_type }}">
             {% else %}
               <div class="placeholder">◈</div>
             {% endif %}
-            <div class="stone-card-name">{{ s.stone_type }}</div>
+            <div class="stone-card-name">{{ s.stone_name or s.stone_type }}</div>
             <div class="stone-card-check">✓</div>
           </div>
           {% endfor %}

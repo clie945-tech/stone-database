@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>{{ stone.stone_type }} — ReStone</title>
+  <title>{{ stone.stone_name or stone.stone_type }} — ReStone</title>
   <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -181,7 +181,7 @@
 
       <div class="main-img-wrap">
         {% if photos %}
-          <img class="main-img" id="mainImg" src="/static/uploads/{{ photos[0] }}" alt="{{ stone.stone_type }}" onclick="openLightbox(this.src)" title="點擊放大" />
+          <img class="main-img" id="mainImg" src="/static/uploads/{{ photos[0] }}" alt="{{ stone.stone_name or stone.stone_type }}" onclick="openLightbox(this.src)" title="點擊放大" />
         {% else %}
           <div class="img-placeholder"><div class="ph">◈</div><span>暫無照片</span></div>
         {% endif %}
@@ -202,7 +202,7 @@
     <div class="info-col">
       <div>
         <div class="stone-badge">{{ stone.stone_type }}</div>
-        <div class="stone-title">{{ stone.stone_type }}</div>
+        <div class="stone-title">{{ stone.stone_name or stone.stone_type }}</div>
         {% if stone.vendor %}
           <div class="stone-vendor">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
@@ -268,7 +268,7 @@
     {% if session.customer_id %}
       <div class="inquiry-card" style="display:flex;align-items:center;gap:1.2rem;flex-wrap:wrap;background:linear-gradient(135deg,#EFF6FF,#E0E7FF);border-color:#BFDBFE">
         <div style="flex:1;min-width:240px">
-          <div style="font-size:0.95rem;font-weight:700;margin-bottom:0.3rem">將「{{ stone.stone_type }}」套用到你的設計圖</div>
+          <div style="font-size:0.95rem;font-weight:700;margin-bottom:0.3rem">將「{{ stone.stone_name or stone.stone_type }}」套用到你的設計圖</div>
           <div style="font-size:0.82rem;color:var(--text-muted);line-height:1.6">上傳室內 / 家具 / 產品設計圖，用筆刷圈選牆面、桌面或表面區域，AI 會用此石材紋理自動合成新圖。</div>
         </div>
         <a href="/design-tool?stone_id={{ stone.id }}"

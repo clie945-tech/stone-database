@@ -237,7 +237,7 @@
           <a href="/stone/{{ s.id }}" class="res-card">
             <div class="res-img-wrap">
               {% if s.photo %}
-                <img class="res-img" src="/static/uploads/{{ s.photo }}" alt="{{ s.stone_type }}" />
+                <img class="res-img" src="/static/uploads/{{ s.photo }}" alt="{{ s.stone_name or s.stone_type }}" />
               {% else %}
                 <div class="res-img-placeholder">◈</div>
               {% endif %}
@@ -246,7 +246,7 @@
               </div>
             </div>
             <div class="res-body">
-              <div class="res-title">{{ s.stone_type }}</div>
+              <div class="res-title">{{ s.stone_name or s.stone_type }}</div>
               <div class="res-meta">
                 {% if s['color'] and s['color'] in color_map %}
                   <span style="background:{{ color_map[s['color']][2] }};color:{{ color_map[s['color']][3] }};padding:1px 7px;border-radius:50px;font-weight:700;font-size:0.7rem">{{ color_map[s['color']][1] }}</span>

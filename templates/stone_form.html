@@ -159,9 +159,17 @@
         <div class="form-body">
 
           <div class="section-title">基本資訊</div>
+
+          <div class="form-group">
+            <label for="stone_name">石材名稱 / 品名 <span class="hint" style="color:var(--text-muted);font-weight:400;font-size:0.78rem">（選填，例：帝諾、卡拉拉白、銀狐）</span></label>
+            <input type="text" id="stone_name" name="stone_name"
+                   value="{{ stone.stone_name if stone and stone.stone_name else '' }}"
+                   placeholder="輸入此石材的具體品名（前台會顯示為主標題）" />
+          </div>
+
           <div class="form-grid">
             <div class="form-group">
-              <label for="stone_type">石材種類 <span class="required">*</span></label>
+              <label for="stone_type">石材種類 / 分類 <span class="required">*</span></label>
               <select id="stone_type" name="stone_type" required>
                 <option value="" disabled {% if not stone %}selected{% endif %}>請選擇石材種類</option>
                 {% for t in ['大理石', '蛇紋石', '化石', '花崗岩'] %}

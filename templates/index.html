@@ -439,7 +439,7 @@
         <a href="/stone/{{ s.id }}" class="stone-card">
           <div class="card-img-wrap">
             {% if s.photo %}
-              <img class="card-img" src="/static/uploads/{{ s.photo }}" alt="{{ s.stone_type }}" loading="lazy" />
+              <img class="card-img" src="/static/uploads/{{ s.photo }}" alt="{{ s.stone_name or s.stone_type }}" loading="lazy" />
             {% else %}
               <div class="card-img-placeholder">
                 <div class="ph-icon">◈</div>
@@ -452,7 +452,7 @@
             {% endif %}
           </div>
           <div class="card-body">
-            <div class="card-title">{{ s.stone_type }}</div>
+            <div class="card-title">{{ s.stone_name or s.stone_type }}</div>
             {% if s.vendor %}
               <div class="card-vendor">
                 <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>

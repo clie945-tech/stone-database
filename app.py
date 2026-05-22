@@ -381,6 +381,13 @@ def init_db():
     except Exception:
         pass
 
+    # 石材品名欄位（自訂名稱，如「帝諾」「卡拉拉白」；stone_type 為分類，stone_name 為品名）
+    try:
+        conn.execute("ALTER TABLE stones ADD COLUMN stone_name TEXT DEFAULT ''")
+        conn.commit()
+    except Exception:
+        pass
+
     # 建立預設管理員帳號
     cursor = conn.execute('SELECT COUNT(*) FROM admin_users')
     if cursor.fetchone()[0] == 0:
@@ -542,9 +549,9 @@ def index():
         conditions = []
         for term in terms:
             conditions.append(
-                '(stone_type LIKE ? OR vendor LIKE ? OR description LIKE ?)'
+                '(stone_type LIKE ? OR stone_name LIKE ? OR vendor LIKE ? OR description LIKE ?)'
             )
-            params.extend([f'%{term}%', f'%{term}%', f'%{term}%'])
+            params.extend([f'%{term}%', f'%{term}%', f'%{term}%', f'%{term}%'])
         base_query += ' AND (' + ' OR '.join(conditions) + ')'
 
     if stone_type:
@@ -611,12 +618,13 @@ def submit_inquiry(id):
         conn.close()
         return redirect(url_for('stone_detail', id=id))
 
-    stone_name = stone['stone_type']
+    # 詢價時優先存品名（stone.stone_name），無則用分類（stone_type）
+    inquiry_stone_name = (stone['stone_name'] if 'stone_name' in stone.keys() and stone['stone_name'] else None) or stone['stone_type']
     conn.execute('''
         INSERT INTO inquiries (stone_id, stone_name, customer_name, customer_email,
                                customer_phone, quantity, message)
         VALUES (?, ?, ?, ?, ?, ?, ?)
-    ''', (id, stone_name, name, email, phone, qty, message))
+    ''', (id, inquiry_stone_name, name, email, phone, qty, message))
     conn.commit()
     conn.close()
 
@@ -827,6 +835,7 @@ def update_inquiry_status(id):
 def add_stone():
     if request.method == 'POST':
         stone_type = request.form.get('stone_type', '').strip()
+        stone_name = request.form.get('stone_name', '').strip()
         if not stone_type:
             flash('石材種類為必填欄位', 'error')
             return render_template('stone_form.html', stone=None, title='新增石材', colors=COLORS, vendors=VENDORS)
@@ -875,17 +884,19 @@ def add_stone():
 
         conn = get_db()
         conn.execute('''
-            INSERT INTO stones (stone_type, photo, photo2, photo3,
+            INSERT INTO stones (stone_type, stone_name, photo, photo2, photo3,
                                 width, height, thickness, quantity, unit, price, vendor, description, color,
                                 image_hash, dominant_rgb, ai_prompt)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        ''', (stone_type, photo, photo2, photo3,
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ''', (stone_type, stone_name, photo, photo2, photo3,
               width, height, thickness, quantity, unit, price, vendor, description, color,
               image_hash, dominant_rgb, ai_prompt))
         conn.commit()
         conn.close()
 
-        msg = f'「{stone_type}」已成功新增！'
+        # 顯示名稱：優先用品名，否則用分類
+        display_name = stone_name or stone_type
+        msg = f'「{display_name}」已成功新增！'
         if photo and not request.form.get('color') and color:
             color_label = COLOR_MAP.get(color, ('', color, '', ''))[1]
             msg += f' 已自動偵測顏色為「{color_label}」'
@@ -908,6 +919,7 @@ def edit_stone(id):
 
     if request.method == 'POST':
         stone_type  = request.form.get('stone_type', '').strip()
+        stone_name  = request.form.get('stone_name', '').strip()
         width       = request.form.get('width') or None
         height      = request.form.get('height') or None
         thickness   = request.form.get('thickness') or None
@@ -963,19 +975,20 @@ def edit_stone(id):
 
         conn.execute('''
             UPDATE stones
-            SET stone_type=?, photo=?, photo2=?, photo3=?,
+            SET stone_type=?, stone_name=?, photo=?, photo2=?, photo3=?,
                 width=?, height=?, thickness=?,
                 quantity=?, unit=?, price=?, vendor=?, description=?, color=?,
                 image_hash=?, dominant_rgb=?, ai_prompt=?,
                 updated_at=CURRENT_TIMESTAMP
             WHERE id=?
-        ''', (stone_type, photos[0], photos[1], photos[2],
+        ''', (stone_type, stone_name, photos[0], photos[1], photos[2],
               width, height, thickness, quantity, unit, price, vendor, description, color,
               image_hash, dominant_rgb, ai_prompt, id))
         conn.commit()
         conn.close()
 
-        flash(f'「{stone_type}」資料已更新！', 'success')
+        display_name = stone_name or stone_type
+        flash(f'「{display_name}」資料已更新！', 'success')
         return redirect(url_for('admin_dashboard'))
 
     conn.close()
@@ -1189,7 +1202,7 @@ def design_tool():
     """設計工具頁：上傳設計圖 + 圈選區域 + 選石材 → AI 合成"""
     conn = get_db()
     stones = conn.execute(
-        'SELECT id, stone_type, color, photo, ai_prompt FROM stones ORDER BY id DESC'
+        'SELECT id, stone_type, stone_name, color, photo, ai_prompt FROM stones ORDER BY id DESC'
     ).fetchall()
     conn.close()
     selected_id = request.args.get('stone_id', type=int)
@@ -1370,12 +1383,13 @@ def api_apply_stone():
 init_db()
 
 if __name__ == '__main__':
+    port = int(os.environ.get('PORT', 5000))
     print("\n" + "="*50)
     print("  ReStone 循環石材服務平台 已啟動！")
     print("="*50)
-    print("  前台瀏覽：http://127.0.0.1:5000")
-    print("  管理後台：http://127.0.0.1:5000/admin/login")
+    print(f"  前台瀏覽：http://127.0.0.1:{port}")
+    print(f"  管理後台：http://127.0.0.1:{port}/admin/login")
     print("  預設帳號：admin")
     print("  預設密碼：admin123")
     print("="*50 + "\n")
-    app.run(debug=False, port=5000)
+    app.run(debug=False, host='0.0.0.0', port=port)
