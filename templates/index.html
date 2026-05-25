@@ -377,6 +377,12 @@
         <span class="stat-num">{{ types|length }}</span>
         <span class="stat-lbl">石材種類</span>
       </div>
+      {% if total_carbon_kg and total_carbon_kg > 0 %}
+      <div class="hero-stat" style="border-left:1px solid var(--border);padding-left:1.5rem">
+        <span class="stat-num" style="color:#10B981">🌱 {{ fmt_carbon(total_carbon_kg) }}</span>
+        <span class="stat-lbl">累積減碳 CO₂e</span>
+      </div>
+      {% endif %}
     </div>
   </div>
 </section>
@@ -469,6 +475,12 @@
                 <span class="spec-tag">{{ s.description[:28] }}{% if s.description|length > 28 %}…{% endif %}</span>
               {% endif %}
             </div>
+            {% set _c = calc_carbon(s.stone_type, s.width, s.height, s.thickness, s.quantity) %}
+            {% if _c > 0 %}
+              <div style="margin-top:0.6rem;padding:5px 10px;background:#ECFDF5;border-radius:6px;font-size:0.72rem;font-weight:700;color:#065F46;display:inline-flex;align-items:center;gap:4px">
+                🌱 減碳 {{ fmt_carbon(_c) }} CO₂e
+              </div>
+            {% endif %}
             <div class="card-footer">
               <div class="card-price">
                 {% if s.price %}

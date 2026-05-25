@@ -126,6 +126,73 @@ VENDORS = [
     '鎮一大理石有限公司',
 ]
 
+# ──────────────────────────────────────────────────────────────────────
+# 減碳效益計算（依 ICE Database v3.0, University of Bath, UK）
+# 數據範疇：cradle-to-gate（開採至出廠）
+# 單位：kg CO2e / m³
+# ──────────────────────────────────────────────────────────────────────
+CARBON_COEFFICIENTS = {
+    '大理石': 237,
+    '蛇紋石': 250,
+    '化石':   200,
+    '花崗岩': 280,
+}
+DEFAULT_CARBON_COEFFICIENT = 230  # 未知種類的預設值
+
+# 生活化等量換算（讓抽象數字變具體）
+CO2_PER_TREE_YEAR = 21.0       # 1 棵成樹/年 ≈ 21 kg CO2
+CO2_PER_CAR_KM    = 0.120      # 汽車排放 ≈ 120 g/km
+CO2_PER_KWH_TW    = 0.495      # 台電碳排係數（2024 公告值）
+
+
+def calculate_carbon_saved(stone_type, width, height, thickness, quantity):
+    """計算該批石材若回收使用可減少之碳排放（kg CO2e）
+
+    Formula:  總體積 (m³) × 碳排係數 (kg CO2e/m³)
+    """
+    try:
+        w = float(width or 0)
+        h = float(height or 0)
+        t = float(thickness or 0)
+        q = int(quantity or 0)
+        if not (w and h and t and q):
+            return 0.0
+        volume_m3 = (w * h * t / 1_000_000.0) * q   # cm³ → m³
+        coef = CARBON_COEFFICIENTS.get(stone_type, DEFAULT_CARBON_COEFFICIENT)
+        return volume_m3 * coef
+    except (ValueError, TypeError):
+        return 0.0
+
+
+def carbon_equivalents(kg_co2):
+    """把 kg CO2 翻譯成日常情境，回傳 dict"""
+    if not kg_co2 or kg_co2 <= 0:
+        return {'trees': 0, 'car_km': 0, 'kwh': 0}
+    return {
+        'trees':  kg_co2 / CO2_PER_TREE_YEAR,
+        'car_km': kg_co2 / CO2_PER_CAR_KM,
+        'kwh':    kg_co2 / CO2_PER_KWH_TW,
+    }
+
+
+def format_carbon(kg_co2):
+    """格式化 kg CO2 顯示：< 1 顯示 g，>= 1000 顯示 t"""
+    if kg_co2 < 1:
+        return f"{kg_co2 * 1000:.0f} g"
+    if kg_co2 < 1000:
+        return f"{kg_co2:.1f} kg"
+    return f"{kg_co2 / 1000:.2f} t"
+
+
+@app.context_processor
+def inject_carbon_helpers():
+    """讓所有模板都能用減碳計算 helper"""
+    return dict(
+        calc_carbon=calculate_carbon_saved,
+        carbon_eq=carbon_equivalents,
+        fmt_carbon=format_carbon,
+    )
+
 
 # ── 圖片 AI 分析工具 ──
 def classify_rgb(r, g, b):
@@ -567,11 +634,21 @@ def index():
     stones = conn.execute(base_query, params).fetchall()
     types = conn.execute('SELECT DISTINCT stone_type FROM stones ORDER BY stone_type').fetchall()
     total = conn.execute('SELECT COUNT(*) FROM stones').fetchone()[0]
+
+    # 平台累積總減碳量（涵蓋所有石材，不論篩選條件）
+    all_stones = conn.execute(
+        'SELECT stone_type, width, height, thickness, quantity FROM stones'
+    ).fetchall()
+    total_carbon_kg = sum(
+        calculate_carbon_saved(s['stone_type'], s['width'], s['height'], s['thickness'], s['quantity'])
+        for s in all_stones
+    )
     conn.close()
 
     return render_template('index.html', stones=stones, types=types,
                            search=search, selected_type=stone_type, total=total,
-                           colors=COLORS, color_map=COLOR_MAP, selected_color=color)
+                           colors=COLORS, color_map=COLOR_MAP, selected_color=color,
+                           total_carbon_kg=total_carbon_kg)
 
 
 @app.route('/stone/<int:id>')
@@ -801,8 +878,14 @@ def admin_dashboard():
     new_inquiries = conn.execute(
         "SELECT COUNT(*) FROM inquiries WHERE status = 'pending'").fetchone()[0]
     conn.close()
+    # 平台累積減碳量
+    total_carbon_kg = sum(
+        calculate_carbon_saved(s['stone_type'], s['width'], s['height'], s['thickness'], s['quantity'])
+        for s in stones
+    )
     return render_template('admin.html', stones=stones, total=total,
-                           new_inquiries=new_inquiries)
+                           new_inquiries=new_inquiries,
+                           total_carbon_kg=total_carbon_kg)
 
 
 @app.route('/admin/inquiries')

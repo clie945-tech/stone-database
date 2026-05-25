@@ -178,6 +178,13 @@
         <div class="stat-label">石材種類</div>
         <div class="stat-value">{{ stones | map(attribute='stone_type') | list | unique | list | length }}</div>
       </div>
+      {% if total_carbon_kg and total_carbon_kg > 0 %}
+      <div class="stat-card" style="background:linear-gradient(135deg,#ECFDF5,#D1FAE5);border:1px solid #10B981">
+        <div class="stat-label" style="color:#065F46">🌱 累積減碳 CO₂e</div>
+        <div class="stat-value" style="color:#065F46">{{ fmt_carbon(total_carbon_kg) }}</div>
+        <div style="font-size:0.7rem;color:#047857;margin-top:4px">≈ {{ "{:.1f}".format(total_carbon_kg / 21) }} 棵樹一年吸收量</div>
+      </div>
+      {% endif %}
     </div>
 
     <div class="table-card">
