@@ -1,0 +1,810 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<title>ReStone · AI 技術清單與說明</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Noto+Sans+TC:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --blue: #2563EB; --blue-light: #DBEAFE; --blue-dark: #1E40AF;
+    --purple: #7C3AED; --purple-light: #F3E8FF; --purple-dark: #5B21B6;
+    --gold: #F59E0B; --gold-light: #FEF3C7; --gold-dark: #92400E;
+    --green: #10B981; --green-light: #D1FAE5; --green-dark: #065F46;
+    --gray: #64748B; --gray-light: #F1F5F9;
+    --text: #0F172A; --muted: #64748B; --light: #94A3B8;
+    --border: #E2E8F0; --bg: #F8FAFC; --white: #FFFFFF;
+  }
+  body {
+    font-family: 'Inter', 'Noto Sans TC', sans-serif;
+    color: var(--text); background: #ECECEC;
+    padding: 2rem 1rem;
+  }
+  .doc {
+    width: 210mm; max-width: 100%;
+    margin: 0 auto;
+    background: white;
+    padding: 18mm 18mm 14mm;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.1);
+  }
+
+  /* ─── Header ─── */
+  .doc-header {
+    padding-bottom: 6mm;
+    border-bottom: 3px solid var(--text);
+    margin-bottom: 8mm;
+  }
+  .doc-title {
+    font-size: 22pt; font-weight: 900;
+    letter-spacing: -0.02em; line-height: 1.1;
+    margin-bottom: 2mm;
+  }
+  .doc-subtitle {
+    font-size: 11pt; color: var(--muted);
+    line-height: 1.5;
+  }
+  .doc-meta {
+    display: flex; gap: 5mm;
+    margin-top: 4mm; font-size: 8pt; color: var(--light);
+  }
+  .doc-meta strong { color: var(--text); font-weight: 700; }
+
+  /* ─── 摘要表格 ─── */
+  .summary-table {
+    width: 100%; border-collapse: collapse;
+    font-size: 8.5pt; margin-bottom: 10mm;
+  }
+  .summary-table th {
+    background: var(--text); color: white;
+    padding: 2.5mm 3mm; text-align: left;
+    font-size: 8pt; font-weight: 700;
+    letter-spacing: 0.05em; text-transform: uppercase;
+  }
+  .summary-table td {
+    padding: 2.5mm 3mm; border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+  .summary-table tr:hover td { background: var(--bg); }
+  .tag {
+    display: inline-block; padding: 0.5mm 2mm;
+    border-radius: 3px; font-size: 7pt; font-weight: 700;
+    letter-spacing: 0.04em;
+  }
+  .tag.cloud { background: var(--gold-light); color: var(--gold-dark); }
+  .tag.local { background: var(--blue-light); color: var(--blue-dark); }
+  .tag.custom { background: var(--purple-light); color: var(--purple-dark); }
+  .tag.infra { background: var(--gray-light); color: var(--gray); }
+
+  /* ─── 區段標題 ─── */
+  .section {
+    margin-bottom: 10mm;
+  }
+  .section-head {
+    display: flex; align-items: center; gap: 4mm;
+    padding-bottom: 3mm;
+    border-bottom: 2px solid var(--border);
+    margin-bottom: 6mm;
+  }
+  .section-letter {
+    width: 12mm; height: 12mm; border-radius: 3mm;
+    color: white;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16pt; font-weight: 900;
+    font-family: 'Inter'; flex-shrink: 0;
+  }
+  .sec-a .section-letter { background: var(--gold); }
+  .sec-b .section-letter { background: var(--blue); }
+  .sec-c .section-letter { background: var(--purple); }
+  .sec-d .section-letter { background: var(--gray); }
+  .section-title-block { flex: 1; }
+  .section-title {
+    font-size: 14pt; font-weight: 900; line-height: 1.1;
+  }
+  .section-en {
+    font-size: 9pt; color: var(--muted);
+    margin-top: 1mm; letter-spacing: 0.05em;
+  }
+  .section-count {
+    font-size: 9pt; color: var(--muted);
+    text-align: right; flex-shrink: 0;
+  }
+  .section-count strong { color: var(--text); font-size: 14pt; font-weight: 900; font-family: 'Inter'; }
+
+  /* ─── 技術卡片 ─── */
+  .tech-card {
+    border: 1.5px solid var(--border);
+    border-radius: 3mm;
+    padding: 5mm 6mm;
+    margin-bottom: 4mm;
+    background: white;
+  }
+  .tech-card.cloud { border-left: 5px solid var(--gold); }
+  .tech-card.local { border-left: 5px solid var(--blue); }
+  .tech-card.custom { border-left: 5px solid var(--purple); }
+  .tech-card.infra { border-left: 5px solid var(--gray); }
+
+  .tech-head {
+    display: flex; align-items: flex-start; gap: 4mm;
+    padding-bottom: 3mm;
+    border-bottom: 1px dashed var(--border);
+    margin-bottom: 3mm;
+  }
+  .tech-icon {
+    width: 14mm; height: 14mm;
+    border-radius: 3mm;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18pt;
+    flex-shrink: 0;
+  }
+  .tech-card.cloud .tech-icon { background: var(--gold-light); }
+  .tech-card.local .tech-icon { background: var(--blue-light); }
+  .tech-card.custom .tech-icon { background: var(--purple-light); }
+  .tech-card.infra .tech-icon { background: var(--gray-light); }
+
+  .tech-headinfo { flex: 1; }
+  .tech-name {
+    font-size: 13pt; font-weight: 900; line-height: 1.2;
+    margin-bottom: 1mm;
+  }
+  .tech-name .ver {
+    color: var(--muted); font-weight: 600; font-size: 11pt;
+    margin-left: 4px;
+  }
+  .tech-tagline {
+    font-size: 9.5pt; color: var(--muted);
+    margin-bottom: 2mm; line-height: 1.4;
+  }
+  .tech-meta {
+    display: flex; gap: 4mm; flex-wrap: wrap;
+    font-size: 8pt;
+  }
+  .tech-meta span {
+    color: var(--muted);
+  }
+  .tech-meta span strong { color: var(--text); }
+  .flag { font-size: 11pt; }
+  .license {
+    display: inline-block;
+    padding: 0.3mm 2mm;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    font-size: 7.5pt; font-weight: 700;
+    color: var(--text);
+    font-family: 'Inter';
+  }
+
+  .tech-cost {
+    text-align: right;
+    flex-shrink: 0;
+  }
+  .tech-cost .price {
+    font-size: 13pt; font-weight: 900;
+    font-family: 'Inter';
+    line-height: 1;
+  }
+  .tech-cost .price.paid { color: var(--gold); }
+  .tech-cost .price.free { color: var(--green); }
+  .tech-cost .unit {
+    font-size: 7.5pt; color: var(--muted);
+    margin-top: 1mm;
+  }
+
+  /* tech body grid */
+  .tech-body {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 4mm 6mm;
+    font-size: 9pt;
+    line-height: 1.55;
+  }
+  .tech-body .field {
+    color: var(--text);
+  }
+  .tech-body .field .label {
+    font-size: 7.5pt; font-weight: 800;
+    color: var(--muted); letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 1mm;
+    display: block;
+  }
+  .tech-body .field strong { color: var(--text); font-weight: 700; }
+  .tech-body code {
+    background: var(--bg);
+    padding: 0.3mm 1.5mm;
+    border-radius: 2px;
+    font-family: 'SF Mono', Consolas, monospace;
+    font-size: 8pt;
+    color: var(--purple);
+  }
+
+  .tech-flow {
+    background: var(--bg);
+    padding: 2.5mm 3mm;
+    border-radius: 2mm;
+    margin-top: 3mm;
+    font-size: 8.5pt;
+    color: var(--text);
+  }
+  .tech-flow .arr { color: var(--light); margin: 0 2mm; }
+  .tech-flow .in {
+    background: var(--blue-light); color: var(--blue-dark);
+    padding: 0.5mm 2mm; border-radius: 2px; font-weight: 700; font-size: 8pt;
+  }
+  .tech-flow .out {
+    background: var(--green-light); color: var(--green-dark);
+    padding: 0.5mm 2mm; border-radius: 2px; font-weight: 700; font-size: 8pt;
+  }
+
+  /* ─── 合規區塊 ─── */
+  .compliance {
+    background: linear-gradient(135deg, #ECFDF5 0%, white 100%);
+    border: 1.5px solid var(--green);
+    border-radius: 3mm;
+    padding: 5mm 6mm;
+    margin-top: 8mm;
+  }
+  .compliance-head {
+    display: flex; align-items: center; gap: 3mm;
+    margin-bottom: 3mm;
+  }
+  .compliance-head .ico {
+    width: 10mm; height: 10mm; border-radius: 50%;
+    background: var(--green); color: white;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14pt;
+  }
+  .compliance-title {
+    font-size: 12pt; font-weight: 800;
+  }
+  .compliance-en {
+    font-size: 8pt; color: var(--green-dark);
+    letter-spacing: 0.05em; margin-top: 0.5mm;
+  }
+  .compliance-body {
+    font-size: 9pt; line-height: 1.6; color: var(--text);
+  }
+  .compliance-body ul {
+    list-style: none; padding-left: 0;
+    margin-top: 2mm;
+  }
+  .compliance-body li {
+    padding: 0.5mm 0 0.5mm 5mm;
+    position: relative;
+  }
+  .compliance-body li::before {
+    content: '✓';
+    position: absolute; left: 0; top: 0.5mm;
+    color: var(--green); font-weight: 900;
+  }
+
+  /* ─── Footer ─── */
+  .doc-footer {
+    margin-top: 10mm; padding-top: 5mm;
+    border-top: 2px solid var(--border);
+    display: flex; justify-content: space-between;
+    font-size: 8pt; color: var(--light);
+  }
+
+  @media print {
+    body { background: white; padding: 0; }
+    .doc { box-shadow: none; }
+    @page { size: A4 portrait; margin: 0; }
+    .section { page-break-inside: avoid; }
+    .tech-card { page-break-inside: avoid; }
+  }
+  @media (max-width: 800px) {
+    body { padding: 0.5rem; }
+    .doc { padding: 8mm; }
+    .tech-body { grid-template-columns: 1fr; }
+    .tech-head { flex-wrap: wrap; }
+  }
+</style>
+</head>
+
+<body>
+<div class="doc">
+
+  <!-- ─── Header ─── -->
+  <div class="doc-header">
+    <div class="doc-title">AI 技術清單與說明</div>
+    <div class="doc-subtitle">
+      ReStone 循環石材服務平台 — 全部 AI 與機器學習相關技術組件詳列<br>
+      AI Technology Stack Reference for ReStone Circular Stone Service Platform
+    </div>
+    <div class="doc-meta">
+      <span><strong>文件編號</strong> RS-AI-REF-2026-001</span>
+      <span><strong>版本</strong> v1.0</span>
+      <span><strong>製作日期</strong> 2026/05/18</span>
+      <span><strong>用途</strong> 技術說明 · 合規檢核 · 競賽附錄</span>
+    </div>
+  </div>
+
+  <!-- ─── 摘要表格 ─── -->
+  <table class="summary-table">
+    <thead>
+      <tr>
+        <th style="width:5%">#</th>
+        <th style="width:22%">技術名稱</th>
+        <th style="width:18%">提供者</th>
+        <th style="width:9%">來源國</th>
+        <th style="width:13%">類別</th>
+        <th style="width:18%">用途（一句話）</th>
+        <th style="width:15%">每次成本</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>1</td>
+        <td><strong>Flux Fill Pro</strong></td>
+        <td>Black Forest Labs</td>
+        <td>🇩🇪 德國</td>
+        <td><span class="tag cloud">雲端 AI</span></td>
+        <td>AI 設計合成（旗艦）</td>
+        <td><strong>NT$1.5</strong> / 張</td>
+      </tr>
+      <tr>
+        <td>2</td>
+        <td><strong>LLaVA v1.6 Mistral 7B</strong></td>
+        <td>UW Madison + Microsoft</td>
+        <td>🇺🇸 美國</td>
+        <td><span class="tag cloud">雲端 AI</span></td>
+        <td>視覺看圖寫描述</td>
+        <td><strong>NT$0.5</strong> / 張</td>
+      </tr>
+      <tr>
+        <td>3</td>
+        <td><strong>Pillow + pillow-heif</strong></td>
+        <td>Pillow 社群 / Alex Clark</td>
+        <td>🇺🇸 美國</td>
+        <td><span class="tag local">本機處理</span></td>
+        <td>影像讀寫、HEIC 轉檔</td>
+        <td>免費</td>
+      </tr>
+      <tr>
+        <td>4</td>
+        <td><strong>ImageHash (pHash)</strong></td>
+        <td>Johannes Buchner</td>
+        <td>🇦🇹 奧地利</td>
+        <td><span class="tag local">本機處理</span></td>
+        <td>以圖搜圖、紋理比對</td>
+        <td>免費</td>
+      </tr>
+      <tr>
+        <td>5</td>
+        <td><strong>HSV 顏色分類</strong></td>
+        <td>Python colorsys 標準庫</td>
+        <td>🇺🇸 美國</td>
+        <td><span class="tag local">本機處理</span></td>
+        <td>自動辨識顏色標籤</td>
+        <td>免費</td>
+      </tr>
+      <tr>
+        <td>6</td>
+        <td><strong>三層 Prompt 工程</strong></td>
+        <td>ReStone 自建</td>
+        <td>🇹🇼 台灣</td>
+        <td><span class="tag custom">自建邏輯</span></td>
+        <td>智能 prompt 產生</td>
+        <td>免費</td>
+      </tr>
+      <tr>
+        <td>7</td>
+        <td><strong>同義詞字典</strong></td>
+        <td>ReStone 自建</td>
+        <td>🇹🇼 台灣</td>
+        <td><span class="tag custom">自建邏輯</span></td>
+        <td>跨語言語義搜尋</td>
+        <td>免費</td>
+      </tr>
+      <tr>
+        <td>8</td>
+        <td><strong>Replicate Python SDK</strong></td>
+        <td>Replicate, Inc.</td>
+        <td>🇺🇸 美國</td>
+        <td><span class="tag infra">整合層</span></td>
+        <td>呼叫雲端 AI 模型</td>
+        <td>免費</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- ═══════════════ Section A: 雲端 AI ═══════════════ -->
+  <div class="section sec-a">
+    <div class="section-head">
+      <div class="section-letter">A</div>
+      <div class="section-title-block">
+        <div class="section-title">雲端 AI 服務</div>
+        <div class="section-en">Cloud AI Services — usage-based pricing</div>
+      </div>
+      <div class="section-count"><strong>2</strong> 項 / 付費</div>
+    </div>
+
+    <!-- AI #1: Flux Fill Pro -->
+    <div class="tech-card cloud">
+      <div class="tech-head">
+        <div class="tech-icon">✨</div>
+        <div class="tech-headinfo">
+          <div class="tech-name">Flux Fill Pro <span class="ver">v1</span></div>
+          <div class="tech-tagline">業界頂尖的文字引導影像 inpainting 模型，能將指定區域以提示詞描述的紋理替換。</div>
+          <div class="tech-meta">
+            <span><span class="flag">🇩🇪</span> <strong>Black Forest Labs GmbH</strong>（德國）</span>
+            <span class="license">FLUX.1 [pro] Commercial</span>
+          </div>
+        </div>
+        <div class="tech-cost">
+          <div class="price paid">NT$1.5</div>
+          <div class="unit">/ 張 per generation</div>
+        </div>
+      </div>
+      <div class="tech-body">
+        <div class="field">
+          <span class="label">做什麼 What it does</span>
+          將使用者上傳的設計圖 + 遮罩 + 文字 prompt 結合，AI 在遮罩區域內生成符合 prompt 描述的紋理。
+        </div>
+        <div class="field">
+          <span class="label">何時觸發 When it fires</span>
+          會員在 AI 設計工具按下「✨ 套用石材」按鈕時。輸出時間約 15–40 秒。
+        </div>
+        <div class="field">
+          <span class="label">為何選擇 Why chosen</span>
+          目前商業可用最強的 inpainting 模型，紋理寫實度與邊緣融合品質遠優於 Stable Diffusion Inpaint。
+        </div>
+        <div class="field">
+          <span class="label">替代方案 Alternatives</span>
+          SDXL Inpaint（品質較弱）、DALL-E 3 Edit（無 mask 支援）、自建 ControlNet（部署複雜）。
+        </div>
+      </div>
+      <div class="tech-flow">
+        <span class="in">設計圖 + 遮罩 + Prompt</span>
+        <span class="arr">→</span> Flux Fill Pro <span class="arr">→</span>
+        <span class="out">商業級寫實合成圖</span>
+      </div>
+    </div>
+
+    <!-- AI #2: LLaVA -->
+    <div class="tech-card cloud">
+      <div class="tech-head">
+        <div class="tech-icon">👁</div>
+        <div class="tech-headinfo">
+          <div class="tech-name">LLaVA v1.6 Mistral 7B</div>
+          <div class="tech-tagline">視覺語言大型模型，能「看懂」圖片並用自然語言描述，支援中英文輸出。</div>
+          <div class="tech-meta">
+            <span><span class="flag">🇺🇸</span> <strong>University of Wisconsin–Madison + Microsoft Research</strong></span>
+            <span class="license">Apache 2.0</span>
+          </div>
+        </div>
+        <div class="tech-cost">
+          <div class="price paid">NT$0.5</div>
+          <div class="unit">/ 張 per analysis</div>
+        </div>
+      </div>
+      <div class="tech-body">
+        <div class="field">
+          <span class="label">做什麼 What it does</span>
+          看石材照片，輸出 10–15 個英文關鍵字描述（顏色、紋路、表面）作為 Flux Fill Pro 的 prompt。
+        </div>
+        <div class="field">
+          <span class="label">何時觸發 When it fires</span>
+          管理員上傳新石材照片時自動執行；或在編輯頁按「✨ 重新分析照片」手動觸發。
+        </div>
+        <div class="field">
+          <span class="label">為何選擇 Why chosen</span>
+          比規則式 prompt 模板精準 5–10 倍。LLaVA 已開源、Replicate 上易用、比 GPT-4V 便宜 80%。
+        </div>
+        <div class="field">
+          <span class="label">替代方案 Alternatives</span>
+          GPT-4V（貴 5×）、Claude Vision（貴 4×）、BLIP-2（語意精準度較弱）。
+        </div>
+      </div>
+      <div class="tech-flow">
+        <span class="in">石材照片</span>
+        <span class="arr">→</span> LLaVA <span class="arr">→</span>
+        <span class="out">"deep green serpentine with white veining, polished surface"</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════ Section B: 本機處理 ═══════════════ -->
+  <div class="section sec-b">
+    <div class="section-head">
+      <div class="section-letter">B</div>
+      <div class="section-title-block">
+        <div class="section-title">本機影像處理</div>
+        <div class="section-en">Local Image Processing — runs inside the container, no API cost</div>
+      </div>
+      <div class="section-count"><strong>3</strong> 項 / 免費</div>
+    </div>
+
+    <!-- Tech #3: Pillow -->
+    <div class="tech-card local">
+      <div class="tech-head">
+        <div class="tech-icon">🖼</div>
+        <div class="tech-headinfo">
+          <div class="tech-name">Pillow <span class="ver">11.x</span> + pillow-heif <span class="ver">0.16+</span></div>
+          <div class="tech-tagline">Python 影像處理事實標準函式庫，加上 HEIC / HEIF 支援擴充。</div>
+          <div class="tech-meta">
+            <span><span class="flag">🇺🇸</span> <strong>Alex Clark + Pillow 社群</strong></span>
+            <span class="license">MIT-CMU + Apache 2.0</span>
+          </div>
+        </div>
+        <div class="tech-cost">
+          <div class="price free">免費</div>
+          <div class="unit">Open Source</div>
+        </div>
+      </div>
+      <div class="tech-body">
+        <div class="field">
+          <span class="label">做什麼 What it does</span>
+          讀取上傳影像、轉換色彩模式、縮放、儲存；HEIC 自動轉成 JPG 確保瀏覽器相容。
+        </div>
+        <div class="field">
+          <span class="label">何時觸發 When it fires</span>
+          任何影像進入系統時：石材上傳、設計圖上傳、AI 合成回傳結果儲存。
+        </div>
+        <div class="field">
+          <span class="label">為何選擇 Why chosen</span>
+          Python 生態系標準、pillow-heif 提供 iPhone 預設格式相容、零成本、無中資疑慮。
+        </div>
+        <div class="field">
+          <span class="label">替代方案 Alternatives</span>
+          OpenCV（過於龐大）、Wand/ImageMagick（部署複雜）、ImageIO（HEIC 支援不完整）。
+        </div>
+      </div>
+    </div>
+
+    <!-- Tech #4: ImageHash -->
+    <div class="tech-card local">
+      <div class="tech-head">
+        <div class="tech-icon">🔢</div>
+        <div class="tech-headinfo">
+          <div class="tech-name">ImageHash <span class="ver">4.3+</span></div>
+          <div class="tech-tagline">感知雜湊（perceptual hash）演算法實作，產生影像的 64-bit 視覺指紋。</div>
+          <div class="tech-meta">
+            <span><span class="flag">🇦🇹</span> <strong>Johannes Buchner</strong>（奧地利學者，個人開源專案）</span>
+            <span class="license">BSD-2-Clause</span>
+          </div>
+        </div>
+        <div class="tech-cost">
+          <div class="price free">免費</div>
+          <div class="unit">Open Source</div>
+        </div>
+      </div>
+      <div class="tech-body">
+        <div class="field">
+          <span class="label">做什麼 What it does</span>
+          計算每張石材照片的 pHash 雜湊值，比對時用 Hamming distance 算出視覺相似度。
+        </div>
+        <div class="field">
+          <span class="label">何時觸發 When it fires</span>
+          上架時建立索引；使用者用「以圖搜圖」時即時計算所有庫存的相似度排序。
+        </div>
+        <div class="field">
+          <span class="label">為何選擇 Why chosen</span>
+          無需訓練、零延遲、單張石材只需 64 bits 儲存。比 CNN-based embedding 簡單 100×。
+        </div>
+        <div class="field">
+          <span class="label">替代方案 Alternatives</span>
+          CLIP embeddings（要 GPU、儲存大）、SIFT/SURF（已過時）、Resnet 特徵（部署複雜）。
+        </div>
+      </div>
+      <div class="tech-flow">
+        <span class="in">參考圖</span>
+        <span class="arr">→</span> pHash <span class="arr">→</span>
+        <span class="out">64-bit 指紋 → 相似度 0–100%</span>
+      </div>
+    </div>
+
+    <!-- Tech #5: HSV -->
+    <div class="tech-card local">
+      <div class="tech-head">
+        <div class="tech-icon">🌈</div>
+        <div class="tech-headinfo">
+          <div class="tech-name">HSV 色彩空間分類 <span class="ver">自建演算法</span></div>
+          <div class="tech-tagline">用 Python 標準庫 colorsys 將 RGB 轉 HSV，依色相/飽和度/亮度規則分類 8 種顏色。</div>
+          <div class="tech-meta">
+            <span><span class="flag">🇺🇸</span> <strong>Python Software Foundation</strong>（colorsys 為標準庫）</span>
+            <span class="license">PSF License</span>
+          </div>
+        </div>
+        <div class="tech-cost">
+          <div class="price free">免費</div>
+          <div class="unit">Stdlib</div>
+        </div>
+      </div>
+      <div class="tech-body">
+        <div class="field">
+          <span class="label">做什麼 What it does</span>
+          分析石材主色，自動分類為白/灰/黑/米/棕/綠/紅/其他 8 種顏色標籤。
+        </div>
+        <div class="field">
+          <span class="label">何時觸發 When it fires</span>
+          上架時自動執行（如管理員未手動指定顏色）；批次重新索引時可一鍵重算。
+        </div>
+        <div class="field">
+          <span class="label">為何選擇 Why chosen</span>
+          石材色彩語意（如「綠色系」）用 HSV 比 RGB 直觀精準。針對蛇紋石擴展綠色 hue 到 195°。
+        </div>
+        <div class="field">
+          <span class="label">替代方案 Alternatives</span>
+          K-means 主色提取（複雜度高）、CNN 分類（要訓練資料）、外部 API（不必要）。
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════ Section C: 自建邏輯 ═══════════════ -->
+  <div class="section sec-c">
+    <div class="section-head">
+      <div class="section-letter">C</div>
+      <div class="section-title-block">
+        <div class="section-title">自建 AI 邏輯</div>
+        <div class="section-en">In-House AI Logic — built specifically for ReStone</div>
+      </div>
+      <div class="section-count"><strong>2</strong> 項 / 自有</div>
+    </div>
+
+    <!-- Tech #6: 3-Tier Prompt -->
+    <div class="tech-card custom">
+      <div class="tech-head">
+        <div class="tech-icon">🧠</div>
+        <div class="tech-headinfo">
+          <div class="tech-name">三層 Prompt 工程系統</div>
+          <div class="tech-tagline">智能 prompt 生成機制，平衡「自動化」與「人工控制」的混合策略。</div>
+          <div class="tech-meta">
+            <span><span class="flag">🇹🇼</span> <strong>ReStone 自建</strong>（台灣）</span>
+            <span class="license">Proprietary</span>
+          </div>
+        </div>
+        <div class="tech-cost">
+          <div class="price free">免費</div>
+          <div class="unit">In-house</div>
+        </div>
+      </div>
+      <div class="tech-body">
+        <div class="field">
+          <span class="label">做什麼 What it does</span>
+          為 Flux Fill Pro 產生最佳 prompt。優先順序：管理員手動編輯 → LLaVA 視覺 AI 寫描述 → 規則模板生成。
+        </div>
+        <div class="field">
+          <span class="label">何時觸發 When it fires</span>
+          設計師按「套用石材」按鈕時，系統依優先順序自動選用最精準的 prompt。
+        </div>
+        <div class="field">
+          <span class="label">為何選擇 Why chosen</span>
+          純依賴 AI 不可控、純依賴人工不自動化。三層 fallback 確保系統健壯（即使 LLaVA 失敗仍可運作）。
+        </div>
+        <div class="field">
+          <span class="label">設計師可介入 Override</span>
+          設計工具中可即時編輯 prompt（不存檔），管理員可永久編輯每個石材的 prompt。
+        </div>
+      </div>
+      <div class="tech-flow">
+        <span class="in">石材屬性</span> <span class="arr">→</span>
+        [Tier 1] 人工手動 <span class="arr">→</span>
+        [Tier 2] LLaVA AI <span class="arr">→</span>
+        [Tier 3] 模板規則 <span class="arr">→</span>
+        <span class="out">最終 Prompt</span>
+      </div>
+    </div>
+
+    <!-- Tech #7: 同義詞字典 -->
+    <div class="tech-card custom">
+      <div class="tech-head">
+        <div class="tech-icon">💬</div>
+        <div class="tech-headinfo">
+          <div class="tech-name">中英同義詞語義搜尋字典</div>
+          <div class="tech-tagline">針對石材產業詞彙的中英對應與口語別名，純 Python dict 實作。</div>
+          <div class="tech-meta">
+            <span><span class="flag">🇹🇼</span> <strong>ReStone 自建</strong>（台灣）</span>
+            <span class="license">Proprietary</span>
+          </div>
+        </div>
+        <div class="tech-cost">
+          <div class="price free">免費</div>
+          <div class="unit">In-house</div>
+        </div>
+      </div>
+      <div class="tech-body">
+        <div class="field">
+          <span class="label">做什麼 What it does</span>
+          設計師打「marble」或「大理石」或「雲石」都能搜到同樣結果。展開後送入 SQL LIKE 查詢。
+        </div>
+        <div class="field">
+          <span class="label">範例 Examples</span>
+          <code>大理石 → [marble, 雲石, 大理岩, marmo]</code><br>
+          <code>花崗岩 → [granite, 花崗石, 麻石]</code>
+        </div>
+        <div class="field">
+          <span class="label">為何選擇 Why chosen</span>
+          石材分類有限（4 大類），用字典精準度遠勝向量搜尋。零延遲、零成本、易維護。
+        </div>
+        <div class="field">
+          <span class="label">替代方案 Alternatives</span>
+          Sentence Transformers embedding（過度設計）、Elasticsearch 同義詞索引（部署成本高）。
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════ Section D: 整合層 ═══════════════ -->
+  <div class="section sec-d">
+    <div class="section-head">
+      <div class="section-letter">D</div>
+      <div class="section-title-block">
+        <div class="section-title">整合層</div>
+        <div class="section-en">Integration Layer — connects to external AI services</div>
+      </div>
+      <div class="section-count"><strong>1</strong> 項 / 基礎建設</div>
+    </div>
+
+    <!-- Tech #8: Replicate SDK -->
+    <div class="tech-card infra">
+      <div class="tech-head">
+        <div class="tech-icon">🔌</div>
+        <div class="tech-headinfo">
+          <div class="tech-name">Replicate Python SDK <span class="ver">0.32+</span></div>
+          <div class="tech-tagline">統一介面呼叫雲端 AI 模型，封裝 Flux Fill Pro 與 LLaVA 的 API 通訊。</div>
+          <div class="tech-meta">
+            <span><span class="flag">🇺🇸</span> <strong>Replicate, Inc.</strong>（舊金山，Y Combinator 投資）</span>
+            <span class="license">Apache 2.0</span>
+          </div>
+        </div>
+        <div class="tech-cost">
+          <div class="price free">免費</div>
+          <div class="unit">SDK 免費，按模型用量付費</div>
+        </div>
+      </div>
+      <div class="tech-body">
+        <div class="field">
+          <span class="label">做什麼 What it does</span>
+          將 ReStone 後端的 Python 函式呼叫，轉換為 Replicate 雲端的 HTTP API 請求。
+        </div>
+        <div class="field">
+          <span class="label">何時觸發 When it fires</span>
+          每次需要呼叫 Flux Fill Pro 或 LLaVA 時自動處理上傳檔案、輪詢結果、下載回傳。
+        </div>
+        <div class="field">
+          <span class="label">為何選擇 Why chosen</span>
+          一個 token 涵蓋所有開源 AI 模型，避免直接管理 GPU / 模型部署的複雜度。
+        </div>
+        <div class="field">
+          <span class="label">替代方案 Alternatives</span>
+          自建 GPU 伺服器（人月成本高）、Hugging Face Inference（部分模型缺）、fal.ai（生態較新）。
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── 合規聲明 ─── -->
+  <div class="compliance">
+    <div class="compliance-head">
+      <div class="ico">🛡</div>
+      <div>
+        <div class="compliance-title">合規聲明</div>
+        <div class="compliance-en">Compliance Statement — Aligned with Taiwan MOEA Guidelines</div>
+      </div>
+    </div>
+    <div class="compliance-body">
+      經逐項稽核，本平台所使用之 8 項 AI 技術組件，全數符合下列合規要求：
+      <ul>
+        <li>無任何具中華人民共和國（含香港、澳門）資本、控股或主要研發據點之技術組件</li>
+        <li>全部開源組件採用主流寬鬆授權（MIT、BSD、Apache 2.0 等），可商用無虞</li>
+        <li>所有 AI 模型推論皆於美國 Replicate 雲端執行，不涉及大陸地區資料中心</li>
+        <li>使用者影像處理優先於本機完成，僅在必要時才送往 Replicate API</li>
+        <li>已備齊技術組件聲明書、資安自評表、資料流向圖三份正式合規文件</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ─── Footer ─── -->
+  <div class="doc-footer">
+    <div>
+      <strong>ReStone</strong> 循環石材服務平台 · AI Technology Reference
+    </div>
+    <div>RS-AI-REF-2026-001 · v1.0 · Page 1</div>
+  </div>
+
+</div>
+</body>
+</html>
