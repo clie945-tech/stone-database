@@ -322,9 +322,17 @@ def generate_ai_prompt(stone_type, color, description=''):
     return ' '.join([p for p in parts if p]).strip()
 
 
+_LAST_VISION_ERROR = ''
+
 def describe_stone_with_vision(image_path):
     """用 LLaVA 視覺 AI 看石材照片，產生精準的 inpainting prompt"""
-    if not REPLICATE_API_TOKEN or not image_path or not os.path.exists(image_path):
+    global _LAST_VISION_ERROR
+    _LAST_VISION_ERROR = ''
+    if not REPLICATE_API_TOKEN:
+        _LAST_VISION_ERROR = 'REPLICATE_API_TOKEN 未設定'
+        return ''
+    if not image_path or not os.path.exists(image_path):
+        _LAST_VISION_ERROR = f'找不到照片檔案：{image_path}'
         return ''
     try:
         import replicate
@@ -360,9 +368,12 @@ def describe_stone_with_vision(image_path):
         # 限制長度避免回傳過長段落
         if len(caption) > 240:
             caption = caption[:240].rsplit(',', 1)[0]
+        if not caption:
+            _LAST_VISION_ERROR = 'AI 回傳空白描述'
         return caption
     except Exception as e:
-        print(f'[Vision AI 錯誤] {e}')
+        _LAST_VISION_ERROR = f'{type(e).__name__}: {str(e)[:200]}'
+        print(f'[Vision AI 錯誤] {_LAST_VISION_ERROR}')
         return ''
 
 
@@ -1695,19 +1706,28 @@ def admin_reanalyze_prompts():
     conn = get_db()
     stones = conn.execute('SELECT id, photo FROM stones WHERE photo IS NOT NULL AND photo != ""').fetchall()
     updated, failed = 0, 0
+    first_error = ''
     for s in stones:
         path = os.path.join(app.config['UPLOAD_FOLDER'], s['photo'])
         if not os.path.exists(path):
-            failed += 1; continue
+            failed += 1
+            if not first_error:
+                first_error = f'石材 #{s["id"]} 找不到照片檔案（{s["photo"]}）'
+            continue
         new_prompt = describe_stone_with_vision(path)
         if new_prompt:
             conn.execute('UPDATE stones SET ai_prompt = ? WHERE id = ?', (new_prompt, s['id']))
             updated += 1
         else:
             failed += 1
+            if not first_error and _LAST_VISION_ERROR:
+                first_error = f'石材 #{s["id"]}：{_LAST_VISION_ERROR}'
     conn.commit()
     conn.close()
-    flash(f'AI Prompt 重新分析完成：{updated} 成功 / {failed} 失敗', 'success' if failed == 0 else 'error')
+    msg = f'AI Prompt 重新分析完成：{updated} 成功 / {failed} 失敗'
+    if failed and first_error:
+        msg += f'　｜ 失敗原因：{first_error}'
+    flash(msg, 'success' if failed == 0 else 'error')
     return redirect(url_for('admin_dashboard'))
 
 
