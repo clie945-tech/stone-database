@@ -337,9 +337,16 @@ def describe_stone_with_vision(image_path):
     try:
         import replicate
         client = replicate.Client(api_token=REPLICATE_API_TOKEN)
+        # 動態解析最新版本（避免寫死的版本編號被 Replicate 移除後整批失敗）
+        model_name = 'yorickvp/llava-v1.6-mistral-7b'
+        try:
+            model = client.models.get(model_name)
+            ref = f'{model_name}:{model.latest_version.id}' if getattr(model, 'latest_version', None) else model_name
+        except Exception:
+            ref = model_name
         with open(image_path, 'rb') as f:
             output = client.run(
-                'yorickvp/llava-v1.6-mistral-7b:19be067b589d0c46689ffa7cc3ff321447a441986a7694c01225973ccc1a9c0a',
+                ref,
                 input={
                     'image': f,
                     'prompt': (
