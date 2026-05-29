@@ -16,6 +16,9 @@ UPLOAD_FOLDER = os.environ.get('UPLOAD_FOLDER', 'static/uploads')
 DB_PATH = os.environ.get('DB_PATH', 'stone_database.db')
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'webp', 'heic', 'heif'}
 
+# 每位會員「我的設計」最多保留的合成圖數量，超過時自動刪除最舊的（控制 Volume 容量）
+HISTORY_LIMIT = 30
+
 
 def _setup_upload_symlink():
     """讓 /static/uploads URL 能對應到實際儲存位置（Volume 在不同路徑時用 symlink 連回）"""
@@ -416,6 +419,16 @@ def init_db():
             status TEXT DEFAULT 'pending',
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );
+
+        CREATE TABLE IF NOT EXISTS synthesis_history (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            customer_id INTEGER NOT NULL,
+            stone_id INTEGER,
+            stone_name TEXT,
+            image_file TEXT,
+            prompt TEXT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
     ''')
 
     # 舊資料庫遷移：補上 photo2, photo3 欄位
@@ -578,6 +591,46 @@ def delete_photo(filename):
         path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
         if os.path.exists(path):
             os.remove(path)
+
+
+def save_synthesis_history(customer_id, stone_id, stone_name, result_url, prompt):
+    """下載 AI 合成結果到 Volume，寫入歷史紀錄，並自動清除超過 HISTORY_LIMIT 的舊圖。
+    回傳本地檔名（失敗回 None，不影響主流程）。"""
+    import urllib.request
+    try:
+        os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+        filename = f'design_{secrets.token_hex(8)}.jpg'
+        dest = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+        req = urllib.request.Request(result_url, headers={'User-Agent': 'ReStone/1.0'})
+        with urllib.request.urlopen(req, timeout=30) as resp:
+            data = resp.read()
+        with open(dest, 'wb') as fh:
+            fh.write(data)
+
+        conn = get_db()
+        conn.execute(
+            'INSERT INTO synthesis_history (customer_id, stone_id, stone_name, image_file, prompt) '
+            'VALUES (?, ?, ?, ?, ?)',
+            (customer_id, stone_id, stone_name, filename, prompt)
+        )
+        conn.commit()
+
+        # 清除超過上限的舊圖（連同檔案）
+        old_rows = conn.execute(
+            'SELECT id, image_file FROM synthesis_history WHERE customer_id = ? '
+            'ORDER BY created_at DESC, id DESC LIMIT -1 OFFSET ?',
+            (customer_id, HISTORY_LIMIT)
+        ).fetchall()
+        for row in old_rows:
+            delete_photo(row['image_file'])
+            conn.execute('DELETE FROM synthesis_history WHERE id = ?', (row['id'],))
+        conn.commit()
+        conn.close()
+        print(f'[history] 已存入會員 {customer_id} 的設計：{filename}（清除 {len(old_rows)} 張舊圖）')
+        return filename
+    except Exception as e:
+        print(f'[history] 儲存歷史失敗（不影響合成）：{e}')
+        return None
 
 
 def admin_required(f):
@@ -839,6 +892,35 @@ def my_account():
     ''', (session['customer_email'],)).fetchall()
     conn.close()
     return render_template('customer_dashboard.html', inquiries=inquiries)
+
+
+@app.route('/my-designs')
+@customer_required
+def my_designs():
+    conn = get_db()
+    designs = conn.execute(
+        'SELECT * FROM synthesis_history WHERE customer_id = ? ORDER BY created_at DESC, id DESC',
+        (session['customer_id'],)
+    ).fetchall()
+    conn.close()
+    return render_template('my_designs.html', designs=designs, history_limit=HISTORY_LIMIT)
+
+
+@app.route('/my-designs/<int:id>/delete', methods=['POST'])
+@customer_required
+def delete_my_design(id):
+    conn = get_db()
+    row = conn.execute(
+        'SELECT * FROM synthesis_history WHERE id = ? AND customer_id = ?',
+        (id, session['customer_id'])
+    ).fetchone()
+    if row:
+        delete_photo(row['image_file'])
+        conn.execute('DELETE FROM synthesis_history WHERE id = ?', (id,))
+        conn.commit()
+        flash('已刪除該張設計', 'success')
+    conn.close()
+    return redirect(url_for('my_designs'))
 
 
 # ─── 管理員後台 ─────────────────────────────────────────────
@@ -1442,11 +1524,21 @@ def api_apply_stone():
             }), 500
 
         print(f'[Replicate result_url] {result_url}')
+
+        # 存入「我的設計」歷史（下載到 Volume，自動保留最近 HISTORY_LIMIT 張）
+        display_name = (stone['stone_name'] if 'stone_name' in stone.keys() and stone['stone_name']
+                        else stone['stone_type'])
+        saved_file = save_synthesis_history(
+            session['customer_id'], stone_id, display_name, result_url, prompt)
+        local_url = url_for('static', filename=f'uploads/{saved_file}') if saved_file else None
+
         return jsonify({
             'success': True,
             'result_url': result_url,
+            'local_url': local_url,
+            'saved': bool(saved_file),
             'prompt': prompt,
-            'stone_name': stone['stone_type'],
+            'stone_name': display_name,
         })
     except Exception as e:
         import traceback

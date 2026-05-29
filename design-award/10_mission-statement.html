@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<title>ReStone · 使命宣言 / Mission Statement</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Noto+Serif+TC:wght@500;700;900&family=Noto+Sans+TC:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --ink:        #0A0E1A;
+    --ink-soft:   #475569;
+    --ink-light:  #94A3B8;
+    --line:       #CBD5E1;
+    --paper:      #FBFAF7;     /* 米白紙感 */
+    --paper-edge: #E8E2D6;
+    --blue:       #2563EB;
+    --purple:     #7C3AED;
+    --gold:       #B8860B;     /* 深金 */
+  }
+  body {
+    font-family: 'Noto Sans TC','PingFang TC',sans-serif;
+    background: #1F1B16;        /* 暗背景襯托紙張 */
+    padding: 2rem 1rem;
+    color: var(--ink);
+  }
+
+  /* ─── A4 紙張 ─── */
+  .poster {
+    width: 210mm; min-height: 297mm;
+    max-width: 100%;
+    margin: 0 auto;
+    background: var(--paper);
+    padding: 24mm 22mm 20mm;
+    box-shadow:
+      0 30px 80px rgba(0,0,0,0.4),
+      inset 0 0 0 1px var(--paper-edge);
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* 紙張紋理（淡淡的點狀）*/
+  .poster::before {
+    content: '';
+    position: absolute; inset: 0;
+    background-image: radial-gradient(circle, rgba(0,0,0,0.015) 1px, transparent 1px);
+    background-size: 3mm 3mm;
+    pointer-events: none;
+  }
+
+  /* 邊角裝飾線（極簡）*/
+  .corner {
+    position: absolute;
+    width: 14mm; height: 14mm;
+    pointer-events: none;
+  }
+  .corner.tl { top: 10mm; left: 10mm; border-top: 0.5pt solid var(--gold); border-left: 0.5pt solid var(--gold); }
+  .corner.tr { top: 10mm; right: 10mm; border-top: 0.5pt solid var(--gold); border-right: 0.5pt solid var(--gold); }
+  .corner.bl { bottom: 10mm; left: 10mm; border-bottom: 0.5pt solid var(--gold); border-left: 0.5pt solid var(--gold); }
+  .corner.br { bottom: 10mm; right: 10mm; border-bottom: 0.5pt solid var(--gold); border-right: 0.5pt solid var(--gold); }
+
+  /* ─── 頂部 eyebrow ─── */
+  .top-eyebrow {
+    text-align: center;
+    font-family: 'Inter', sans-serif;
+    font-size: 8pt;
+    letter-spacing: 0.5em;
+    color: var(--gold);
+    font-weight: 700;
+    text-transform: uppercase;
+    margin-bottom: 6mm;
+    position: relative; z-index: 1;
+  }
+  .top-eyebrow .dot {
+    display: inline-block;
+    width: 4px; height: 4px;
+    background: var(--gold);
+    border-radius: 50%;
+    vertical-align: middle;
+    margin: 0 6px 2px;
+  }
+
+  /* ─── 品牌名 ─── */
+  .brand-block {
+    text-align: center;
+    margin-bottom: 14mm;
+    position: relative; z-index: 1;
+  }
+  .brand-name {
+    font-family: 'Inter', sans-serif;
+    font-size: 46pt;
+    font-weight: 900;
+    letter-spacing: -0.04em;
+    line-height: 1;
+    background: linear-gradient(135deg, var(--blue), var(--purple));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .brand-sub {
+    font-size: 10pt;
+    color: var(--ink-soft);
+    margin-top: 3mm;
+    letter-spacing: 0.15em;
+    font-weight: 500;
+  }
+  .brand-sub-en {
+    font-family: 'Inter', sans-serif;
+    font-size: 7pt;
+    color: var(--ink-light);
+    margin-top: 1mm;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    font-style: italic;
+  }
+
+  /* ─── 使命標題 ─── */
+  .section-eyebrow {
+    text-align: center;
+    font-family: 'Inter', sans-serif;
+    font-size: 9pt;
+    letter-spacing: 0.4em;
+    color: var(--ink-soft);
+    font-weight: 700;
+    text-transform: uppercase;
+    margin-bottom: 8mm;
+    position: relative; z-index: 1;
+  }
+  .section-eyebrow::before,
+  .section-eyebrow::after {
+    content: '';
+    display: inline-block;
+    width: 30mm; height: 0.5pt;
+    background: var(--line);
+    vertical-align: middle;
+    margin: 0 6mm 2px;
+  }
+
+  /* ─── 核心宣言 ─── */
+  .manifesto {
+    font-family: 'Noto Serif TC', serif;
+    font-size: 20pt;
+    font-weight: 700;
+    line-height: 2.0;
+    text-align: center;
+    color: var(--ink);
+    margin-bottom: 12mm;
+    letter-spacing: 0.08em;
+    position: relative; z-index: 1;
+  }
+  .manifesto .line {
+    display: block;
+    margin-bottom: 4mm;
+  }
+  .manifesto .accent {
+    background: linear-gradient(120deg, transparent 0%, transparent 35%, rgba(255,215,0,0.25) 35%, rgba(255,215,0,0.25) 70%, transparent 70%);
+    padding: 0 2px;
+  }
+
+  /* ─── 三大支柱 ─── */
+  .pillars {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 6mm;
+    margin-top: 8mm;
+    margin-bottom: 10mm;
+    position: relative; z-index: 1;
+  }
+  .pillar {
+    text-align: center;
+    padding: 6mm 4mm;
+    border: 0.5pt solid var(--line);
+    border-radius: 2mm;
+    background: rgba(255,255,255,0.5);
+    backdrop-filter: blur(4px);
+  }
+  .pillar-num {
+    font-family: 'Inter', sans-serif;
+    font-size: 28pt;
+    font-weight: 900;
+    line-height: 1;
+    background: linear-gradient(135deg, var(--blue), var(--purple));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 3mm;
+  }
+  .pillar-action {
+    font-size: 14pt;
+    font-weight: 800;
+    color: var(--ink);
+    margin-bottom: 2mm;
+    letter-spacing: 0.1em;
+  }
+  .pillar-action-en {
+    font-family: 'Inter', sans-serif;
+    font-size: 8pt;
+    color: var(--ink-light);
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    font-weight: 600;
+    margin-bottom: 4mm;
+  }
+  .pillar-role {
+    font-size: 9pt;
+    color: var(--ink-soft);
+    line-height: 1.6;
+    padding-top: 3mm;
+    border-top: 0.5pt dashed var(--line);
+  }
+  .pillar-role .role-label {
+    display: block;
+    font-size: 7pt;
+    color: var(--gold);
+    font-weight: 800;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-bottom: 1.5mm;
+  }
+
+  /* ─── 英文宣言 ─── */
+  .manifesto-en {
+    font-family: 'Inter', serif;
+    font-size: 11pt;
+    font-style: italic;
+    line-height: 1.8;
+    text-align: center;
+    color: var(--ink-soft);
+    margin: 10mm 8mm 8mm;
+    padding: 6mm 0;
+    border-top: 0.5pt solid var(--line);
+    border-bottom: 0.5pt solid var(--line);
+    position: relative; z-index: 1;
+  }
+  .manifesto-en .line {
+    display: block;
+    margin-bottom: 2mm;
+  }
+
+  /* ─── 收尾標語 ─── */
+  .closing {
+    text-align: center;
+    margin-top: 8mm;
+    position: relative; z-index: 1;
+  }
+  .closing-zh {
+    font-family: 'Noto Serif TC', serif;
+    font-size: 16pt;
+    font-weight: 700;
+    color: var(--ink);
+    letter-spacing: 0.15em;
+    margin-bottom: 2mm;
+  }
+  .closing-en {
+    font-family: 'Inter', sans-serif;
+    font-size: 9pt;
+    color: var(--ink-light);
+    font-style: italic;
+    letter-spacing: 0.2em;
+  }
+
+  /* ─── 簽名區 ─── */
+  .signature {
+    position: absolute;
+    bottom: 16mm; left: 22mm; right: 22mm;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    font-family: 'Inter', sans-serif;
+    font-size: 8pt;
+    color: var(--ink-light);
+    letter-spacing: 0.05em;
+  }
+  .signature .left strong { color: var(--ink-soft); font-weight: 700; }
+  .signature .right { text-align: right; }
+  .signature .url { color: var(--blue); font-family: 'SF Mono', Consolas, monospace; font-weight: 600; }
+
+  @media print {
+    body { background: white; padding: 0; }
+    .poster { box-shadow: none; margin: 0; }
+    @page { size: A4 portrait; margin: 0; }
+  }
+  @media (max-width: 800px) {
+    body { padding: 0.5rem; }
+    .poster { padding: 12mm; }
+    .pillars { grid-template-columns: 1fr; }
+    .manifesto { font-size: 14pt; }
+    .brand-name { font-size: 32pt; }
+  }
+</style>
+</head>
+
+<body>
+<div class="poster">
+
+  <!-- 四角裝飾 -->
+  <div class="corner tl"></div>
+  <div class="corner tr"></div>
+  <div class="corner bl"></div>
+  <div class="corner br"></div>
+
+  <!-- 頂部小字 -->
+  <div class="top-eyebrow">
+    Mission Statement <span class="dot"></span> 使命宣言 <span class="dot"></span> 2026
+  </div>
+
+  <!-- 品牌 -->
+  <div class="brand-block">
+    <div class="brand-name">ReStone</div>
+    <div class="brand-sub">循環石材服務平台</div>
+    <div class="brand-sub-en">Circular Stone Service Platform</div>
+  </div>
+
+  <!-- 區段標題 -->
+  <div class="section-eyebrow">Our Mission</div>
+
+  <!-- 核心宣言（中文） -->
+  <div class="manifesto">
+    <span class="line">方便石材業者循環石材<br><span class="accent">上架管理與維護</span></span>
+    <span class="line">讓設計師容易<span class="accent">找到通路</span>，<br>並能<span class="accent">即時模擬材質</span></span>
+    <span class="line">促成循環石材的<br><span class="accent">流通與再利用</span></span>
+  </div>
+
+  <!-- 三大支柱 -->
+  <div class="pillars">
+    <div class="pillar">
+      <div class="pillar-num">01</div>
+      <div class="pillar-action">上架</div>
+      <div class="pillar-action-en">Manage</div>
+      <div class="pillar-role">
+        <span class="role-label">For Vendors</span>
+        簡化廠商上架與維護<br>降低數位門檻
+      </div>
+    </div>
+    <div class="pillar">
+      <div class="pillar-num">02</div>
+      <div class="pillar-action">找料</div>
+      <div class="pillar-action-en">Discover</div>
+      <div class="pillar-role">
+        <span class="role-label">For Designers</span>
+        集中通路、智能搜尋<br>即時材質模擬
+      </div>
+    </div>
+    <div class="pillar">
+      <div class="pillar-num">03</div>
+      <div class="pillar-action">流通</div>
+      <div class="pillar-action-en">Circulate</div>
+      <div class="pillar-role">
+        <span class="role-label">For Circular Economy</span>
+        讓剩料重新進入消費循環<br>真正物盡其用
+      </div>
+    </div>
+  </div>
+
+  <!-- 英文宣言 -->
+  <div class="manifesto-en">
+    <span class="line">Empowering stone vendors to list, manage, and maintain circular stones effortlessly.</span>
+    <span class="line">Enabling designers to discover stones, supply channels, and instant material simulation.</span>
+    <span class="line">Driving the circulation and reuse of circular stone materials.</span>
+  </div>
+
+  <!-- 收尾標語 -->
+  <div class="closing">
+    <div class="closing-zh">讓 每 一 塊 石 材，找 到 對 的 設 計</div>
+    <div class="closing-en">— Let Every Stone Find Its Design —</div>
+  </div>
+
+  <!-- 簽名區 -->
+  <div class="signature">
+    <div class="left">
+      <strong>ReStone</strong> · 循環石材服務平台<br>
+      Circular Stone Service Platform
+    </div>
+    <div class="right">
+      <span class="url">stone-database-production.up.railway.app</span><br>
+      2026 · Edition 1.0
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

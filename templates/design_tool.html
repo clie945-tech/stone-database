@@ -212,6 +212,7 @@
     </a>
     <div style="display:flex;gap:0.5rem">
       <a href="/" class="hbtn">← 返回首頁</a>
+      <a href="/my-designs" class="hbtn">🖼 我的設計</a>
       <a href="/search/by-image" class="hbtn">📷 以圖搜圖</a>
     </div>
   </div>
@@ -564,7 +565,7 @@ btnApply.addEventListener('click', async () => {
     img.alt = 'AI 合成結果';
     img.src = data.result_url;
 
-    const safeUrl = data.result_url;
+    const safeUrl = data.local_url || data.result_url;
     resultBox.innerHTML = '';
     resultBox.appendChild(img);
     const actions = document.createElement('div');
@@ -572,7 +573,17 @@ btnApply.addEventListener('click', async () => {
     const openA = document.createElement('a'); openA.href = safeUrl; openA.target = '_blank'; openA.textContent = '🔍 開啟原圖';
     const dlA   = document.createElement('a'); dlA.href = safeUrl; dlA.setAttribute('download', 'restone-design.jpg'); dlA.textContent = '↓ 下載圖片';
     actions.appendChild(openA); actions.appendChild(dlA);
+    if (data.saved) {
+      const myA = document.createElement('a'); myA.href = '/my-designs'; myA.textContent = '🖼 我的設計';
+      actions.appendChild(myA);
+    }
     resultBox.appendChild(actions);
+    if (data.saved) {
+      const savedNote = document.createElement('div');
+      savedNote.style.cssText = 'margin-top:0.6rem;font-size:0.76rem;color:#16a34a;font-weight:600';
+      savedNote.textContent = '✓ 已自動存入「我的設計」';
+      resultBox.appendChild(savedNote);
+    }
     const pBox = document.createElement('div');
     pBox.className = 'prompt-box';
     pBox.style.marginTop = '1rem';

@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<title>ReStone · 三層 Prompt 工程系統說明</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Noto+Sans+TC:wght@400;500;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --gold: #B8860B; --gold-light: #FEF3C7; --gold-bg: #FFFBEB; --gold-dark: #78350F;
+    --blue: #2563EB; --blue-light: #DBEAFE; --blue-bg: #EFF6FF; --blue-dark: #1E40AF;
+    --purple: #7C3AED; --purple-light: #F3E8FF; --purple-dark: #5B21B6;
+    --green: #10B981; --green-light: #D1FAE5; --green-bg: #ECFDF5; --green-dark: #065F46;
+    --gray: #64748B; --gray-light: #F1F5F9; --gray-bg: #F8FAFC;
+    --text: #0F172A; --muted: #64748B; --light: #94A3B8;
+    --border: #E2E8F0; --white: #FFFFFF;
+  }
+  body {
+    font-family: 'Inter', 'Noto Sans TC', sans-serif;
+    color: var(--text); background: #ECECEC;
+    padding: 2rem 1rem;
+  }
+  .doc {
+    width: 210mm; max-width: 100%;
+    margin: 0 auto;
+    background: white;
+    padding: 18mm 18mm 14mm;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.1);
+  }
+
+  /* ─── Header ─── */
+  .doc-header {
+    padding-bottom: 6mm;
+    border-bottom: 3px solid var(--text);
+    margin-bottom: 8mm;
+  }
+  .doc-title {
+    font-size: 22pt; font-weight: 900;
+    letter-spacing: -0.02em; line-height: 1.1;
+    margin-bottom: 2mm;
+  }
+  .doc-subtitle {
+    font-size: 11pt; color: var(--muted);
+    line-height: 1.5;
+  }
+  .doc-meta {
+    display: flex; gap: 5mm;
+    margin-top: 4mm; font-size: 8pt; color: var(--light);
+  }
+  .doc-meta strong { color: var(--text); font-weight: 700; }
+
+  /* ─── Section ─── */
+  .section { margin-bottom: 8mm; }
+  .section-eyebrow {
+    font-size: 8pt; letter-spacing: 0.3em; font-weight: 800;
+    color: var(--purple); text-transform: uppercase;
+    margin-bottom: 2mm;
+  }
+  .section-title {
+    font-size: 14pt; font-weight: 900;
+    letter-spacing: -0.02em; line-height: 1.2;
+    margin-bottom: 4mm;
+  }
+  .section-body {
+    font-size: 9.5pt; line-height: 1.7;
+    color: var(--text);
+  }
+  .section-body p { margin-bottom: 2mm; }
+  .section-body strong { color: var(--text); font-weight: 700; }
+
+  /* ─── 開場問題框 ─── */
+  .problem-box {
+    background: var(--gold-bg);
+    border-left: 4px solid var(--gold);
+    padding: 4mm 5mm;
+    border-radius: 2mm;
+    margin: 4mm 0;
+    font-size: 10pt;
+  }
+  .problem-box .label {
+    font-size: 7.5pt; letter-spacing: 0.15em; font-weight: 800;
+    color: var(--gold-dark); text-transform: uppercase;
+    margin-bottom: 2mm;
+  }
+  .problem-box .q {
+    font-size: 11pt; font-weight: 700; color: var(--text);
+    margin-bottom: 1.5mm;
+  }
+  .problem-box .a {
+    font-size: 9pt; color: var(--gold-dark); line-height: 1.5;
+  }
+
+  /* ─── 三層卡片 ─── */
+  .tiers {
+    display: flex; flex-direction: column; gap: 4mm;
+    margin: 6mm 0 4mm;
+  }
+  .tier {
+    border: 2px solid;
+    border-radius: 4mm;
+    padding: 5mm 6mm;
+    position: relative;
+  }
+  .tier-1 { border-color: var(--gold); background: linear-gradient(to right, var(--gold-bg), white 40%); }
+  .tier-2 { border-color: var(--purple); background: linear-gradient(to right, var(--purple-light), white 40%); }
+  .tier-3 { border-color: var(--gray); background: linear-gradient(to right, var(--gray-light), white 40%); }
+
+  .tier-head {
+    display: flex; align-items: center; gap: 4mm;
+    margin-bottom: 3mm;
+    padding-bottom: 3mm;
+    border-bottom: 1px dashed var(--border);
+  }
+  .tier-badge {
+    width: 14mm; height: 14mm; border-radius: 50%;
+    color: white; font-weight: 900;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16pt; font-family: 'Inter'; flex-shrink: 0;
+  }
+  .tier-1 .tier-badge { background: linear-gradient(135deg, var(--gold), #B8860B); }
+  .tier-2 .tier-badge { background: linear-gradient(135deg, var(--blue), var(--purple)); }
+  .tier-3 .tier-badge { background: linear-gradient(135deg, var(--gray), #475569); }
+
+  .tier-titles { flex: 1; }
+  .tier-title {
+    font-size: 13pt; font-weight: 900; line-height: 1.2;
+  }
+  .tier-en {
+    font-size: 8pt; color: var(--muted); font-weight: 600;
+    letter-spacing: 0.05em; margin-top: 0.5mm;
+    text-transform: uppercase;
+  }
+  .tier-priority {
+    font-size: 7pt; font-weight: 800; letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 1.5mm 3mm;
+    border-radius: 2mm;
+    text-align: center;
+  }
+  .tier-1 .tier-priority { background: var(--gold); color: white; }
+  .tier-2 .tier-priority { background: var(--purple); color: white; }
+  .tier-3 .tier-priority { background: var(--gray); color: white; }
+
+  .tier-body {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 4mm;
+    font-size: 9pt; line-height: 1.6;
+  }
+  .tier-field .label {
+    font-size: 7pt; letter-spacing: 0.1em; font-weight: 800;
+    color: var(--muted); text-transform: uppercase;
+    margin-bottom: 1mm;
+  }
+  .tier-field .text {
+    color: var(--text);
+  }
+  .tier-example {
+    margin-top: 3mm;
+    background: var(--text); color: #E2E8F0;
+    padding: 3mm 4mm; border-radius: 2mm;
+    font-family: 'JetBrains Mono', 'SF Mono', monospace;
+    font-size: 8pt; line-height: 1.6;
+  }
+  .tier-example .key { color: #93C5FD; }
+  .tier-example .str { color: #86EFAC; }
+  .tier-example .comment { color: #94A3B8; font-style: italic; }
+
+  /* ─── Cascade flow visualization ─── */
+  .cascade {
+    background: var(--gray-bg);
+    border-radius: 4mm;
+    padding: 6mm;
+    margin: 4mm 0;
+  }
+  .cascade-title {
+    font-size: 9pt; font-weight: 800; letter-spacing: 0.1em;
+    color: var(--purple); text-transform: uppercase;
+    margin-bottom: 3mm; text-align: center;
+  }
+  .cascade-flow {
+    font-family: 'JetBrains Mono', 'SF Mono', monospace;
+    font-size: 8.5pt;
+    line-height: 1.8;
+    color: var(--text);
+    white-space: pre;
+    text-align: left;
+    overflow-x: auto;
+  }
+  .cascade-flow .gold { color: var(--gold-dark); font-weight: 700; }
+  .cascade-flow .purp { color: var(--purple-dark); font-weight: 700; }
+  .cascade-flow .gray { color: var(--gray); font-weight: 700; }
+  .cascade-flow .arrow { color: var(--light); }
+
+  /* ─── Bonus 4th layer ─── */
+  .bonus {
+    background: linear-gradient(135deg, var(--blue-bg) 0%, var(--purple-light) 100%);
+    border: 2px dashed var(--blue);
+    border-radius: 4mm;
+    padding: 5mm 6mm;
+    margin: 4mm 0;
+  }
+  .bonus-tag {
+    display: inline-block;
+    padding: 1mm 3mm;
+    background: var(--blue); color: white;
+    border-radius: 50px;
+    font-size: 7pt; font-weight: 800;
+    letter-spacing: 0.1em;
+    margin-bottom: 2mm;
+  }
+  .bonus-title {
+    font-size: 12pt; font-weight: 800;
+    margin-bottom: 2mm;
+  }
+  .bonus-body {
+    font-size: 9pt; line-height: 1.6; color: var(--text);
+  }
+
+  /* ─── 對比表 ─── */
+  table.cmp {
+    width: 100%; border-collapse: collapse;
+    font-size: 8.5pt; margin-top: 3mm;
+  }
+  table.cmp th {
+    background: var(--text); color: white;
+    padding: 2.5mm 3mm; text-align: left;
+    font-size: 8pt; font-weight: 700;
+    letter-spacing: 0.05em; text-transform: uppercase;
+  }
+  table.cmp td {
+    padding: 2.5mm 3mm;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+  table.cmp tr.us td { background: var(--purple-light); font-weight: 700; }
+  table.cmp .star { color: var(--gold); font-weight: 800; }
+
+  /* ─── 哲學三原則 ─── */
+  .principles {
+    display: grid; grid-template-columns: 1fr 1fr 1fr;
+    gap: 4mm; margin-top: 4mm;
+  }
+  .principle {
+    background: var(--gray-bg);
+    border-top: 4px solid var(--purple);
+    padding: 4mm 5mm 5mm;
+    border-radius: 0 0 2mm 2mm;
+  }
+  .principle-num {
+    font-family: 'Inter';
+    font-size: 22pt; font-weight: 900;
+    line-height: 1;
+    background: linear-gradient(135deg, var(--blue), var(--purple));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 2mm;
+  }
+  .principle-title {
+    font-size: 10pt; font-weight: 800; margin-bottom: 1mm;
+  }
+  .principle-text {
+    font-size: 8.5pt; color: var(--muted); line-height: 1.5;
+  }
+
+  /* ─── 結尾 quote ─── */
+  .quote-card {
+    background: linear-gradient(135deg, #0F172A, #1E1B4B);
+    color: white;
+    padding: 7mm 8mm;
+    border-radius: 4mm;
+    margin-top: 6mm;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .quote-card::before {
+    content: '"';
+    position: absolute; top: -10mm; left: 5mm;
+    font-size: 80pt; color: rgba(96,165,250,0.15);
+    font-family: serif; line-height: 1;
+  }
+  .quote-text {
+    font-size: 13pt; font-weight: 700; line-height: 1.5;
+    letter-spacing: 0.05em;
+    background: linear-gradient(135deg, #93C5FD, white, #C4B5FD);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 3mm;
+    position: relative; z-index: 1;
+  }
+  .quote-en {
+    font-size: 9pt; color: rgba(255,255,255,0.5);
+    font-style: italic; letter-spacing: 0.05em;
+    position: relative; z-index: 1;
+  }
+
+  /* ─── Footer ─── */
+  .doc-footer {
+    margin-top: 8mm; padding-top: 5mm;
+    border-top: 2px solid var(--border);
+    display: flex; justify-content: space-between;
+    font-size: 8pt; color: var(--light);
+  }
+
+  @media print {
+    body { background: white; padding: 0; }
+    .doc { box-shadow: none; }
+    @page { size: A4 portrait; margin: 0; }
+    .tier { page-break-inside: avoid; }
+    .quote-card { page-break-inside: avoid; }
+  }
+  @media (max-width: 800px) {
+    body { padding: 0.5rem; }
+    .doc { padding: 8mm; }
+    .tier-body, .principles { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+
+<body>
+<div class="doc">
+
+  <!-- ─── Header ─── -->
+  <div class="doc-header">
+    <div class="doc-title">三層 Prompt 工程系統</div>
+    <div class="doc-subtitle">
+      ReStone 平台核心 AI 設計倫理之一<br>
+      3-Tier Prompt Engineering: Where AI Serves Human Judgment, Not the Other Way Around
+    </div>
+    <div class="doc-meta">
+      <span><strong>文件編號</strong> RS-3TIER-2026-001</span>
+      <span><strong>版本</strong> v1.0</span>
+      <span><strong>對象</strong> 評審 · 客戶 · 技術評估者</span>
+    </div>
+  </div>
+
+  <!-- ═══════════ 問題開場 ═══════════ -->
+  <div class="section">
+    <div class="section-eyebrow">The Problem · 它解決什麼</div>
+    <div class="section-title">每塊石材都需要一個「對的 Prompt」</div>
+    <div class="section-body">
+      <p>當設計師按下「✨ 套用石材」時，系統要送一段<strong>英文描述（prompt）</strong>給 Flux Fill Pro，AI 才知道要合成什麼樣的紋理。<strong>這個 prompt 的精準度，直接決定合成圖的品質。</strong></p>
+    </div>
+
+    <div class="problem-box">
+      <div class="label">兩難 · The Dilemma</div>
+      <div class="q">⚠ 寫太籠統 → AI 隨便畫，紋理不像 · 寫太具體 → AI 卡死，輸出不自然</div>
+      <div class="q">⚠ 全部讓人工寫 → 廠商上架累死 · 全部讓 AI 寫 → 失控時無法人工干預</div>
+      <div class="a">「三層 Prompt 工程」就是為了同時解決這四個矛盾而設計的優雅折衷。</div>
+    </div>
+  </div>
+
+  <!-- ═══════════ 流程圖 ═══════════ -->
+  <div class="cascade">
+    <div class="cascade-title">⤓ Cascade Logic · 三層 fallback 機制</div>
+<div class="cascade-flow">
+       使用者按下「✨ 套用石材」
+                ↓
+    ┌─────────────────────────────┐
+    │  <span class="gold">Tier 1 · 管理員手寫</span>（最高優先）│
+    └─────────────┬───────────────┘
+                  │ 有人工編輯？
+            <span class="arrow">YES</span> ───┐    └── <span class="arrow">NO</span>
+                 │              ↓
+            使用人工版    ┌─────────────────────────────┐
+                          │  <span class="purp">Tier 2 · LLaVA 視覺 AI</span>      │
+                          └─────────────┬───────────────┘
+                                        │ AI 寫得出來？
+                                   <span class="arrow">YES</span> ───┐    └── <span class="arrow">NO</span>
+                                        │              ↓
+                                   使用 AI 版   ┌─────────────────────────────┐
+                                                │  <span class="gray">Tier 3 · 模板規則（保底）</span>   │
+                                                └─────────────┬───────────────┘
+                                                              ↓
+                                                         使用模板版
+</div>
+  </div>
+
+  <!-- ═══════════ 三層詳述 ═══════════ -->
+  <div class="tiers">
+
+    <!-- Tier 1 -->
+    <div class="tier tier-1">
+      <div class="tier-head">
+        <div class="tier-badge">1</div>
+        <div class="tier-titles">
+          <div class="tier-title">管理員手動編輯</div>
+          <div class="tier-en">Manual Override · Highest Priority</div>
+        </div>
+        <div class="tier-priority">最高優先</div>
+      </div>
+      <div class="tier-body">
+        <div class="tier-field">
+          <div class="label">是什麼</div>
+          <div class="text">後台「編輯石材」頁面的 <code style="background:var(--gold-bg);padding:1px 4px;border-radius:2px;font-family:'JetBrains Mono'">ai_prompt</code> 文字欄位，管理員親自寫此塊石材的描述。</div>
+        </div>
+        <div class="tier-field">
+          <div class="label">何時使用</div>
+          <div class="text">旗艦商品需精細控制、AI 版本不夠精準想覆寫、廠商提供 EPD 正式描述時。</div>
+        </div>
+        <div class="tier-field">
+          <div class="label">為何最優先</div>
+          <div class="text">人工的意圖永遠優先於 AI 猜測。<strong>設計倫理上叫「人類保留決策權」。</strong></div>
+        </div>
+        <div class="tier-field">
+          <div class="label">編輯介面</div>
+          <div class="text">編輯石材頁 → 「✨ AI 設計工具 Prompt」區塊 → 可手寫 / 重新分析。</div>
+        </div>
+      </div>
+      <div class="tier-example">
+<span class="comment"># 管理員親手寫範例</span>
+<span class="key">ai_prompt</span>: <span class="str">"deep emerald green serpentine with prominent white</span>
+              <span class="str">calcite veining in diagonal patterns, hand-polished</span>
+              <span class="str">mirror finish, showroom-grade quality"</span>
+      </div>
+    </div>
+
+    <!-- Tier 2 -->
+    <div class="tier tier-2">
+      <div class="tier-head">
+        <div class="tier-badge">2</div>
+        <div class="tier-titles">
+          <div class="tier-title">LLaVA 視覺 AI 自動生成</div>
+          <div class="tier-en">Vision AI Auto-Generation</div>
+        </div>
+        <div class="tier-priority">自動</div>
+      </div>
+      <div class="tier-body">
+        <div class="tier-field">
+          <div class="label">是什麼</div>
+          <div class="text">當 Tier 1 為空時，自動把照片送給 LLaVA v1.6 視覺模型，AI 看圖寫描述。</div>
+        </div>
+        <div class="tier-field">
+          <div class="label">觸發時機</div>
+          <div class="text">新增石材時自動執行；主照片變更時觸發；後台批次重新分析按鈕。</div>
+        </div>
+        <div class="tier-field">
+          <div class="label">成本</div>
+          <div class="text">每次分析約 <strong>NT$0.5</strong>（廠商一次性上架成本，後續不重複收費）。</div>
+        </div>
+        <div class="tier-field">
+          <div class="label">為何次優先</div>
+          <div class="text">AI 看圖比人腦記憶準確、比規則模板精細，但<strong>仍輸給人類設計師判斷</strong>。</div>
+        </div>
+      </div>
+      <div class="tier-example">
+<span class="comment"># LLaVA 看圖自動生成</span>
+<span class="key">input</span>:  <span class="str">[stone-photo.jpg]</span>
+<span class="key">prompt</span>: <span class="str">"Describe in 10-15 English words. Focus on color,</span>
+         <span class="str">pattern, veining, surface finish."</span>
+<span class="key">output</span>: <span class="str">"gray serpentine with darker veining,</span>
+         <span class="str">polished glossy surface, natural patterns"</span>
+      </div>
+    </div>
+
+    <!-- Tier 3 -->
+    <div class="tier tier-3">
+      <div class="tier-head">
+        <div class="tier-badge">3</div>
+        <div class="tier-titles">
+          <div class="tier-title">模板規則生成（保底）</div>
+          <div class="tier-en">Template Fallback · Safety Net</div>
+        </div>
+        <div class="tier-priority">備援</div>
+      </div>
+      <div class="tier-body">
+        <div class="tier-field">
+          <div class="label">是什麼</div>
+          <div class="text">當 Tier 1、2 皆無法生成時，用「種類 + 顏色 + 表面」組合最簡關鍵字。</div>
+        </div>
+        <div class="tier-field">
+          <div class="label">何時啟動</div>
+          <div class="text">Replicate API 沒餘額、網路斷線、視覺模型回傳錯誤等異常情境。</div>
+        </div>
+        <div class="tier-field">
+          <div class="label">成本</div>
+          <div class="text"><strong>完全免費</strong>，純 Python 字典查找，毫秒級回應。</div>
+        </div>
+        <div class="tier-field">
+          <div class="label">為何存在</div>
+          <div class="text">系統不能因 AI 掛掉就完全不能用。<strong>Tier 3 保證永不下線</strong>。</div>
+        </div>
+      </div>
+      <div class="tier-example">
+<span class="comment"># 規則模板組裝</span>
+<span class="key">stone_type</span>: <span class="str">"花崗岩"</span>  → "granite"
+<span class="key">color</span>:      <span class="str">"黑色系"</span>  → "black"
+<span class="key">template</span>:   <span class="str">"{color_word} {base}, polished surface"</span>
+<span class="key">output</span>:     <span class="str">"black granite, polished surface"</span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ═══════════ 額外第四層 ═══════════ -->
+  <div class="bonus">
+    <div class="bonus-tag">+ BONUS LAYER</div>
+    <div class="bonus-title">第四層：設計師合成時的即時微調</div>
+    <div class="bonus-body">
+      在 Tier 1–3 之外，<strong>設計工具還給設計師一個即時編輯框</strong>。設計師可在合成前微調 prompt 來客製當次氛圍（例如「換成 morning light、soft matte surface」），這個臨時版本只用於本次合成，<strong>不會存回 DB</strong>。
+      <br><br>
+      ✦ 給設計師「**這次合成想要的特定情境**」自由度，同時保留資料庫的整潔。
+    </div>
+  </div>
+
+  <!-- ═══════════ 設計哲學 ═══════════ -->
+  <div class="section">
+    <div class="section-eyebrow">Design Philosophy · 設計哲學</div>
+    <div class="section-title">三個設計原則，回答三個關鍵問題</div>
+
+    <div class="principles">
+      <div class="principle">
+        <div class="principle-num">01</div>
+        <div class="principle-title">AI 賦能，不取代人</div>
+        <div class="principle-text">Tier 1 永遠優先。設計師 / 廠商的判斷永遠贏過 AI 的猜測。</div>
+      </div>
+      <div class="principle">
+        <div class="principle-num">02</div>
+        <div class="principle-title">自動化降低門檻，<br>不強制接受</div>
+        <div class="principle-text">Tier 2 自動運作但可被覆寫。AI 是助手，不是命令者。</div>
+      </div>
+      <div class="principle">
+        <div class="principle-num">03</div>
+        <div class="principle-title">永遠有 fallback</div>
+        <div class="principle-text">Tier 3 確保系統永不下線。再怎麼差也能跑，絕不崩潰。</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════ 對比表 ═══════════ -->
+  <div class="section">
+    <div class="section-eyebrow">Comparison · 業界做法對比</div>
+    <div class="section-title">別人怎麼做？我們有何不同？</div>
+    <table class="cmp">
+      <thead>
+        <tr>
+          <th style="width:24%">做法</th>
+          <th style="width:30%">代表案例</th>
+          <th>主要缺點</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>純人工撰寫</strong></td>
+          <td>多數傳統 B2B 平台</td>
+          <td>1,000 塊石材 = 1,000 次 30 分鐘填表，極度耗時</td>
+        </tr>
+        <tr>
+          <td><strong>純 AI 全自動</strong></td>
+          <td>多數 AIGC 應用</td>
+          <td>AI 服務掛掉 = 系統不能用、人工想介入很困難</td>
+        </tr>
+        <tr>
+          <td><strong>單層自動化</strong></td>
+          <td>部分電商商品描述生成</td>
+          <td>失控時無 fallback、品質參差不齊</td>
+        </tr>
+        <tr class="us">
+          <td><strong>三層 Prompt 工程</strong> <span class="star">★</span></td>
+          <td>ReStone · 本平台</td>
+          <td>人工 / AI / 模板各司其職，<strong>三方優雅折衷</strong></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ═══════════ 結尾 quote ═══════════ -->
+  <div class="quote-card">
+    <div class="quote-text">
+      「三層 Prompt 工程是讓 AI 為人服務的設計倫理，<br>
+      而不是讓人服務 AI 的技術堆疊。」
+    </div>
+    <div class="quote-en">
+      3-Tier Prompt Engineering is the design ethics of AI serving humans,<br>
+      not a technical stack of humans serving AI.
+    </div>
+  </div>
+
+  <!-- ─── Footer ─── -->
+  <div class="doc-footer">
+    <div>
+      <strong>ReStone</strong> 循環石材服務平台 · 三層 Prompt 工程系統說明
+    </div>
+    <div>RS-3TIER-2026-001 · v1.0</div>
+  </div>
+
+</div>
+</body>
+</html>

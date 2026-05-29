@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>我的設計 — ReStone</title>
+  <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --blue: #2563EB; --blue-light: #EFF6FF; --blue-mid: #BFDBFE;
+      --text: #0F172A; --text-muted: #64748B; --text-light: #94A3B8;
+      --border: #E2E8F0; --bg: #F8FAFC; --white: #FFFFFF;
+    }
+    body { font-family: 'Inter','Noto Sans TC',sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+    header { background: rgba(255,255,255,0.85); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); padding: 0 2rem; position: sticky; top: 0; z-index: 100; }
+    .header-inner { max-width: 1100px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; height: 60px; }
+    .logo { display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--text); }
+    .logo-icon { width: 32px; height: 32px; flex-shrink: 0; }
+    .logo-text { font-size: 0.92rem; font-weight: 700; }
+    .header-right { display: flex; align-items: center; gap: 0.75rem; }
+    .btn-link { font-size: 0.8rem; color: var(--text-muted); text-decoration: none; padding: 0.4rem 1rem; border-radius: 8px; border: 1px solid var(--border); transition: all 0.15s; font-weight: 500; }
+    .btn-link:hover { color: var(--blue); border-color: var(--blue-mid); background: var(--blue-light); }
+    .btn-link.primary { color: var(--blue); border-color: var(--blue-mid); background: var(--blue-light); }
+
+    .container { max-width: 1100px; margin: 2.5rem auto; padding: 0 2rem; }
+    .page-header { margin-bottom: 1.5rem; }
+    .page-title { font-size: 1.6rem; font-weight: 800; letter-spacing: -0.03em; }
+    .page-sub { font-size: 0.85rem; color: var(--text-muted); margin-top: 0.4rem; line-height: 1.6; }
+    .quota-note { display:inline-block; margin-top:0.6rem; font-size:0.74rem; color:var(--text-muted); background:var(--white); border:1px solid var(--border); border-radius:99px; padding:4px 12px; }
+
+    .flash { background:#DCFCE7; color:#166534; border:1px solid #BBF7D0; border-radius:10px; padding:0.7rem 1rem; font-size:0.85rem; margin-bottom:1.2rem; }
+
+    .grid { display:grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap:1.4rem; }
+    .card { background:var(--white); border:1px solid var(--border); border-radius:14px; overflow:hidden; transition:box-shadow 0.2s; display:flex; flex-direction:column; }
+    .card:hover { box-shadow:0 4px 20px rgba(0,0,0,0.08); }
+    .card-img-wrap { position:relative; aspect-ratio: 4/3; background:var(--bg); overflow:hidden; }
+    .card-img-wrap img { width:100%; height:100%; object-fit:cover; display:block; }
+    .card-body { padding:1rem 1.1rem 1.1rem; display:flex; flex-direction:column; gap:0.45rem; flex:1; }
+    .card-stone { font-size:0.95rem; font-weight:700; }
+    .card-date { font-size:0.74rem; color:var(--text-muted); }
+    .card-prompt { font-size:0.74rem; color:var(--text-light); line-height:1.5; max-height:3em; overflow:hidden; }
+    .card-actions { display:flex; gap:0.5rem; margin-top:0.6rem; }
+    .card-actions a, .card-actions button { font-size:0.74rem; font-weight:600; text-decoration:none; padding:0.4rem 0.7rem; border-radius:8px; border:1px solid var(--border); background:var(--white); color:var(--text-muted); cursor:pointer; transition:all 0.15s; }
+    .card-actions a:hover { color:var(--blue); border-color:var(--blue-mid); background:var(--blue-light); }
+    .card-actions .del { color:#B91C1C; border-color:#FECACA; }
+    .card-actions .del:hover { background:#FEF2F2; }
+
+    .empty { text-align:center; padding:5rem 2rem; color:var(--text-muted); }
+    .empty-icon { font-size:3rem; opacity:0.15; margin-bottom:1rem; }
+    .empty h3 { font-size:1rem; font-weight:600; color:var(--text); margin-bottom:0.4rem; }
+    .empty a { color:var(--blue); text-decoration:none; font-weight:600; }
+
+    footer { margin-top: 4rem; padding: 1.5rem; text-align: center; font-size: 0.75rem; color: var(--text-light); border-top: 1px solid var(--border); background: var(--white); }
+  </style>
+</head>
+<body>
+<header>
+  <div class="header-inner">
+    <a href="/" class="logo">
+      <span class="logo-icon">{% with size=32, sfx='hdr' %}{% include '_logo.html' %}{% endwith %}</span>
+      <div class="logo-text">ReStone 循環石材服務平台</div>
+    </a>
+    <div class="header-right">
+      <a href="/design-tool" class="btn-link primary">✨ AI 設計工具</a>
+      <a href="/my-account" class="btn-link">我的帳號</a>
+      <a href="/customer/logout" class="btn-link">登出</a>
+    </div>
+  </div>
+</header>
+
+<div class="container">
+  <div class="page-header">
+    <div class="page-title">我的設計</div>
+    <div class="page-sub">{{ session.customer_name }} 透過 AI 設計工具合成的作品，方便回顧設計發展、做出決定。</div>
+    <div class="quota-note">📦 系統自動保留最近 {{ history_limit }} 張（目前 {{ designs|length }} 張）；超過時最舊的會自動清除</div>
+  </div>
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% for category, msg in messages %}
+      <div class="flash">{{ msg }}</div>
+    {% endfor %}
+  {% endwith %}
+
+  {% if designs %}
+    <div class="grid">
+      {% for d in designs %}
+        <div class="card">
+          <div class="card-img-wrap">
+            <a href="{{ url_for('static', filename='uploads/' + d.image_file) }}" target="_blank">
+              <img src="{{ url_for('static', filename='uploads/' + d.image_file) }}" alt="AI 合成設計" loading="lazy">
+            </a>
+          </div>
+          <div class="card-body">
+            <div class="card-stone">{{ d.stone_name or '石材合成' }}</div>
+            <div class="card-date">{{ d.created_at[:16] }}</div>
+            {% if d.prompt %}<div class="card-prompt">{{ d.prompt }}</div>{% endif %}
+            <div class="card-actions">
+              <a href="{{ url_for('static', filename='uploads/' + d.image_file) }}" download="restone-design.jpg">↓ 下載</a>
+              {% if d.stone_id %}<a href="/stone/{{ d.stone_id }}">看石材</a>{% endif %}
+              <form method="POST" action="/my-designs/{{ d.id }}/delete" style="display:inline" onsubmit="return confirm('確定刪除這張設計嗎？刪除後無法復原。');">
+                <button type="submit" class="del">刪除</button>
+              </form>
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="empty">
+      <div class="empty-icon">✨</div>
+      <h3>尚無設計紀錄</h3>
+      <p>前往 <a href="/design-tool">AI 設計工具</a>，上傳設計圖並套用循環石材後，作品會自動保存在這裡</p>
+    </div>
+  {% endif %}
+</div>
+
+<footer>ReStone 循環石材服務平台 — 支持循環經濟，讓石材物盡其用</footer>
+</body>
+</html>
