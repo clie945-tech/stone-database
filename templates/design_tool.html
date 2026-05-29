@@ -540,12 +540,17 @@ btnApply.addEventListener('click', async () => {
     }
 
     stage = '解析回應';
+    // 回應內容只能讀取一次：先讀成文字，再嘗試解析為 JSON
+    const rawText = await r.text().catch(() => '');
     let data;
     try {
-      data = await r.json();
+      data = JSON.parse(rawText);
     } catch (jsonErr) {
-      const txt = await r.text().catch(() => '');
-      throw new Error('回應非 JSON 格式（HTTP ' + r.status + '）：' + txt.slice(0, 120));
+      let hint = rawText.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 160);
+      if (r.status === 500 || r.status === 502) {
+        hint = hint || '伺服器處理逾時或發生錯誤，請稍候再試一次（AI 合成較花時間）';
+      }
+      throw new Error('伺服器回應異常（HTTP ' + r.status + '）：' + hint);
     }
 
     if (!r.ok || !data.success) {
