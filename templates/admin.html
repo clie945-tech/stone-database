@@ -154,9 +154,7 @@
       <form method="post" action="/admin/reindex-images" style="display:inline" onsubmit="return confirm('將為所有現有石材重新計算 AI 圖片索引（顏色與相似度比對用），可能需要幾秒鐘。是否繼續？')">
         <button type="submit" class="btn btn-secondary" title="為現有照片建立 AI 索引">🔄 重新索引照片</button>
       </form>
-      <form method="post" action="/admin/reanalyze-prompts" style="display:inline" onsubmit="return confirm('將用視覺 AI 重新分析所有石材照片並更新 Prompt。每張約 NT$0.5，{{ stones|length if stones else 0 }} 張預估費用 NT${{ (stones|length * 0.5)|round(0)|int if stones else 0 }}。是否繼續？')">
-        <button type="submit" class="btn btn-secondary" title="用視覺 AI 重寫所有石材的 Prompt">✨ 重新分析 Prompt</button>
-      </form>
+      <button type="button" id="btn-reanalyze" class="btn btn-secondary" title="用視覺 AI 逐張重寫所有石材的 Prompt">✨ 重新分析 Prompt</button>
       <a href="/admin/export/stones" class="btn btn-secondary">↓ 匯出 Excel</a>
       <a href="/admin/add" class="btn btn-primary">＋ 新增石材</a>
     </div>
@@ -168,6 +166,8 @@
         <div class="flash flash-{{ category }}">{% if category == 'success' %}✓{% else %}⚠{% endif %} {{ message }}</div>
       {% endfor %}
     {% endwith %}
+
+    <div id="reanalyze-status" class="flash flash-success" style="display:none"></div>
 
     <div class="stats-row">
       <div class="stat-card">
@@ -273,6 +273,70 @@
   }
   function closeModal() { document.getElementById('deleteModal').classList.remove('show'); }
   document.getElementById('deleteModal').addEventListener('click', function(e) { if (e.target === this) closeModal(); });
+
+  // ── 逐張重新分析 Prompt（避開 Replicate 限速與伺服器逾時）──
+  const REANALYZE_IDS = [{% for s in stones %}{% if s.photo %}{{ s.id }},{% endif %}{% endfor %}];
+  const SPACING_MS = 12000;   // 每張間隔，符合「每分鐘 6 次」限速
+  const MAX_RETRY  = 3;       // 遇到 429 限速時的重試次數
+
+  const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+  async function reanalyzeOne(id) {
+    for (let attempt = 0; attempt <= MAX_RETRY; attempt++) {
+      const fd = new FormData();
+      fd.append('stone_id', String(id));
+      let r;
+      try {
+        r = await fetch('/admin/api/reanalyze-one', { method: 'POST', body: fd });
+      } catch (e) {
+        return { ok: false, reason: '網路錯誤：' + (e.message || e) };
+      }
+      if (r.status === 429) {
+        let wait = SPACING_MS;
+        try { const j = await r.json(); if (j.retry_after) wait = j.retry_after * 1000; } catch (e) {}
+        if (attempt < MAX_RETRY) { await sleep(wait); continue; }
+        return { ok: false, reason: '限速重試多次仍失敗（請考慮為 Replicate 儲值到 $5 以上）' };
+      }
+      let data = {};
+      try { data = await r.json(); } catch (e) {}
+      if (r.ok && data.success) return { ok: true, prompt: data.prompt };
+      return { ok: false, reason: data.error || ('HTTP ' + r.status) };
+    }
+    return { ok: false, reason: '未知錯誤' };
+  }
+
+  const btnReanalyze = document.getElementById('btn-reanalyze');
+  const statusBox = document.getElementById('reanalyze-status');
+
+  btnReanalyze.addEventListener('click', async () => {
+    const total = REANALYZE_IDS.length;
+    if (!total) { alert('沒有可分析的石材（需有照片）'); return; }
+    if (!confirm(`將用視覺 AI 逐張重新分析 ${total} 張石材照片，每張間隔約 12 秒以符合 Replicate 限速，預計約 ${Math.ceil(total * 13 / 60)} 分鐘。期間請勿關閉此頁。是否繼續？`)) return;
+
+    btnReanalyze.disabled = true;
+    const origText = btnReanalyze.textContent;
+    statusBox.className = 'flash flash-success';
+    statusBox.style.display = 'block';
+
+    let success = 0, failed = 0, firstError = '';
+    for (let i = 0; i < total; i++) {
+      const id = REANALYZE_IDS[i];
+      btnReanalyze.textContent = `分析中… ${i + 1}/${total}`;
+      statusBox.textContent = `⏳ 重新分析中：${i + 1}/${total}（成功 ${success}、失敗 ${failed}）…`;
+      const res = await reanalyzeOne(id);
+      if (res.ok) success++;
+      else { failed++; if (!firstError) firstError = `石材 #${id}：${res.reason}`; }
+      if (i < total - 1) await sleep(SPACING_MS);   // 間隔以符合限速
+    }
+
+    btnReanalyze.textContent = origText;
+    btnReanalyze.disabled = false;
+    statusBox.className = 'flash ' + (failed ? 'flash-error' : 'flash-success');
+    statusBox.textContent = (failed ? '⚠' : '✓') +
+      ` 重新分析完成：${success} 成功 / ${failed} 失敗` +
+      (failed && firstError ? `　｜ 失敗原因：${firstError}` : '') +
+      '（重新整理頁面即可在各石材看到新描述）';
+  });
 </script>
 </body>
 </html>

@@ -1706,6 +1706,40 @@ def admin_analyze_photo():
             except Exception: pass
 
 
+@app.route('/admin/api/reanalyze-one', methods=['POST'])
+@admin_required
+def admin_reanalyze_one():
+    """管理員 AJAX：分析單一石材照片並把描述存回資料庫（供前端逐張呼叫，避開限速與逾時）。
+    遇到 Replicate 429 限速時回傳 429 + retry_after，讓前端等候後重試。"""
+    from flask import jsonify
+    stone_id = request.form.get('stone_id', type=int)
+    if not stone_id:
+        return jsonify({'error': '缺少 stone_id'}), 400
+    conn = get_db()
+    row = conn.execute('SELECT id, photo FROM stones WHERE id = ?', (stone_id,)).fetchone()
+    if not row or not row['photo']:
+        conn.close()
+        return jsonify({'error': '此石材沒有照片'}), 400
+    path = os.path.join(app.config['UPLOAD_FOLDER'], row['photo'])
+    if not os.path.exists(path):
+        conn.close()
+        return jsonify({'error': f'找不到照片檔案（{row["photo"]}）'}), 400
+
+    prompt = describe_stone_with_vision(path)
+    if not prompt:
+        conn.close()
+        reason = _LAST_VISION_ERROR or 'AI 回傳空白'
+        # 限速 → 回 429，讓前端等待後重試
+        if '429' in reason or 'throttl' in reason.lower() or 'rate limit' in reason.lower():
+            return jsonify({'error': reason, 'throttled': True, 'retry_after': 12}), 429
+        return jsonify({'error': reason}), 500
+
+    conn.execute('UPDATE stones SET ai_prompt = ? WHERE id = ?', (prompt, stone_id))
+    conn.commit()
+    conn.close()
+    return jsonify({'success': True, 'prompt': prompt})
+
+
 @app.route('/admin/reanalyze-prompts', methods=['POST'])
 @admin_required
 def admin_reanalyze_prompts():
