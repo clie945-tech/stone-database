@@ -55,6 +55,46 @@
     .empty h3 { font-size: 1rem; font-weight: 600; color: var(--text); margin-bottom: 0.4rem; }
     .empty a { color: var(--blue); text-decoration: none; font-weight: 600; }
 
+    /* 區段標題 */
+    .section-head { display:flex; align-items:center; justify-content:space-between; gap:1rem; margin: 2.5rem 0 1rem; }
+    .section-head:first-of-type { margin-top: 0; }
+    .section-title { font-size: 1rem; font-weight: 700; }
+    .section-title .count { color: var(--text-muted); font-weight: 400; font-size: 0.85rem; margin-left: 0.4rem; }
+    .section-link { font-size: 0.8rem; color: var(--blue); text-decoration: none; font-weight: 600; }
+    .section-link:hover { text-decoration: underline; }
+
+    /* flash */
+    .flash { border-radius: 10px; padding: 0.7rem 1rem; font-size: 0.85rem; margin-bottom: 1.2rem; }
+    .flash.success { background:#DCFCE7; color:#166534; border:1px solid #BBF7D0; }
+    .flash.error   { background:#FEE2E2; color:#991B1B; border:1px solid #FECACA; }
+
+    /* 基本資料卡片 */
+    .profile-card { background:var(--white); border:1px solid var(--border); border-radius:14px; padding:1.6rem; }
+    .form-grid { display:grid; grid-template-columns: repeat(2, 1fr); gap:1.1rem; }
+    .field { display:flex; flex-direction:column; gap:0.35rem; }
+    .field.full { grid-column: 1 / -1; }
+    .field label { font-size:0.76rem; font-weight:600; color:var(--text-muted); }
+    .field input { font-family:inherit; font-size:0.9rem; color:var(--text); padding:0.6rem 0.8rem; border:1px solid var(--border); border-radius:9px; background:var(--white); transition:border-color 0.15s; }
+    .field input:focus { outline:none; border-color:var(--blue); box-shadow:0 0 0 3px var(--blue-light); }
+    .field input:read-only { background:var(--bg); color:var(--text-muted); cursor:not-allowed; }
+    .field .hint { font-size:0.7rem; color:var(--text-light); }
+    .form-actions { margin-top:1.3rem; display:flex; gap:0.6rem; align-items:center; }
+    .btn-save { font-family:inherit; font-size:0.85rem; font-weight:700; color:#fff; background:var(--blue); border:none; padding:0.6rem 1.4rem; border-radius:9px; cursor:pointer; transition:background 0.15s; }
+    .btn-save:hover { background:#1D4ED8; }
+
+    /* 最近設計 */
+    .design-grid { display:grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap:1rem; }
+    .design-card { background:var(--white); border:1px solid var(--border); border-radius:12px; overflow:hidden; transition:box-shadow 0.2s; }
+    .design-card:hover { box-shadow:0 4px 16px rgba(0,0,0,0.08); }
+    .design-thumb { aspect-ratio:4/3; background:var(--bg); overflow:hidden; display:block; }
+    .design-thumb img { width:100%; height:100%; object-fit:cover; display:block; }
+    .design-body { padding:0.7rem 0.8rem; }
+    .design-name { font-size:0.82rem; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .design-date { font-size:0.68rem; color:var(--text-muted); margin-top:2px; }
+    .design-pdf { display:inline-block; margin-top:0.5rem; font-size:0.7rem; font-weight:600; color:var(--blue); text-decoration:none; border:1px solid var(--blue-mid); background:var(--blue-light); padding:0.25rem 0.6rem; border-radius:7px; }
+
+    @media (max-width:560px){ .form-grid { grid-template-columns: 1fr; } }
+
     footer { margin-top: 4rem; padding: 1.5rem; text-align: center; font-size: 0.75rem; color: var(--text-light); border-top: 1px solid var(--border); background: var(--white); }
   </style>
 </head>
@@ -79,7 +119,46 @@
     <div class="page-sub">{{ session.customer_name }} · {{ session.customer_email }}</div>
   </div>
 
-  <h2 style="font-size:1rem;font-weight:700;margin-bottom:1rem;">詢問紀錄 <span style="color:var(--text-muted);font-weight:400;font-size:0.85rem">共 {{ inquiries|length }} 筆</span></h2>
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% for category, msg in messages %}
+      <div class="flash {{ category }}">{{ msg }}</div>
+    {% endfor %}
+  {% endwith %}
+
+  <div class="section-head">
+    <div class="section-title">基本資料</div>
+  </div>
+  <form class="profile-card" method="POST" action="/my-account/update">
+    <div class="form-grid">
+      <div class="field">
+        <label>姓名 *</label>
+        <input type="text" name="name" value="{{ customer.name or '' }}" required>
+      </div>
+      <div class="field">
+        <label>電話</label>
+        <input type="text" name="phone" value="{{ customer.phone or '' }}" placeholder="例：0912-345-678">
+      </div>
+      <div class="field">
+        <label>公司名稱</label>
+        <input type="text" name="company" value="{{ customer.company or '' }}" placeholder="例：○○設計工作室">
+      </div>
+      <div class="field">
+        <label>Email（登入帳號，不可修改）</label>
+        <input type="email" value="{{ customer.email or '' }}" readonly>
+      </div>
+      <div class="field full">
+        <label>聯絡地址</label>
+        <input type="text" name="address" value="{{ customer.address or '' }}" placeholder="例：台北市信義區○○路○段○號">
+      </div>
+    </div>
+    <div class="form-actions">
+      <button type="submit" class="btn-save">儲存變更</button>
+    </div>
+  </form>
+
+  <div class="section-head">
+    <div class="section-title">詢問紀錄 <span class="count">共 {{ inquiries|length }} 筆</span></div>
+  </div>
 
   {% if inquiries %}
     <div class="inquiry-list">
@@ -111,6 +190,34 @@
       <div class="empty-icon">◈</div>
       <h3>尚無詢問紀錄</h3>
       <p><a href="/">瀏覽石材</a>並送出詢問後，紀錄會顯示在這裡</p>
+    </div>
+  {% endif %}
+
+  <div class="section-head">
+    <div class="section-title">最近設計 <span class="count">最新 {{ recent_designs|length }} 張</span></div>
+    {% if recent_designs %}<a href="/my-designs" class="section-link">查看全部 →</a>{% endif %}
+  </div>
+
+  {% if recent_designs %}
+    <div class="design-grid">
+      {% for d in recent_designs %}
+        <div class="design-card">
+          <a href="{{ url_for('static', filename='uploads/' + d.image_file) }}" target="_blank" class="design-thumb">
+            <img src="{{ url_for('static', filename='uploads/' + d.image_file) }}" alt="AI 合成設計" loading="lazy">
+          </a>
+          <div class="design-body">
+            <div class="design-name">{{ d.stone_name or '石材合成' }}</div>
+            <div class="design-date">{{ d.created_at[:16] }}</div>
+            <a href="/my-designs/{{ d.id }}/proposal.pdf" class="design-pdf">📄 提案 PDF</a>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="empty">
+      <div class="empty-icon">✨</div>
+      <h3>尚無設計紀錄</h3>
+      <p>前往 <a href="/design-tool">AI 設計工具</a>，套用循環石材後作品會顯示在這裡</p>
     </div>
   {% endif %}
 </div>

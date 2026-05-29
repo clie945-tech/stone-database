@@ -468,6 +468,14 @@ def init_db():
     except Exception:
         pass
 
+    # 會員基本資料擴充欄位（公司名稱、聯絡地址）
+    for col in ['company', 'address']:
+        try:
+            conn.execute(f"ALTER TABLE customers ADD COLUMN {col} TEXT DEFAULT ''")
+            conn.commit()
+        except Exception:
+            pass
+
     # 建立預設管理員帳號
     cursor = conn.execute('SELECT COUNT(*) FROM admin_users')
     if cursor.fetchone()[0] == 0:
@@ -1060,14 +1068,43 @@ def customer_logout():
 @customer_required
 def my_account():
     conn = get_db()
+    customer = conn.execute('SELECT * FROM customers WHERE id = ?',
+                            (session['customer_id'],)).fetchone()
     inquiries = conn.execute('''
         SELECT i.*, s.stone_type FROM inquiries i
         LEFT JOIN stones s ON i.stone_id = s.id
         WHERE i.customer_email = ?
         ORDER BY i.created_at DESC
     ''', (session['customer_email'],)).fetchall()
+    recent_designs = conn.execute(
+        'SELECT * FROM synthesis_history WHERE customer_id = ? ORDER BY created_at DESC, id DESC LIMIT 6',
+        (session['customer_id'],)
+    ).fetchall()
     conn.close()
-    return render_template('customer_dashboard.html', inquiries=inquiries)
+    return render_template('customer_dashboard.html', customer=customer,
+                           inquiries=inquiries, recent_designs=recent_designs)
+
+
+@app.route('/my-account/update', methods=['POST'])
+@customer_required
+def update_my_account():
+    name    = request.form.get('name', '').strip()
+    phone   = request.form.get('phone', '').strip()
+    company = request.form.get('company', '').strip()
+    address = request.form.get('address', '').strip()
+    if not name:
+        flash('姓名為必填欄位', 'error')
+        return redirect(url_for('my_account'))
+    conn = get_db()
+    conn.execute(
+        'UPDATE customers SET name = ?, phone = ?, company = ?, address = ? WHERE id = ?',
+        (name, phone, company, address, session['customer_id'])
+    )
+    conn.commit()
+    conn.close()
+    session['customer_name'] = name
+    flash('基本資料已更新', 'success')
+    return redirect(url_for('my_account'))
 
 
 @app.route('/my-designs')
