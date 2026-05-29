@@ -360,6 +360,31 @@ def describe_stone_with_vision(image_path):
         return ''
 
 
+def resolve_ai_prompt(stone, custom_prompt=''):
+    """決定 inpainting 要用的 prompt（方案 A：讓 AI 實際「看」石材照片）。
+    優先序：使用者自訂 > 已快取的 ai_prompt > LLaVA 視覺描述(看真實照片，並快取) > 通用後備。"""
+    if custom_prompt:
+        return custom_prompt
+    if 'ai_prompt' in stone.keys() and stone['ai_prompt']:
+        return stone['ai_prompt']
+    # 尚無描述 → 用 LLaVA 看實際石材照片產生精準描述，並快取回資料庫（之後免再呼叫）
+    caption = ''
+    if stone['photo']:
+        photo_path = os.path.join(app.config['UPLOAD_FOLDER'], stone['photo'])
+        caption = describe_stone_with_vision(photo_path)
+    if caption:
+        try:
+            conn = get_db()
+            conn.execute('UPDATE stones SET ai_prompt = ? WHERE id = ?', (caption, stone['id']))
+            conn.commit()
+            conn.close()
+            print(f'[ai_prompt] 已用 LLaVA 視覺描述快取石材 {stone["id"]}：{caption}')
+        except Exception as e:
+            print(f'[ai_prompt cache 錯誤] {e}')
+        return caption
+    return generate_ai_prompt(stone['stone_type'], stone['color'] or '', stone['description'] or '')
+
+
 def get_db():
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
@@ -1754,9 +1779,8 @@ def api_apply_stone():
     if not stone:
         return jsonify({'error': '找不到指定石材'}), 404
 
-    # 組合 prompt：使用者自訂 > 資料庫 ai_prompt > 即時生成
-    prompt = custom_prompt or (stone['ai_prompt'] if 'ai_prompt' in stone.keys() and stone['ai_prompt']
-                               else generate_ai_prompt(stone['stone_type'], stone['color'] or '', stone['description'] or ''))
+    # 組合 prompt：使用者自訂 > 快取 ai_prompt > LLaVA 看真實照片 > 通用後備
+    prompt = resolve_ai_prompt(stone, custom_prompt)
 
     import tempfile, base64
     design_path, mask_path = None, None
