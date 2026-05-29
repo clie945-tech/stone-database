@@ -46,6 +46,7 @@
     .card-actions { display:flex; gap:0.5rem; margin-top:0.6rem; }
     .card-actions a, .card-actions button { font-size:0.74rem; font-weight:600; text-decoration:none; padding:0.4rem 0.7rem; border-radius:8px; border:1px solid var(--border); background:var(--white); color:var(--text-muted); cursor:pointer; transition:all 0.15s; }
     .card-actions a:hover { color:var(--blue); border-color:var(--blue-mid); background:var(--blue-light); }
+    .card-actions .pdf { color:var(--blue); border-color:var(--blue-mid); background:var(--blue-light); }
     .card-actions .del { color:#B91C1C; border-color:#FECACA; }
     .card-actions .del:hover { background:#FEF2F2; }
 
@@ -99,6 +100,7 @@
             <div class="card-date">{{ d.created_at[:16] }}</div>
             {% if d.prompt %}<div class="card-prompt">{{ d.prompt }}</div>{% endif %}
             <div class="card-actions">
+              <a href="/my-designs/{{ d.id }}/proposal.pdf" class="pdf">📄 提案 PDF</a>
               <a href="{{ url_for('static', filename='uploads/' + d.image_file) }}" download="restone-design.jpg">↓ 下載</a>
               {% if d.stone_id %}<a href="/stone/{{ d.stone_id }}">看石材</a>{% endif %}
               <form method="POST" action="/my-designs/{{ d.id }}/delete" style="display:inline" onsubmit="return confirm('確定刪除這張設計嗎？刪除後無法復原。');">

@@ -608,11 +608,12 @@ def save_synthesis_history(customer_id, stone_id, stone_name, result_url, prompt
             fh.write(data)
 
         conn = get_db()
-        conn.execute(
+        cur = conn.execute(
             'INSERT INTO synthesis_history (customer_id, stone_id, stone_name, image_file, prompt) '
             'VALUES (?, ?, ?, ?, ?)',
             (customer_id, stone_id, stone_name, filename, prompt)
         )
+        hist_id = cur.lastrowid
         conn.commit()
 
         # 清除超過上限的舊圖（連同檔案）
@@ -627,10 +628,185 @@ def save_synthesis_history(customer_id, stone_id, stone_name, result_url, prompt
         conn.commit()
         conn.close()
         print(f'[history] 已存入會員 {customer_id} 的設計：{filename}（清除 {len(old_rows)} 張舊圖）')
-        return filename
+        return filename, hist_id
     except Exception as e:
         print(f'[history] 儲存歷史失敗（不影響合成）：{e}')
-        return None
+        return None, None
+
+
+# ── AI 設計提案 PDF 生成 ──
+_PDF_FONT_NAME = None
+
+def _get_pdf_font():
+    """註冊並回傳繁體中文字型名稱。
+
+    優先嵌入專案內的 Noto Sans TC（OFL 授權、TrueType），確保任何閱讀器都能
+    正確顯示中文；若字型檔不存在則退回 reportlab 內建 CID 字型 MSung-Light。
+    （皆為非中資來源：Noto = Google/OFL；reportlab/CID = US 來源）"""
+    global _PDF_FONT_NAME
+    if _PDF_FONT_NAME:
+        return _PDF_FONT_NAME
+    from reportlab.pdfbase import pdfmetrics
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    ttf = os.path.join(base_dir, 'fonts', 'NotoSansTC-Regular.ttf')
+    try:
+        if os.path.exists(ttf):
+            from reportlab.pdfbase.ttfonts import TTFont
+            pdfmetrics.registerFont(TTFont('NotoSansTC', ttf))
+            _PDF_FONT_NAME = 'NotoSansTC'
+            return _PDF_FONT_NAME
+    except Exception as e:
+        print(f'[pdf] 嵌入 TTF 失敗，改用 CID 字型：{e}')
+    from reportlab.pdfbase.cidfonts import UnicodeCIDFont
+    pdfmetrics.registerFont(UnicodeCIDFont('MSung-Light'))
+    _PDF_FONT_NAME = 'MSung-Light'
+    return _PDF_FONT_NAME
+
+
+def build_proposal_pdf(design, stone, customer_name=''):
+    """產生單一設計案的 A4 提案 PDF，回傳 BytesIO。
+    design：synthesis_history 列；stone：對應 stones 列（可能為 None，若石材已刪除）。"""
+    from reportlab.lib.pagesizes import A4
+    from reportlab.lib.units import mm
+    from reportlab.lib import colors
+    from reportlab.platypus import (SimpleDocTemplate, Paragraph, Spacer,
+                                    Image as RLImage, Table, TableStyle)
+    from reportlab.lib.styles import ParagraphStyle
+    from reportlab.lib.enums import TA_CENTER, TA_LEFT
+
+    font = _get_pdf_font()
+    BLUE  = colors.HexColor('#2563EB')
+    DARK  = colors.HexColor('#0F172A')
+    MUTED = colors.HexColor('#64748B')
+    LINE  = colors.HexColor('#E2E8F0')
+    GREEN = colors.HexColor('#16A34A')
+    GREENBG = colors.HexColor('#F0FDF4')
+
+    buf = io.BytesIO()
+    doc = SimpleDocTemplate(buf, pagesize=A4, title='ReStone AI 設計提案',
+                            topMargin=16*mm, bottomMargin=14*mm,
+                            leftMargin=18*mm, rightMargin=18*mm)
+    avail_w = A4[0] - 36*mm
+
+    s_brand = ParagraphStyle('brand', fontName=font, fontSize=15, textColor=BLUE, leading=18)
+    s_sub   = ParagraphStyle('sub',   fontName=font, fontSize=8.5, textColor=MUTED, leading=12)
+    s_h1    = ParagraphStyle('h1',    fontName=font, fontSize=20, textColor=DARK, leading=24, spaceBefore=2, spaceAfter=2)
+    s_sec   = ParagraphStyle('sec',   fontName=font, fontSize=11, textColor=BLUE, leading=15, spaceBefore=4, spaceAfter=4)
+    s_body  = ParagraphStyle('body',  fontName=font, fontSize=9.5, textColor=DARK, leading=15)
+    s_muted = ParagraphStyle('mut',   fontName=font, fontSize=8.5, textColor=MUTED, leading=13)
+    s_cell  = ParagraphStyle('cell',  fontName=font, fontSize=9.5, textColor=DARK, leading=14)
+    s_celll = ParagraphStyle('celll', fontName=font, fontSize=9.5, textColor=MUTED, leading=14)
+    s_green = ParagraphStyle('grn',   fontName=font, fontSize=9.5, textColor=GREEN, leading=15)
+
+    elems = []
+    name = design['stone_name'] or (stone['stone_name'] if stone and 'stone_name' in stone.keys() and stone['stone_name'] else (stone['stone_type'] if stone else '循環石材'))
+    created = (design['created_at'] or '')[:16]
+
+    # 頁首
+    head_tbl = Table([[Paragraph('◈ ReStone 循環石材服務平台', s_brand),
+                       Paragraph(f'AI 設計提案<br/>AI DESIGN PROPOSAL', s_sub)]],
+                     colWidths=[avail_w*0.62, avail_w*0.38])
+    head_tbl.setStyle(TableStyle([
+        ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
+        ('ALIGN', (1,0), (1,0), 'RIGHT'),
+        ('LINEBELOW', (0,0), (-1,-1), 1, BLUE),
+        ('BOTTOMPADDING', (0,0), (-1,-1), 8),
+    ]))
+    elems += [head_tbl, Spacer(1, 8)]
+
+    elems += [Paragraph(name, s_h1),
+              Paragraph(f'提案編號 #{design["id"]:04d} ｜ 產生日期 {created}'
+                        + (f' ｜ 設計師 {customer_name}' if customer_name else ''), s_muted),
+              Spacer(1, 10)]
+
+    # 合成設計圖
+    img_path = os.path.join(app.config['UPLOAD_FOLDER'], design['image_file'])
+    if os.path.exists(img_path):
+        try:
+            from PIL import Image as PILImage
+            with PILImage.open(img_path) as im:
+                iw, ih = im.size
+            disp_w = avail_w
+            disp_h = disp_w * (ih / iw)
+            max_h = 120*mm
+            if disp_h > max_h:
+                disp_h = max_h
+                disp_w = disp_h * (iw / ih)
+            elems += [RLImage(img_path, width=disp_w, height=disp_h, hAlign='CENTER'),
+                      Spacer(1, 4),
+                      Paragraph('▲ AI 合成效果圖（套用循環石材於設計空間）', s_muted),
+                      Spacer(1, 12)]
+        except Exception as e:
+            print(f'[pdf] 圖片嵌入失敗：{e}')
+
+    # 石材規格
+    elems += [Paragraph('石材規格 ｜ Specifications', s_sec)]
+    def spec_row(label, value):
+        return [Paragraph(label, s_celll), Paragraph(str(value) if value not in (None, '') else '—', s_cell)]
+    if stone:
+        dims = '—'
+        if stone['width'] and stone['height']:
+            t = f" × {stone['thickness']}" if stone['thickness'] else ''
+            dims = f"{stone['width']} × {stone['height']}{t} cm"
+        rows = [
+            spec_row('品名', name),
+            spec_row('分類', stone['stone_type']),
+            spec_row('尺寸 (寬×高×厚)', dims),
+            spec_row('數量', f"{stone['quantity']} {stone['unit'] or '片'}" if stone['quantity'] else '—'),
+            spec_row('參考單價', f"NT$ {stone['price']:,.0f}" if stone['price'] else '—'),
+            spec_row('供應商', stone['vendor']),
+        ]
+    else:
+        rows = [spec_row('品名', name),
+                spec_row('備註', '此石材已自資料庫移除，僅保留設計圖紀錄')]
+    spec_tbl = Table(rows, colWidths=[avail_w*0.28, avail_w*0.72])
+    spec_tbl.setStyle(TableStyle([
+        ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
+        ('LINEBELOW', (0,0), (-1,-1), 0.5, LINE),
+        ('TOPPADDING', (0,0), (-1,-1), 6), ('BOTTOMPADDING', (0,0), (-1,-1), 6),
+        ('LEFTPADDING', (0,0), (-1,-1), 0),
+    ]))
+    elems += [spec_tbl, Spacer(1, 12)]
+
+    # 永續貢獻（減碳效益）
+    if stone:
+        kg = calculate_carbon_saved(stone['stone_type'], stone['width'],
+                                    stone['height'], stone['thickness'], stone['quantity'])
+        if kg and kg > 0:
+            eq = carbon_equivalents(kg)
+            elems += [Paragraph('永續貢獻 ｜ Sustainability', s_sec)]
+            carbon_tbl = Table([[
+                Paragraph(f'減少碳排放<br/><font size=15 color="#16A34A">{format_carbon(kg)}</font> CO2e', s_green),
+                Paragraph(f'相當於<br/>{eq["trees"]:.1f} 棵樹一年的吸碳量', s_body),
+                Paragraph(f'相當於<br/>少開 {eq["car_km"]:.0f} 公里的汽車碳排', s_body),
+            ]], colWidths=[avail_w/3.0]*3)
+            carbon_tbl.setStyle(TableStyle([
+                ('BACKGROUND', (0,0), (-1,-1), GREENBG),
+                ('BOX', (0,0), (-1,-1), 0.5, colors.HexColor('#BBF7D0')),
+                ('INNERGRID', (0,0), (-1,-1), 0.5, colors.HexColor('#DCFCE7')),
+                ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
+                ('TOPPADDING', (0,0), (-1,-1), 10), ('BOTTOMPADDING', (0,0), (-1,-1), 10),
+                ('LEFTPADDING', (0,0), (-1,-1), 10),
+            ]))
+            elems += [carbon_tbl,
+                      Paragraph('＊依體積 × ICE Database v3.0 碳排係數估算；選用循環石材取代開採新料之減碳效益。', s_muted),
+                      Spacer(1, 12)]
+
+    # 廠商聯繫
+    if stone and stone['vendor']:
+        elems += [Paragraph('採購聯繫 ｜ Contact', s_sec),
+                  Paragraph(f'供應商：{stone["vendor"]}', s_body),
+                  Paragraph('如需報價或洽詢庫存，請透過 ReStone 平台「詢問訂購」功能與供應商聯繫。', s_muted),
+                  Spacer(1, 10)]
+
+    # 頁尾
+    elems += [Spacer(1, 6),
+              Table([['']], colWidths=[avail_w], style=TableStyle([('LINEABOVE',(0,0),(-1,-1),0.5,LINE)])),
+              Paragraph('本提案由 ReStone 循環石材服務平台 AI 設計工具自動生成　｜　支持循環經濟，讓石材物盡其用', s_muted)]
+
+    doc.build(elems)
+    buf.seek(0)
+    return buf
 
 
 def admin_required(f):
@@ -921,6 +1097,34 @@ def delete_my_design(id):
         flash('已刪除該張設計', 'success')
     conn.close()
     return redirect(url_for('my_designs'))
+
+
+@app.route('/my-designs/<int:id>/proposal.pdf')
+@customer_required
+def design_proposal_pdf(id):
+    conn = get_db()
+    design = conn.execute(
+        'SELECT * FROM synthesis_history WHERE id = ? AND customer_id = ?',
+        (id, session['customer_id'])
+    ).fetchone()
+    if not design:
+        conn.close()
+        flash('找不到該設計', 'error')
+        return redirect(url_for('my_designs'))
+    stone = None
+    if design['stone_id']:
+        stone = conn.execute('SELECT * FROM stones WHERE id = ?', (design['stone_id'],)).fetchone()
+    conn.close()
+    try:
+        pdf = build_proposal_pdf(design, stone, session.get('customer_name', ''))
+    except Exception as e:
+        import traceback; traceback.print_exc()
+        flash(f'PDF 生成失敗：{str(e)[:120]}', 'error')
+        return redirect(url_for('my_designs'))
+    safe_name = (design['stone_name'] or 'design').replace('/', '_').replace(' ', '_')
+    return send_file(pdf, as_attachment=True,
+                     download_name=f'ReStone_提案_{safe_name}_{id:04d}.pdf',
+                     mimetype='application/pdf')
 
 
 # ─── 管理員後台 ─────────────────────────────────────────────
@@ -1528,7 +1732,7 @@ def api_apply_stone():
         # 存入「我的設計」歷史（下載到 Volume，自動保留最近 HISTORY_LIMIT 張）
         display_name = (stone['stone_name'] if 'stone_name' in stone.keys() and stone['stone_name']
                         else stone['stone_type'])
-        saved_file = save_synthesis_history(
+        saved_file, design_id = save_synthesis_history(
             session['customer_id'], stone_id, display_name, result_url, prompt)
         local_url = url_for('static', filename=f'uploads/{saved_file}') if saved_file else None
 
@@ -1537,6 +1741,7 @@ def api_apply_stone():
             'result_url': result_url,
             'local_url': local_url,
             'saved': bool(saved_file),
+            'design_id': design_id,
             'prompt': prompt,
             'stone_name': display_name,
         })

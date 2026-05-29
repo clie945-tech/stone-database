@@ -1,0 +1,16 @@
+字型授權說明 / Font License Notice
+=====================================
+
+檔案 File: NotoSansTC-Regular.ttf
+字型 Font: Noto Sans TC (Traditional Chinese)
+來源 Source: Google / Noto Project（衍生自 Noto Sans Hant OTF，
+            以 fontTools 轉換為 TrueType 格式供 PDF 嵌入使用）
+版權 Copyright: Copyright 2014-2021 Google LLC.
+授權 License: SIL Open Font License, Version 1.1 (OFL-1.1)
+授權全文 Full text: https://scripts.sil.org/OFL
+
+用途 Usage:
+本字型用於 ReStone 循環石材服務平台「AI 設計提案 PDF」之中文內嵌顯示。
+OFL 1.1 允許免費使用、修改、再散布與嵌入文件，符合本平台
+「不使用中資技術／模組」之合規要求（Noto 為 Google 開源專案，
+非中國大陸來源；轉檔工具 fontTools 為開源、非中資）。

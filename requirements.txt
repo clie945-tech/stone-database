@@ -7,3 +7,4 @@ Pillow>=10.0.0
 ImageHash>=4.3.0
 replicate>=0.32.0
 pillow-heif>=0.16.0
+reportlab>=4.0.0
