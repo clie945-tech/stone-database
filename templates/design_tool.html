@@ -159,16 +159,6 @@
     }
     .btn-apply:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(124,58,237,0.35); }
     .btn-apply:disabled { opacity: 0.5; cursor: not-allowed; }
-    .btn-composite {
-      background: linear-gradient(135deg, #0EA5E9 0%, #16A34A 100%);
-      box-shadow: 0 6px 20px rgba(22,163,74,0.25);
-      margin-top: 1rem;
-    }
-    .btn-composite:hover:not(:disabled) { box-shadow: 0 8px 28px rgba(22,163,74,0.35); }
-    .btn-apply.secondary { background: var(--white); color: var(--purple); border: 1.5px solid var(--purple); box-shadow: none; margin-top: 0.6rem; }
-    .btn-apply.secondary:hover:not(:disabled) { background: #FAF5FF; box-shadow: none; }
-    .apply-hint { font-size: 0.72rem; color: var(--text-muted); line-height: 1.55; margin-top: 0.7rem; }
-    .apply-hint b { color: var(--text); font-weight: 700; }
 
     /* Result */
     .result-panel { margin-top: 1.5rem; display: none; }
@@ -313,12 +303,7 @@
             style="width:100%;padding:0.7rem 0.9rem;background:#F1F5F9;border:1px solid var(--border);border-radius:8px;font-size:0.78rem;color:var(--text);line-height:1.5;font-family:'SF Mono',Consolas,monospace;resize:vertical;outline:none"></textarea>
         </div>
 
-        <button class="btn-apply btn-composite" id="btn-composite" disabled>🪨 真實石材貼合（免費）</button>
-        <button class="btn-apply secondary" id="btn-apply" disabled>✨ AI 合成（融入光影）</button>
-        <div class="apply-hint">
-          <b>真實貼合</b>：直接用資料庫的石材照片貼入，紋路 = 實品，並自動套用原表面光影，免 API 費用。<br>
-          <b>AI 合成</b>：由 AI 依描述「想像」石材，融入感較自然，但非實品紋路、需 API 費用。
-        </div>
+        <button class="btn-apply" id="btn-apply" disabled>✨ 套用石材（AI 合成）</button>
         <div class="error-box" id="error-box"></div>
       </div>
     </div>
@@ -338,7 +323,6 @@ const brushVal    = document.getElementById('brush-val');
 const clearBtn    = document.getElementById('clear-mask');
 const reuploadBtn = document.getElementById('reupload');
 const btnApply    = document.getElementById('btn-apply');
-const btnComposite = document.getElementById('btn-composite');
 const errorBox    = document.getElementById('error-box');
 const resultPanel = document.getElementById('result-panel');
 const resultBox   = document.getElementById('result-content');
@@ -498,9 +482,7 @@ document.getElementById('reset-prompt').addEventListener('click', () => {
 {% endif %}
 
 function refreshApplyState() {
-  const ready = !!(designBlob && painted && selectedStoneId);
-  btnApply.disabled = !ready;
-  btnComposite.disabled = !ready;
+  btnApply.disabled = !(designBlob && painted && selectedStoneId);
 }
 
 // ── 產出純黑白遮罩 PNG（白=要替換，黑=保留）──
@@ -525,14 +507,12 @@ function exportMask() {
   });
 }
 
-// ── 套用（mode: 'ai' = AI 合成；'composite' = 真實石材貼合）──
-async function runApply(mode) {
-  const isAI = (mode === 'ai');
+// ── 套用石材（AI 合成）──
+async function runApply() {
   errorBox.classList.remove('active'); errorBox.textContent = '';
-  btnApply.disabled = true; btnComposite.disabled = true;
+  btnApply.disabled = true;
   resultPanel.classList.add('active');
-  resultBox.innerHTML = '<div class="loading"><div class="spinner"></div>' +
-    (isAI ? 'AI 正在合成中… 通常需要 15–40 秒' : '正在貼合真實石材… 數秒內完成') + '</div>';
+  resultBox.innerHTML = '<div class="loading"><div class="spinner"></div>AI 正在合成中… 通常需要 15–40 秒</div>';
   resultPanel.scrollIntoView({ behavior: 'smooth', block: 'center' });
 
   let stage = '準備中';
@@ -546,18 +526,15 @@ async function runApply(mode) {
     fd.append('stone_id', String(selectedStoneId || ''));
     fd.append('design', designBlob, 'design.png');
     fd.append('mask', maskBlob, 'mask.png');
-    if (isAI) {
-      const editedPrompt = (promptText.value || '').trim();
-      if (editedPrompt && editedPrompt !== originalPrompt) {
-        fd.append('prompt', editedPrompt);
-      }
+    const editedPrompt = (promptText.value || '').trim();
+    if (editedPrompt && editedPrompt !== originalPrompt) {
+      fd.append('prompt', editedPrompt);
     }
 
     stage = '傳送請求';
-    const endpoint = isAI ? '/api/apply-stone' : '/api/composite-stone';
     let r;
     try {
-      r = await fetch(endpoint, { method: 'POST', body: fd });
+      r = await fetch('/api/apply-stone', { method: 'POST', body: fd });
     } catch (netErr) {
       throw new Error('網路請求失敗：' + (netErr.message || netErr));
     }
@@ -590,7 +567,7 @@ async function runApply(mode) {
     stage = '顯示結果';
     // 用 DOM API 設定 src，避免 HTML 內插造成的特殊字元問題
     const img = document.createElement('img');
-    img.alt = isAI ? 'AI 合成結果' : '真實貼合結果';
+    img.alt = 'AI 合成結果';
     img.src = url;
 
     const safeUrl = data.local_url || url;
@@ -633,8 +610,7 @@ async function runApply(mode) {
   }
 }
 
-btnApply.addEventListener('click', () => runApply('ai'));
-btnComposite.addEventListener('click', () => runApply('composite'));
+btnApply.addEventListener('click', () => runApply());
 
 // 拖放上傳：用 DataTransfer 建構子確保檔案能正確送出
 ['dragenter','dragover'].forEach(ev => {

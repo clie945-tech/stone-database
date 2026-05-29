@@ -335,13 +335,19 @@ def describe_stone_with_vision(image_path):
                 input={
                     'image': f,
                     'prompt': (
-                        'Describe this stone material in 10-15 English words for AI image generation. '
-                        'Focus on: dominant color, pattern style, veining/specks, and surface finish. '
-                        'Example: "deep green serpentine with white veining, polished glossy surface". '
-                        'Output ONLY the description, no preamble, no quotes.'
+                        'You are describing a natural stone slab surface for photorealistic texture generation. '
+                        'In 18-28 English words, describe ONLY the material itself: '
+                        '(1) base colour and secondary tones; '
+                        '(2) veining or speckles — their colour, thickness, density and direction; '
+                        '(3) overall pattern type (marbled, brecciated, speckled, or uniform); '
+                        '(4) surface finish (polished glossy, honed matte, or textured). '
+                        'Be concrete and visual. Do NOT mention background, lighting, objects, people, or shape. '
+                        'Example: "creamy white marble, fine grey diagonal veining with subtle gold flecks, '
+                        'medium density, smooth high-gloss polished finish". '
+                        'Output ONLY the comma-separated description phrase — no preamble, no quotes, no full sentence.'
                     ),
-                    'temperature': 0.2,
-                    'max_tokens': 60,
+                    'temperature': 0.15,
+                    'max_tokens': 90,
                 }
             )
         caption = ''.join(str(t) for t in output) if isinstance(output, list) else str(output)
@@ -352,8 +358,8 @@ def describe_stone_with_vision(image_path):
                 caption = caption[len(prefix):].lstrip(' :,').strip()
                 break
         # 限制長度避免回傳過長段落
-        if len(caption) > 200:
-            caption = caption[:200].rsplit(',', 1)[0]
+        if len(caption) > 240:
+            caption = caption[:240].rsplit(',', 1)[0]
         return caption
     except Exception as e:
         print(f'[Vision AI 錯誤] {e}')
@@ -667,57 +673,6 @@ def save_synthesis_history(customer_id, stone_id, stone_name, result_url, prompt
     except Exception as e:
         print(f'[history] 儲存歷史失敗（不影響合成）：{e}')
         return None, None
-
-
-def composite_stone_onto_design(design_path, mask_path, stone_photo_path, max_side=1600):
-    """方案①真實石材貼合：把實際石材照片貼入遮罩區，並轉移原表面的光影使其自然。
-    回傳合成後的 PIL Image。全程本地運算，不呼叫外部 AI。"""
-    import numpy as np
-    from PIL import Image, ImageFilter
-
-    design = Image.open(design_path).convert('RGB')
-    # 控制工作尺寸，兼顧品質與檔案大小
-    if max(design.size) > max_side:
-        r = max_side / max(design.size)
-        design = design.resize((round(design.width * r), round(design.height * r)), Image.LANCZOS)
-    W, H = design.size
-
-    # 遮罩：與設計圖等比例，縮放對齊
-    mask = Image.open(mask_path).convert('L').resize((W, H), Image.LANCZOS)
-    bbox = mask.point(lambda p: 255 if p > 30 else 0).getbbox()
-    if not bbox:
-        raise ValueError('遮罩為空，請先塗選要替換的區域')
-
-    # 石材照片：縮放並裁切以「覆蓋」遮罩範圍（slab 自然尺度）
-    bw, bh = bbox[2] - bbox[0], bbox[3] - bbox[1]
-    stone = Image.open(stone_photo_path).convert('RGB')
-    sw, sh = stone.size
-    scale = max(bw / sw, bh / sh)
-    stone_rs = stone.resize((max(1, round(sw * scale)), max(1, round(sh * scale))), Image.LANCZOS)
-    left = (stone_rs.width - bw) // 2
-    top = (stone_rs.height - bh) // 2
-    stone_crop = stone_rs.crop((left, top, left + bw, top + bh))
-    stone_full = Image.new('RGB', (W, H))
-    stone_full.paste(stone_crop, (bbox[0], bbox[1]))
-
-    # 羽化遮罩邊緣，讓接縫自然
-    alpha = np.asarray(mask.filter(ImageFilter.GaussianBlur(3)), dtype=np.float32) / 255.0
-    alpha = alpha[..., None]
-
-    design_np = np.asarray(design, dtype=np.float32)
-    stone_np = np.asarray(stone_full, dtype=np.float32)
-
-    # 光影轉移：取原表面亮度，正規化成乘法 shading map，套到石材上
-    lum = (design_np[..., 0] * 0.299 + design_np[..., 1] * 0.587 + design_np[..., 2] * 0.114)
-    sel = np.asarray(mask, dtype=np.float32) > 128
-    mean_lum = float(lum[sel].mean()) if sel.any() else 128.0
-    if mean_lum < 1e-3:
-        mean_lum = 128.0
-    shading = np.clip(lum / mean_lum, 0.55, 1.6)[..., None]
-    stone_lit = np.clip(stone_np * shading, 0, 255)
-
-    out = design_np * (1 - alpha) + stone_lit * alpha
-    return Image.fromarray(np.clip(out, 0, 255).astype('uint8'), 'RGB')
 
 
 # ── AI 設計提案 PDF 生成 ──
@@ -1864,76 +1819,6 @@ def api_apply_stone():
         print(f'[Replicate 錯誤] {e}')
         traceback.print_exc()
         return jsonify({'error': f'AI 合成失敗：{str(e)[:300]}'}), 500
-    finally:
-        for p in (design_path, mask_path):
-            try:
-                if p and os.path.exists(p):
-                    os.unlink(p)
-            except Exception:
-                pass
-
-
-@app.route('/api/composite-stone', methods=['POST'])
-def api_composite_stone():
-    """方案①：用資料庫實際石材照片做「真實貼合」，本地運算、不呼叫外部 AI、零 API 費用。"""
-    from flask import jsonify
-    if not session.get('customer_id'):
-        return jsonify({'error': '請先登入會員才能使用設計工具'}), 401
-
-    stone_id = request.form.get('stone_id', type=int)
-    design   = request.files.get('design')
-    mask     = request.files.get('mask')
-    if not stone_id or not design or not mask:
-        return jsonify({'error': '缺少必要欄位（設計圖、遮罩、石材）'}), 400
-
-    conn = get_db()
-    stone = conn.execute('SELECT * FROM stones WHERE id = ?', (stone_id,)).fetchone()
-    conn.close()
-    if not stone:
-        return jsonify({'error': '找不到指定石材'}), 404
-    if not stone['photo']:
-        return jsonify({'error': '此石材沒有照片，無法做真實貼合（請改用 AI 合成或先為石材上傳照片）'}), 400
-
-    stone_photo_path = os.path.join(app.config['UPLOAD_FOLDER'], stone['photo'])
-    if not os.path.exists(stone_photo_path):
-        return jsonify({'error': '石材照片檔案不存在，無法貼合'}), 400
-
-    import tempfile
-    design_path, mask_path = None, None
-    try:
-        design_path = normalize_image_to_jpg_path(design, max_size=1600)
-        if not design_path:
-            return jsonify({'error': '設計圖格式無法解析（支援 JPG / PNG / HEIC / WebP）'}), 400
-        with tempfile.NamedTemporaryFile(suffix='.png', delete=False) as mf:
-            mask.save(mf.name)
-            mask_path = mf.name
-
-        result_img = composite_stone_onto_design(design_path, mask_path, stone_photo_path)
-
-        display_name = (stone['stone_name'] if 'stone_name' in stone.keys() and stone['stone_name']
-                        else stone['stone_type'])
-        # 直接存檔到 Volume 並寫入歷史
-        os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
-        filename = f'design_{secrets.token_hex(8)}.jpg'
-        result_img.save(os.path.join(app.config['UPLOAD_FOLDER'], filename), 'JPEG', quality=90)
-        design_id = _record_design(session['customer_id'], stone_id, display_name,
-                                   filename, '真實石材貼合（免 AI）')
-        local_url = url_for('static', filename=f'uploads/{filename}')
-
-        return jsonify({
-            'success': True,
-            'result_url': local_url,
-            'local_url': local_url,
-            'saved': True,
-            'design_id': design_id,
-            'prompt': '真實石材貼合（直接使用資料庫石材照片）',
-            'stone_name': display_name,
-        })
-    except ValueError as ve:
-        return jsonify({'error': str(ve)}), 400
-    except Exception as e:
-        import traceback; traceback.print_exc()
-        return jsonify({'error': f'真實貼合失敗：{str(e)[:200]}'}), 500
     finally:
         for p in (design_path, mask_path):
             try:
