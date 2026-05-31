@@ -108,6 +108,11 @@ REPLICATE_API_TOKEN = os.environ.get('REPLICATE_API_TOKEN', '')
 # 預設使用 flux-fill-pro（高品質 inpainting）
 REPLICATE_MODEL = os.environ.get('REPLICATE_MODEL', 'black-forest-labs/flux-fill-pro')
 
+# ── Gemini AI 設定（從環境變數讀取）──
+GEMINI_API_KEY = os.environ.get('GEMINI_API_KEY', '') or os.environ.get('GOOGLE_API_KEY', '')
+GEMINI_VISION_MODEL = os.environ.get('GEMINI_VISION_MODEL', 'gemini-2.5-flash')
+GEMINI_IMAGE_MODEL = os.environ.get('GEMINI_IMAGE_MODEL', 'gemini-2.5-flash-image')
+
 # ── 顏色標籤定義 ──
 COLORS = [
     ('white',  '白色系', '#F8FAFC', '#64748B'),
@@ -324,20 +329,61 @@ def generate_ai_prompt(stone_type, color, description=''):
 
 _LAST_VISION_ERROR = ''
 
-def describe_stone_with_vision(image_path):
-    """用 LLaVA 視覺 AI 看石材照片，產生精準的 inpainting prompt"""
+STONE_VISION_PROMPT = (
+    'You are describing a natural stone slab surface for photorealistic texture generation. '
+    'In 18-28 English words, describe ONLY the material itself: '
+    '(1) base colour and secondary tones; '
+    '(2) veining or speckles — their colour, thickness, density and direction; '
+    '(3) overall pattern type (marbled, brecciated, speckled, or uniform); '
+    '(4) surface finish (polished glossy, honed matte, or textured). '
+    'Be concrete and visual. Do NOT mention background, lighting, objects, people, or shape. '
+    'Example: "creamy white marble, fine grey diagonal veining with subtle gold flecks, '
+    'medium density, smooth high-gloss polished finish". '
+    'Output ONLY the comma-separated description phrase — no preamble, no quotes, no full sentence.'
+)
+
+
+def _clean_caption(caption):
+    caption = (caption or '').strip().strip('"\'').rstrip('.')
+    for prefix in ('Description:', 'description:', 'The image shows', 'This stone', 'The stone'):
+        if caption.startswith(prefix):
+            caption = caption[len(prefix):].lstrip(' :,').strip()
+            break
+    if len(caption) > 240:
+        caption = caption[:240].rsplit(',', 1)[0]
+    return caption
+
+
+def _describe_with_gemini(image_path):
+    """用 Gemini 視覺模型描述石材（首選：快、準、有免費額度、不受 Replicate 限速）。"""
     global _LAST_VISION_ERROR
-    _LAST_VISION_ERROR = ''
-    if not REPLICATE_API_TOKEN:
-        _LAST_VISION_ERROR = 'REPLICATE_API_TOKEN 未設定'
+    try:
+        from google import genai
+        from google.genai import types
+        client = genai.Client(api_key=GEMINI_API_KEY)
+        with open(image_path, 'rb') as f:
+            img_bytes = f.read()
+        mime = 'image/png' if image_path.lower().endswith('.png') else 'image/jpeg'
+        resp = client.models.generate_content(
+            model=GEMINI_VISION_MODEL,
+            contents=[types.Part.from_bytes(data=img_bytes, mime_type=mime), STONE_VISION_PROMPT],
+        )
+        caption = _clean_caption(getattr(resp, 'text', '') or '')
+        if not caption:
+            _LAST_VISION_ERROR = 'Gemini 回傳空白描述'
+        return caption
+    except Exception as e:
+        _LAST_VISION_ERROR = f'Gemini {type(e).__name__}: {str(e)[:200]}'
+        print(f'[Gemini Vision 錯誤] {_LAST_VISION_ERROR}')
         return ''
-    if not image_path or not os.path.exists(image_path):
-        _LAST_VISION_ERROR = f'找不到照片檔案：{image_path}'
-        return ''
+
+
+def _describe_with_llava(image_path):
+    """用 Replicate LLaVA 視覺 AI 描述石材（後備）。"""
+    global _LAST_VISION_ERROR
     try:
         import replicate
         client = replicate.Client(api_token=REPLICATE_API_TOKEN)
-        # 動態解析最新版本（避免寫死的版本編號被 Replicate 移除後整批失敗）
         model_name = 'yorickvp/llava-v1.6-mistral-7b'
         try:
             model = client.models.get(model_name)
@@ -345,36 +391,11 @@ def describe_stone_with_vision(image_path):
         except Exception:
             ref = model_name
         with open(image_path, 'rb') as f:
-            output = client.run(
-                ref,
-                input={
-                    'image': f,
-                    'prompt': (
-                        'You are describing a natural stone slab surface for photorealistic texture generation. '
-                        'In 18-28 English words, describe ONLY the material itself: '
-                        '(1) base colour and secondary tones; '
-                        '(2) veining or speckles — their colour, thickness, density and direction; '
-                        '(3) overall pattern type (marbled, brecciated, speckled, or uniform); '
-                        '(4) surface finish (polished glossy, honed matte, or textured). '
-                        'Be concrete and visual. Do NOT mention background, lighting, objects, people, or shape. '
-                        'Example: "creamy white marble, fine grey diagonal veining with subtle gold flecks, '
-                        'medium density, smooth high-gloss polished finish". '
-                        'Output ONLY the comma-separated description phrase — no preamble, no quotes, no full sentence.'
-                    ),
-                    'temperature': 0.15,
-                    'max_tokens': 90,
-                }
-            )
-        caption = ''.join(str(t) for t in output) if isinstance(output, list) else str(output)
-        caption = caption.strip().strip('"\'').rstrip('.')
-        # 移除常見 preamble
-        for prefix in ('Description:', 'description:', 'The image shows', 'This stone', 'The stone'):
-            if caption.startswith(prefix):
-                caption = caption[len(prefix):].lstrip(' :,').strip()
-                break
-        # 限制長度避免回傳過長段落
-        if len(caption) > 240:
-            caption = caption[:240].rsplit(',', 1)[0]
+            output = client.run(ref, input={
+                'image': f, 'prompt': STONE_VISION_PROMPT,
+                'temperature': 0.15, 'max_tokens': 90,
+            })
+        caption = _clean_caption(''.join(str(t) for t in output) if isinstance(output, list) else str(output))
         if not caption:
             _LAST_VISION_ERROR = 'AI 回傳空白描述'
         return caption
@@ -382,6 +403,87 @@ def describe_stone_with_vision(image_path):
         _LAST_VISION_ERROR = f'{type(e).__name__}: {str(e)[:200]}'
         print(f'[Vision AI 錯誤] {_LAST_VISION_ERROR}')
         return ''
+
+
+def describe_stone_with_vision(image_path):
+    """看石材照片產生精準材質描述。優先用 Gemini，無金鑰時退回 Replicate LLaVA。"""
+    global _LAST_VISION_ERROR
+    _LAST_VISION_ERROR = ''
+    if not image_path or not os.path.exists(image_path):
+        _LAST_VISION_ERROR = f'找不到照片檔案：{image_path}'
+        return ''
+    if GEMINI_API_KEY:
+        caption = _describe_with_gemini(image_path)
+        if caption:
+            return caption
+    if REPLICATE_API_TOKEN:
+        return _describe_with_llava(image_path)
+    if not _LAST_VISION_ERROR:
+        _LAST_VISION_ERROR = '未設定 GEMINI_API_KEY 或 REPLICATE_API_TOKEN'
+    return ''
+
+
+_LAST_SYNTH_ERROR = ''
+
+def synthesize_with_gemini(design_path, mask_path, stone_photo_path, max_side=1280):
+    """方案②：用 Gemini 2.5 Flash Image 把『實際石材照片』的材質貼到設計圖遮罩區（參考圖編輯）。
+    在遮罩區塗半透明洋紅當「目標區域」提示，連同石材參考圖一起交給 Gemini 編輯。
+    回傳合成後 PIL Image；失敗回 None 並記錄 _LAST_SYNTH_ERROR。"""
+    global _LAST_SYNTH_ERROR
+    _LAST_SYNTH_ERROR = ''
+    try:
+        from io import BytesIO
+        from PIL import Image
+        from google import genai
+        from google.genai import types
+
+        design = Image.open(design_path).convert('RGB')
+        if max(design.size) > max_side:
+            r = max_side / max(design.size)
+            design = design.resize((round(design.width * r), round(design.height * r)), Image.LANCZOS)
+        W, H = design.size
+        mask = Image.open(mask_path).convert('L').resize((W, H), Image.LANCZOS)
+
+        # 在遮罩區疊半透明洋紅，標示要替換的目標表面
+        magenta = Image.new('RGB', (W, H), (255, 0, 255))
+        marked = Image.composite(Image.blend(design, magenta, 0.5), design, mask)
+
+        stone = Image.open(stone_photo_path).convert('RGB')
+        if max(stone.size) > max_side:
+            r = max_side / max(stone.size)
+            stone = stone.resize((round(stone.width * r), round(stone.height * r)), Image.LANCZOS)
+
+        def to_part(img):
+            b = BytesIO(); img.save(b, 'PNG')
+            return types.Part.from_bytes(data=b.getvalue(), mime_type='image/png')
+
+        instruction = (
+            'Image 1 is an interior or product design photo with a TARGET AREA highlighted in semi-transparent magenta. '
+            'Image 2 is a real natural stone material sample. '
+            'Re-surface ONLY the magenta-highlighted area of Image 1 with the EXACT stone material from Image 2 — '
+            'same base colour, veining and pattern — following the surface perspective and preserving the original '
+            'lighting, shadows and reflections so it looks photorealistic. '
+            'Do NOT change anything outside the highlighted area, and completely remove the magenta highlight. '
+            'Return only the edited image.'
+        )
+
+        client = genai.Client(api_key=GEMINI_API_KEY)
+        resp = client.models.generate_content(
+            model=GEMINI_IMAGE_MODEL,
+            contents=[instruction, to_part(marked), to_part(stone)],
+        )
+        for cand in (resp.candidates or []):
+            parts = getattr(getattr(cand, 'content', None), 'parts', None) or []
+            for part in parts:
+                inline = getattr(part, 'inline_data', None)
+                if inline and getattr(inline, 'data', None):
+                    return Image.open(BytesIO(inline.data)).convert('RGB')
+        _LAST_SYNTH_ERROR = 'Gemini 未回傳影像（可能被安全機制擋下或模型暫不支援）'
+        return None
+    except Exception as e:
+        _LAST_SYNTH_ERROR = f'Gemini {type(e).__name__}: {str(e)[:200]}'
+        print(f'[Gemini 合成錯誤] {_LAST_SYNTH_ERROR}')
+        return None
 
 
 def resolve_ai_prompt(stone, custom_prompt=''):
@@ -1778,8 +1880,8 @@ def api_apply_stone():
     from flask import jsonify
     if not session.get('customer_id'):
         return jsonify({'error': '請先登入會員才能使用 AI 設計工具'}), 401
-    if not REPLICATE_API_TOKEN:
-        return jsonify({'error': 'AI 功能尚未啟用（請設定 REPLICATE_API_TOKEN）'}), 503
+    if not (REPLICATE_API_TOKEN or GEMINI_API_KEY):
+        return jsonify({'error': 'AI 功能尚未啟用（請設定 GEMINI_API_KEY 或 REPLICATE_API_TOKEN）'}), 503
 
     stone_id = request.form.get('stone_id', type=int)
     design   = request.files.get('design')
@@ -1795,25 +1897,49 @@ def api_apply_stone():
     if not stone:
         return jsonify({'error': '找不到指定石材'}), 404
 
-    # 組合 prompt：使用者自訂 > 快取 ai_prompt > LLaVA 看真實照片 > 通用後備
-    prompt = resolve_ai_prompt(stone, custom_prompt)
+    display_name = (stone['stone_name'] if 'stone_name' in stone.keys() and stone['stone_name']
+                    else stone['stone_type'])
 
-    import tempfile, base64
+    import tempfile
     design_path, mask_path = None, None
     try:
-        import replicate
-        client = replicate.Client(api_token=REPLICATE_API_TOKEN)
-
-        # 設計圖：用 normalize_image_to_jpg_path 統一轉成 JPG（支援 HEIC）
+        # 設計圖：統一轉成 JPG（支援 HEIC）；遮罩來自 canvas 已是 PNG
         design_path = normalize_image_to_jpg_path(design, max_size=1536)
         if not design_path:
             return jsonify({'error': '設計圖格式無法解析（支援 JPG / PNG / HEIC / WebP）'}), 400
-
-        # 遮罩：來自 canvas 已是標準 PNG，不需轉檔
         with tempfile.NamedTemporaryFile(suffix='.png', delete=False) as mf:
             mask.save(mf.name)
             mask_path = mf.name
 
+        # ── ① 首選：Gemini 參考圖編輯（直接用實際石材照片，最忠實自然）──
+        stone_photo_path = (os.path.join(app.config['UPLOAD_FOLDER'], stone['photo'])
+                            if stone['photo'] else None)
+        if GEMINI_API_KEY and stone_photo_path and os.path.exists(stone_photo_path):
+            result_img = synthesize_with_gemini(design_path, mask_path, stone_photo_path)
+            if result_img is not None:
+                os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+                filename = f'design_{secrets.token_hex(8)}.jpg'
+                result_img.save(os.path.join(app.config['UPLOAD_FOLDER'], filename), 'JPEG', quality=92)
+                design_id = _record_design(session['customer_id'], stone_id, display_name,
+                                           filename, 'Gemini 參考圖合成（使用實際石材照片）')
+                local_url = url_for('static', filename=f'uploads/{filename}')
+                return jsonify({
+                    'success': True, 'result_url': local_url, 'local_url': local_url,
+                    'saved': True, 'design_id': design_id,
+                    'prompt': 'Gemini 直接參考此石材照片合成', 'stone_name': display_name,
+                    'engine': 'gemini',
+                })
+            # Gemini 失敗：有 Replicate 就往下用 Flux 後備，否則回報錯誤
+            if not REPLICATE_API_TOKEN:
+                return jsonify({'error': f'Gemini 合成失敗：{_LAST_SYNTH_ERROR or "未回傳影像"}'}), 500
+
+        # ── ② 後備：Replicate Flux Fill（文字 prompt inpainting）──
+        if not REPLICATE_API_TOKEN:
+            return jsonify({'error': 'AI 合成暫時無法使用（Gemini 失敗且未設定 Replicate）'}), 503
+        # 組合 prompt：使用者自訂 > 快取 ai_prompt > 視覺描述 > 通用後備
+        prompt = resolve_ai_prompt(stone, custom_prompt)
+        import replicate
+        client = replicate.Client(api_token=REPLICATE_API_TOKEN)
         with open(design_path, 'rb') as dfh, open(mask_path, 'rb') as mfh:
             output = client.run(
                 REPLICATE_MODEL,
@@ -1860,8 +1986,6 @@ def api_apply_stone():
         print(f'[Replicate result_url] {result_url}')
 
         # 存入「我的設計」歷史（下載到 Volume，自動保留最近 HISTORY_LIMIT 張）
-        display_name = (stone['stone_name'] if 'stone_name' in stone.keys() and stone['stone_name']
-                        else stone['stone_type'])
         saved_file, design_id = save_synthesis_history(
             session['customer_id'], stone_id, display_name, result_url, prompt)
         local_url = url_for('static', filename=f'uploads/{saved_file}') if saved_file else None
@@ -1874,10 +1998,11 @@ def api_apply_stone():
             'design_id': design_id,
             'prompt': prompt,
             'stone_name': display_name,
+            'engine': 'flux',
         })
     except Exception as e:
         import traceback
-        print(f'[Replicate 錯誤] {e}')
+        print(f'[AI 合成錯誤] {e}')
         traceback.print_exc()
         return jsonify({'error': f'AI 合成失敗：{str(e)[:300]}'}), 500
     finally:
