@@ -593,6 +593,18 @@ async function runApply() {
       savedNote.textContent = '✓ 已自動存入「我的設計」';
       resultBox.appendChild(savedNote);
     }
+    if (data.engine === 'gemini') {
+      const eng = document.createElement('div');
+      eng.style.cssText = 'margin-top:0.4rem;font-size:0.74rem;color:#7c3aed;font-weight:700';
+      eng.textContent = '🤖 引擎：Gemini 參考圖合成（使用實際石材照片）';
+      resultBox.appendChild(eng);
+    } else if (data.engine === 'flux') {
+      const eng = document.createElement('div');
+      eng.style.cssText = 'margin-top:0.4rem;font-size:0.72rem;color:#b45309;line-height:1.5';
+      eng.textContent = '⚙ 引擎：Flux（文字生成）' +
+        (data.gemini_error ? '　｜ Gemini 未啟用原因：' + data.gemini_error : '');
+      resultBox.appendChild(eng);
+    }
     const pBox = document.createElement('div');
     pBox.className = 'prompt-box';
     pBox.style.marginTop = '1rem';

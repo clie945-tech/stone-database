@@ -471,14 +471,24 @@ def synthesize_with_gemini(design_path, mask_path, stone_photo_path, max_side=12
         resp = client.models.generate_content(
             model=GEMINI_IMAGE_MODEL,
             contents=[instruction, to_part(marked), to_part(stone)],
+            config=types.GenerateContentConfig(response_modalities=['TEXT', 'IMAGE']),
         )
-        for cand in (resp.candidates or []):
-            parts = getattr(getattr(cand, 'content', None), 'parts', None) or []
-            for part in parts:
-                inline = getattr(part, 'inline_data', None)
-                if inline and getattr(inline, 'data', None):
-                    return Image.open(BytesIO(inline.data)).convert('RGB')
-        _LAST_SYNTH_ERROR = 'Gemini 未回傳影像（可能被安全機制擋下或模型暫不支援）'
+        # 萃取輸出影像（先用 resp.parts，再退回 candidates）；同時收集文字以利診斷
+        parts = getattr(resp, 'parts', None)
+        if not parts:
+            parts = []
+            for cand in (getattr(resp, 'candidates', None) or []):
+                parts += (getattr(getattr(cand, 'content', None), 'parts', None) or [])
+        text_chunks = []
+        for part in (parts or []):
+            inline = getattr(part, 'inline_data', None)
+            if inline and getattr(inline, 'data', None):
+                return Image.open(BytesIO(inline.data)).convert('RGB')
+            if getattr(part, 'text', None):
+                text_chunks.append(part.text)
+        note = (' 模型回應文字：' + ' '.join(text_chunks)[:180]) if text_chunks else \
+               ' 無影像也無文字（模型可能不可用、未開通或被安全機制擋下）'
+        _LAST_SYNTH_ERROR = 'Gemini 未回傳影像。' + note
         return None
     except Exception as e:
         _LAST_SYNTH_ERROR = f'Gemini {type(e).__name__}: {str(e)[:200]}'
@@ -1912,9 +1922,14 @@ def api_apply_stone():
             mask_path = mf.name
 
         # ── ① 首選：Gemini 參考圖編輯（直接用實際石材照片，最忠實自然）──
+        gemini_err = ''
         stone_photo_path = (os.path.join(app.config['UPLOAD_FOLDER'], stone['photo'])
                             if stone['photo'] else None)
-        if GEMINI_API_KEY and stone_photo_path and os.path.exists(stone_photo_path):
+        if not GEMINI_API_KEY:
+            gemini_err = '未設定 GEMINI_API_KEY'
+        elif not (stone_photo_path and os.path.exists(stone_photo_path)):
+            gemini_err = '此石材沒有照片，無法用 Gemini 參考圖合成'
+        else:
             result_img = synthesize_with_gemini(design_path, mask_path, stone_photo_path)
             if result_img is not None:
                 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
@@ -1929,9 +1944,10 @@ def api_apply_stone():
                     'prompt': 'Gemini 直接參考此石材照片合成', 'stone_name': display_name,
                     'engine': 'gemini',
                 })
+            gemini_err = _LAST_SYNTH_ERROR or '未回傳影像'
             # Gemini 失敗：有 Replicate 就往下用 Flux 後備，否則回報錯誤
             if not REPLICATE_API_TOKEN:
-                return jsonify({'error': f'Gemini 合成失敗：{_LAST_SYNTH_ERROR or "未回傳影像"}'}), 500
+                return jsonify({'error': f'Gemini 合成失敗：{gemini_err}'}), 500
 
         # ── ② 後備：Replicate Flux Fill（文字 prompt inpainting）──
         if not REPLICATE_API_TOKEN:
@@ -1999,6 +2015,7 @@ def api_apply_stone():
             'prompt': prompt,
             'stone_name': display_name,
             'engine': 'flux',
+            'gemini_error': gemini_err,
         })
     except Exception as e:
         import traceback
