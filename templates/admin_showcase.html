@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>展覽圖庫 — ReStone 後台</title>
+  <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{--blue:#2563EB;--blue-light:#EFF6FF;--blue-mid:#BFDBFE;--purple:#7C3AED;
+      --text:#0F172A;--text-muted:#64748B;--text-light:#94A3B8;--border:#E2E8F0;--bg:#F8FAFC;--white:#fff}
+    body{font-family:'Inter','Noto Sans TC',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+    header{background:rgba(255,255,255,.85);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:0 2rem;position:sticky;top:0;z-index:100}
+    .header-inner{max-width:1100px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;height:60px}
+    .logo{font-size:.92rem;font-weight:700;color:var(--text);text-decoration:none}
+    .btn-link{font-size:.8rem;color:var(--text-muted);text-decoration:none;padding:.4rem 1rem;border-radius:8px;border:1px solid var(--border);font-weight:500}
+    .btn-link:hover{color:var(--blue);border-color:var(--blue-mid);background:var(--blue-light)}
+    .container{max-width:1100px;margin:2.2rem auto;padding:0 2rem}
+    .page-title{font-size:1.6rem;font-weight:800;letter-spacing:-.03em}
+    .page-sub{font-size:.85rem;color:var(--text-muted);margin-top:.4rem;line-height:1.6}
+    .warn{background:#FEF3C7;color:#92400E;border:1px solid #FDE68A;border-radius:10px;padding:.7rem 1rem;font-size:.85rem;margin:1rem 0}
+    .flash{background:#DCFCE7;color:#166534;border:1px solid #BBF7D0;border-radius:10px;padding:.7rem 1rem;font-size:.85rem;margin:1rem 0}
+    .card{background:var(--white);border:1px solid var(--border);border-radius:14px;padding:1.4rem;margin-top:1.4rem}
+    .card h2{font-size:1rem;font-weight:700;margin-bottom:1rem}
+    table{width:100%;border-collapse:collapse}
+    th,td{text-align:left;padding:.6rem .5rem;font-size:.85rem;border-bottom:1px solid var(--border)}
+    th{font-size:.72rem;color:var(--text-muted);font-weight:600;text-transform:uppercase;letter-spacing:.05em}
+    select{font-family:inherit;font-size:.85rem;padding:.4rem .6rem;border:1px solid var(--border);border-radius:8px;background:#fff}
+    .row-status{font-size:.76rem;color:var(--text-muted)}
+    .btn{font-family:inherit;font-weight:700;cursor:pointer;border-radius:9px;border:none;transition:all .15s}
+    .btn-sm{font-size:.76rem;padding:.4rem .8rem;background:var(--white);color:var(--blue);border:1px solid var(--blue-mid)}
+    .btn-sm:hover:not(:disabled){background:var(--blue-light)}
+    .btn-primary{font-size:.9rem;padding:.7rem 1.5rem;color:#fff;background:linear-gradient(135deg,var(--blue),var(--purple));box-shadow:0 6px 20px rgba(124,58,237,.25)}
+    .btn:disabled{opacity:.5;cursor:not-allowed}
+    .actions{margin-top:1.2rem;display:flex;gap:1rem;align-items:center;flex-wrap:wrap}
+    #status{font-size:.82rem;font-weight:600}
+    .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:1.2rem;margin-top:1rem}
+    .shot{background:var(--white);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+    .shot .img{aspect-ratio:4/3;background:var(--bg);overflow:hidden;display:block}
+    .shot .img img{width:100%;height:100%;object-fit:cover;display:block}
+    .shot .meta{padding:.6rem .8rem}
+    .shot .scene{font-size:.82rem;font-weight:700}
+    .shot .stone{font-size:.72rem;color:var(--text-muted)}
+    .shot .del{margin-top:.4rem;font-size:.7rem;color:#b91c1c;background:none;border:1px solid #FECACA;border-radius:6px;padding:.2rem .5rem;cursor:pointer}
+    .empty{color:var(--text-muted);font-size:.85rem;padding:1.5rem 0}
+  </style>
+</head>
+<body>
+<header>
+  <div class="header-inner">
+    <a href="/admin" class="logo">◈ ReStone 後台</a>
+    <a href="/admin" class="btn-link">← 返回庫存</a>
+  </div>
+</header>
+
+<div class="container">
+  <div class="page-title">展覽圖庫</div>
+  <div class="page-sub">用 Gemini 把每塊石材直接生成在精緻的空間情境中（免遮罩、一步到位），供 iPad 展覽模式秒選秒看。</div>
+
+  {% if not gemini_enabled %}
+    <div class="warn">⚠ 尚未設定 GEMINI_API_KEY，無法生成。請先在 Railway 設定金鑰。</div>
+  {% endif %}
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% for category, msg in messages %}<div class="flash">{{ msg }}</div>{% endfor %}
+  {% endwith %}
+
+  <div class="card">
+    <h2>生成計畫（5 個情境）</h2>
+    <table>
+      <thead><tr><th>情境</th><th>套用石材</th><th>狀態</th><th></th></tr></thead>
+      <tbody>
+        {% for p in plan %}
+        <tr data-scene="{{ p.scene_index }}">
+          <td>{{ p.label }}</td>
+          <td>
+            <select class="stone-pick">
+              {% for s in stones %}
+              <option value="{{ s.id }}" {% if s.id == p.stone_id %}selected{% endif %}>{{ s.stone_name or s.stone_type }}</option>
+              {% endfor %}
+            </select>
+          </td>
+          <td class="row-status">—</td>
+          <td><button type="button" class="btn btn-sm gen-one" {% if not gemini_enabled %}disabled{% endif %}>生成這張</button></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <div class="actions">
+      <button type="button" id="gen-all" class="btn btn-primary" {% if not gemini_enabled %}disabled{% endif %}>✨ 全部生成（5 張）</button>
+      <span id="status"></span>
+    </div>
+    <div class="page-sub" style="margin-top:.8rem">每張間隔約 15 秒以符合速率；生成成功會即時出現在下方圖庫。每張約 NT$1.2。</div>
+  </div>
+
+  <div class="card">
+    <h2>已生成圖庫 <span style="color:var(--text-muted);font-weight:400;font-size:.85rem">共 <span id="count">{{ images|length }}</span> 張</span></h2>
+    <div class="grid" id="gallery">
+      {% for im in images %}
+      <div class="shot">
+        <a class="img" href="{{ url_for('static', filename='uploads/' + im.image_file) }}" target="_blank">
+          <img src="{{ url_for('static', filename='uploads/' + im.image_file) }}" alt="展覽圖" loading="lazy">
+        </a>
+        <div class="meta">
+          <div class="scene">{{ im.scene_label }}</div>
+          <div class="stone">{{ im.stone_name }} · {{ im.created_at[:16] }}</div>
+          <form method="POST" action="/admin/showcase/{{ im.id }}/delete" onsubmit="return confirm('刪除這張展覽圖？')">
+            <button class="del" type="submit">刪除</button>
+          </form>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% if not images %}<div class="empty" id="empty-hint">尚未生成任何展覽圖，點上方「全部生成」開始。</div>{% endif %}
+  </div>
+</div>
+
+<script>
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+const SPACING = 15000, MAX_RETRY = 3;
+const gallery = document.getElementById('gallery');
+const statusEl = document.getElementById('status');
+const countEl = document.getElementById('count');
+
+async function genOne(sceneIndex, stoneId, statusCell) {
+  for (let attempt = 0; attempt <= MAX_RETRY; attempt++) {
+    const fd = new FormData();
+    fd.append('scene_index', String(sceneIndex));
+    fd.append('stone_id', String(stoneId));
+    let r;
+    try { r = await fetch('/admin/api/generate-showcase', { method:'POST', body:fd }); }
+    catch(e){ return { ok:false, reason:'網路錯誤' }; }
+    if (r.status === 429) {
+      let wait = SPACING;
+      try { const j = await r.json(); if (j.retry_after) wait = j.retry_after*1000; } catch(e){}
+      if (statusCell) statusCell.textContent = `限速，等待重試…`;
+      if (attempt < MAX_RETRY) { await sleep(wait); continue; }
+      return { ok:false, reason:'限速重試多次仍失敗' };
+    }
+    let data={}; try { data = await r.json(); } catch(e){}
+    if (r.ok && data.success) return { ok:true, data };
+    return { ok:false, reason: data.error || ('HTTP '+r.status) };
+  }
+  return { ok:false, reason:'未知錯誤' };
+}
+
+function addToGallery(d) {
+  const hint = document.getElementById('empty-hint'); if (hint) hint.remove();
+  const div = document.createElement('div');
+  div.className = 'shot';
+  div.innerHTML = `<a class="img" href="${d.image_url}" target="_blank"><img src="${d.image_url}" alt="展覽圖"></a>`
+    + `<div class="meta"><div class="scene">${d.scene_label}</div><div class="stone">${d.stone_name} · 剛生成</div></div>`;
+  gallery.prepend(div);
+  countEl.textContent = parseInt(countEl.textContent || '0') + 1;
+}
+
+async function runRow(tr) {
+  const sceneIndex = parseInt(tr.dataset.scene);
+  const stoneId = tr.querySelector('.stone-pick').value;
+  const cell = tr.querySelector('.row-status');
+  cell.textContent = '生成中…';
+  const res = await genOne(sceneIndex, stoneId, cell);
+  if (res.ok) { cell.textContent = '✓ 完成'; addToGallery(res.data); }
+  else cell.textContent = '✗ ' + res.reason;
+  return res.ok;
+}
+
+document.querySelectorAll('.gen-one').forEach(btn => {
+  btn.addEventListener('click', async () => {
+    btn.disabled = true;
+    await runRow(btn.closest('tr'));
+    btn.disabled = false;
+  });
+});
+
+document.getElementById('gen-all').addEventListener('click', async () => {
+  const rows = Array.from(document.querySelectorAll('tr[data-scene]'));
+  const allBtn = document.getElementById('gen-all');
+  allBtn.disabled = true;
+  document.querySelectorAll('.gen-one').forEach(b => b.disabled = true);
+  let ok = 0, fail = 0;
+  for (let i = 0; i < rows.length; i++) {
+    statusEl.textContent = `生成中… ${i+1}/${rows.length}（成功 ${ok}、失敗 ${fail}）`;
+    const good = await runRow(rows[i]);
+    good ? ok++ : fail++;
+    if (i < rows.length - 1) await sleep(SPACING);
+  }
+  statusEl.textContent = `完成：${ok} 成功 / ${fail} 失敗`;
+  allBtn.disabled = false;
+  document.querySelectorAll('.gen-one').forEach(b => b.disabled = false);
+});
+</script>
+</body>
+</html>

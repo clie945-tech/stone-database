@@ -496,6 +496,63 @@ def synthesize_with_gemini(design_path, mask_path, stone_photo_path, max_side=12
         return None
 
 
+# 展覽圖庫：5 個空間情境（一步到位，直接把石材生成在場景中）
+SHOWCASE_SCENES = [
+    {'label': '現代客廳特色牆', 'prompt': 'a modern minimalist living room with a full-height feature wall behind the sofa'},
+    {'label': '餐廳餐桌桌面',   'prompt': 'an elegant dining room, close-up hero shot of the rectangular dining table top'},
+    {'label': '廚房中島檯面',   'prompt': 'a contemporary luxury kitchen, focus on the large kitchen island countertop'},
+    {'label': '旅店接待櫃台',   'prompt': 'a boutique hotel lobby, focus on the reception desk front cladding panel'},
+    {'label': '衛浴洗手檯面',   'prompt': 'a high-end hotel bathroom, focus on the vanity countertop and backsplash'},
+]
+
+
+def generate_showcase_scene(stone_photo_path, scene_prompt):
+    """展覽圖庫：把實際石材直接生成在指定空間情境中（單張）。回傳 PIL Image 或 None。"""
+    global _LAST_SYNTH_ERROR
+    _LAST_SYNTH_ERROR = ''
+    try:
+        from io import BytesIO
+        from PIL import Image
+        from google import genai
+        from google.genai import types
+
+        with open(stone_photo_path, 'rb') as f:
+            stone_bytes = f.read()
+        mime = 'image/png' if stone_photo_path.lower().endswith('.png') else 'image/jpeg'
+        prompt = (
+            f'Create a photorealistic interior design photograph: {scene_prompt}. '
+            'The main surface is finished with the EXACT natural stone material shown in the reference image — '
+            'faithfully match its real base colour, veining and pattern. '
+            'High-end architectural interior photography, soft natural daylight, elegant modern styling, '
+            'realistic reflections and shadows, shallow depth of field. No text, no watermark, no people.'
+        )
+        client = genai.Client(api_key=GEMINI_API_KEY)
+        resp = client.models.generate_content(
+            model=GEMINI_IMAGE_MODEL,
+            contents=[prompt, types.Part.from_bytes(data=stone_bytes, mime_type=mime)],
+            config=types.GenerateContentConfig(response_modalities=['TEXT', 'IMAGE']),
+        )
+        parts = getattr(resp, 'parts', None)
+        if not parts:
+            parts = []
+            for cand in (getattr(resp, 'candidates', None) or []):
+                parts += (getattr(getattr(cand, 'content', None), 'parts', None) or [])
+        text_chunks = []
+        for part in (parts or []):
+            inline = getattr(part, 'inline_data', None)
+            if inline and getattr(inline, 'data', None):
+                return Image.open(BytesIO(inline.data)).convert('RGB')
+            if getattr(part, 'text', None):
+                text_chunks.append(part.text)
+        _LAST_SYNTH_ERROR = 'Gemini 未回傳影像。' + (
+            ('模型回應：' + ' '.join(text_chunks)[:160]) if text_chunks else '（無內容）')
+        return None
+    except Exception as e:
+        _LAST_SYNTH_ERROR = f'Gemini {type(e).__name__}: {str(e)[:200]}'
+        print(f'[展覽圖庫生成錯誤] {_LAST_SYNTH_ERROR}')
+        return None
+
+
 def resolve_ai_prompt(stone, custom_prompt=''):
     """決定 inpainting 要用的 prompt（方案 A：讓 AI 實際「看」石材照片）。
     優先序：使用者自訂 > 已快取的 ai_prompt > LLaVA 視覺描述(看真實照片，並快取) > 通用後備。"""
@@ -588,6 +645,15 @@ def init_db():
             stone_name TEXT,
             image_file TEXT,
             prompt TEXT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+
+        CREATE TABLE IF NOT EXISTS showcase_images (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            stone_id INTEGER,
+            stone_name TEXT,
+            scene_label TEXT,
+            image_file TEXT,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );
     ''')
@@ -1882,6 +1948,79 @@ def admin_reanalyze_prompts():
         msg += f'　｜ 失敗原因：{first_error}'
     flash(msg, 'success' if failed == 0 else 'error')
     return redirect(url_for('admin_dashboard'))
+
+
+@app.route('/admin/showcase')
+@admin_required
+def admin_showcase():
+    """展覽圖庫：用 Gemini 把石材生成在空間情境中，供 iPad 展覽模式使用。"""
+    conn = get_db()
+    stones = conn.execute(
+        "SELECT id, stone_name, stone_type, photo FROM stones WHERE photo IS NOT NULL AND photo != '' ORDER BY id"
+    ).fetchall()
+    images = conn.execute('SELECT * FROM showcase_images ORDER BY created_at DESC, id DESC').fetchall()
+    conn.close()
+    # 預設 5 個情境，各自循環指派一塊石材
+    plan = []
+    for i, scene in enumerate(SHOWCASE_SCENES):
+        plan.append({'scene_index': i, 'label': scene['label'],
+                     'stone_id': stones[i % len(stones)]['id'] if stones else None})
+    return render_template('admin_showcase.html', stones=stones, images=images,
+                           scenes=SHOWCASE_SCENES, plan=plan,
+                           gemini_enabled=bool(GEMINI_API_KEY))
+
+
+@app.route('/admin/api/generate-showcase', methods=['POST'])
+@admin_required
+def admin_generate_showcase():
+    from flask import jsonify
+    if not GEMINI_API_KEY:
+        return jsonify({'error': '未設定 GEMINI_API_KEY，無法生成'}), 400
+    scene_index = request.form.get('scene_index', type=int)
+    stone_id = request.form.get('stone_id', type=int)
+    if scene_index is None or not (0 <= scene_index < len(SHOWCASE_SCENES)) or not stone_id:
+        return jsonify({'error': '參數錯誤'}), 400
+    conn = get_db()
+    stone = conn.execute('SELECT * FROM stones WHERE id = ?', (stone_id,)).fetchone()
+    conn.close()
+    if not stone or not stone['photo']:
+        return jsonify({'error': '石材無照片'}), 400
+    photo = os.path.join(app.config['UPLOAD_FOLDER'], stone['photo'])
+    if not os.path.exists(photo):
+        return jsonify({'error': '找不到石材照片檔案'}), 400
+
+    scene = SHOWCASE_SCENES[scene_index]
+    img = generate_showcase_scene(photo, scene['prompt'])
+    if img is None:
+        reason = _LAST_SYNTH_ERROR or '未回傳影像'
+        throttled = ('429' in reason) or ('RESOURCE_EXHAUSTED' in reason) or ('throttl' in reason.lower())
+        return jsonify({'error': reason, 'throttled': throttled, 'retry_after': 15}), (429 if throttled else 500)
+
+    os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+    fn = f'showcase_{secrets.token_hex(8)}.jpg'
+    img.save(os.path.join(app.config['UPLOAD_FOLDER'], fn), 'JPEG', quality=92)
+    name = (stone['stone_name'] if 'stone_name' in stone.keys() and stone['stone_name'] else stone['stone_type'])
+    conn = get_db()
+    conn.execute('INSERT INTO showcase_images (stone_id, stone_name, scene_label, image_file) VALUES (?, ?, ?, ?)',
+                 (stone_id, name, scene['label'], fn))
+    conn.commit()
+    conn.close()
+    return jsonify({'success': True, 'image_url': url_for('static', filename=f'uploads/{fn}'),
+                    'scene_label': scene['label'], 'stone_name': name})
+
+
+@app.route('/admin/showcase/<int:id>/delete', methods=['POST'])
+@admin_required
+def delete_showcase(id):
+    conn = get_db()
+    row = conn.execute('SELECT image_file FROM showcase_images WHERE id = ?', (id,)).fetchone()
+    if row:
+        delete_photo(row['image_file'])
+        conn.execute('DELETE FROM showcase_images WHERE id = ?', (id,))
+        conn.commit()
+        flash('已刪除一張展覽圖', 'success')
+    conn.close()
+    return redirect(url_for('admin_showcase'))
 
 
 @app.route('/api/apply-stone', methods=['POST'])
