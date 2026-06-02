@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>AI 設計工具 — 套用石材到設計圖 — ReStone</title>
+  <title>材質模擬 — AI 設計工具 — ReStone</title>
   <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -224,7 +224,7 @@
   <div class="page-hero">
     <div class="page-hero-inner">
       <span class="ai-tag">✨ AI DESIGN TOOL</span>
-      <h1>套用石材到你的設計</h1>
+      <h1>材質模擬</h1>
       <p>上傳設計圖 → 圈選要替換的區域（牆面 / 桌面 / 地板）→ 從石材庫挑材料 → AI 一鍵合成</p>
     </div>
   </div>
@@ -304,7 +304,7 @@
             style="width:100%;padding:0.7rem 0.9rem;background:#F1F5F9;border:1px solid var(--border);border-radius:8px;font-size:0.78rem;color:var(--text);line-height:1.5;font-family:'SF Mono',Consolas,monospace;resize:vertical;outline:none"></textarea>
         </div>
 
-        <button class="btn-apply" id="btn-apply" disabled>✨ 套用石材（AI 合成）</button>
+        <button class="btn-apply" id="btn-apply" disabled>材質模擬</button>
         <div class="error-box" id="error-box"></div>
       </div>
     </div>
@@ -508,7 +508,7 @@ function exportMask() {
   });
 }
 
-// ── 套用石材（AI 合成）──
+// ── 材質模擬（AI 合成）──
 async function runApply() {
   errorBox.classList.remove('active'); errorBox.textContent = '';
   btnApply.disabled = true;
