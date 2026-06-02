@@ -1883,6 +1883,12 @@ def change_password():
 
 
 # ─── AI 設計工具：套用石材到設計圖（僅限會員）────────────────────────
+@app.route('/studio')
+def studio():
+    """設計工具功能選擇頁（Hub）：列出材質模擬、草圖渲染等工具，公開可瀏覽。"""
+    return render_template('studio.html')
+
+
 @app.route('/design-tool')
 @customer_required
 def design_tool():

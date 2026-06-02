@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>設計工具 — ReStone</title>
+  <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{--blue:#2563EB;--blue-light:#EFF6FF;--blue-mid:#BFDBFE;--purple:#7C3AED;
+      --text:#0F172A;--text-muted:#64748B;--text-light:#94A3B8;--border:#E2E8F0;--bg:#F8FAFC;--white:#fff}
+    body{font-family:'Inter','Noto Sans TC',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+    header{background:rgba(255,255,255,.85);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:0 2rem;position:sticky;top:0;z-index:100}
+    .header-inner{max-width:1100px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;height:60px}
+    .logo{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--text)}
+    .logo-icon{width:32px;height:32px}.logo-text{font-size:.92rem;font-weight:700}
+    .hbtn{font-size:.8rem;color:var(--text-muted);text-decoration:none;padding:.4rem 1rem;border-radius:8px;border:1px solid var(--border);font-weight:500;margin-left:.5rem}
+    .hbtn:hover{color:var(--blue);border-color:var(--blue-mid);background:var(--blue-light)}
+    .container{max-width:1100px;margin:2.6rem auto;padding:0 2rem}
+    .hero{text-align:center;margin-bottom:2.4rem}
+    .ai-tag{display:inline-block;background:var(--purple);color:#fff;font-size:.7rem;font-weight:700;letter-spacing:.08em;padding:.25rem .7rem;border-radius:99px}
+    .hero h1{font-size:2rem;font-weight:800;letter-spacing:-.03em;margin:.7rem 0 .4rem}
+    .hero p{font-size:.92rem;color:var(--text-muted);line-height:1.6}
+    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1.4rem}
+    .tool{display:flex;flex-direction:column;background:var(--white);border:1px solid var(--border);border-radius:18px;padding:1.8rem;text-decoration:none;color:var(--text);transition:all .18s;position:relative;overflow:hidden}
+    .tool:hover{box-shadow:0 12px 32px rgba(37,99,235,.12);transform:translateY(-3px);border-color:var(--blue-mid)}
+    .tool .ic{width:54px;height:54px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:1.7rem;background:linear-gradient(135deg,var(--blue-light),#F5F3FF);margin-bottom:1.1rem}
+    .tool h2{font-size:1.2rem;font-weight:800;margin-bottom:.5rem}
+    .tool .desc{font-size:.86rem;color:var(--text-muted);line-height:1.65;flex:1}
+    .tool .go{margin-top:1.2rem;font-size:.84rem;font-weight:700;color:var(--blue);display:flex;align-items:center;gap:.3rem}
+    .tool.soon{cursor:default;opacity:.85}
+    .tool.soon:hover{box-shadow:none;transform:none;border-color:var(--border)}
+    .tool.soon .ic{background:var(--bg)}
+    .badge{position:absolute;top:1.2rem;right:1.2rem;font-size:.66rem;font-weight:700;padding:.2rem .6rem;border-radius:99px}
+    .badge.ai{background:var(--purple);color:#fff}
+    .badge.soon{background:#FEF3C7;color:#92400E}
+    .tip{margin-top:2rem;text-align:center;font-size:.8rem;color:var(--text-light)}
+    footer{margin-top:3.5rem;padding:1.5rem;text-align:center;font-size:.75rem;color:var(--text-light);border-top:1px solid var(--border);background:#fff}
+  </style>
+</head>
+<body>
+<header>
+  <div class="header-inner">
+    <a href="/" class="logo">
+      <span class="logo-icon">{% with size=32, sfx='stdhdr' %}{% include '_logo.html' %}{% endwith %}</span>
+      <div class="logo-text">ReStone 循環石材服務平台</div>
+    </a>
+    <div>
+      <a href="/" class="hbtn">← 返回首頁</a>
+      {% if session.customer_id %}<a href="/my-designs" class="hbtn">🖼 我的設計</a>{% endif %}
+    </div>
+  </div>
+</header>
+
+<div class="container">
+  <div class="hero">
+    <span class="ai-tag">✨ AI DESIGN STUDIO</span>
+    <h1>設計工具</h1>
+    <p>選擇一個工具開始：用 AI 把循環石材帶進你的設計。</p>
+  </div>
+
+  <div class="grid">
+    <a href="/design-tool" class="tool">
+      <span class="badge ai">AI</span>
+      <div class="ic">🪨</div>
+      <h2>材質模擬</h2>
+      <div class="desc">上傳設計圖或空間照片，圈選要替換的區域（牆面、桌面、家具表面），AI 把循環石材的真實紋理套用上去，即時預覽完成效果。</div>
+      <div class="go">開始模擬 →</div>
+    </a>
+
+    <a href="/sketch" class="tool">
+      <span class="badge ai">AI</span>
+      <div class="ic">✏️</div>
+      <h2>草圖渲染</h2>
+      <div class="desc">上傳手繪草圖或概念線稿，選一塊循環石材，再補一句產品描述，AI 生成寫實的產品渲染圖——概念秒變提案。</div>
+      <div class="go">開始渲染 →</div>
+    </a>
+
+    <div class="tool soon">
+      <span class="badge soon">即將推出</span>
+      <div class="ic">🔮</div>
+      <h2>更多 AI 應用</h2>
+      <div class="desc">AI 配石推薦、多材質並排比較、空間風格分析等更多功能持續開發中，讓循環石材的設計應用更完整。敬請期待。</div>
+      <div class="go" style="color:var(--text-light)">開發中</div>
+    </div>
+  </div>
+
+  <div class="tip">💡 使用 AI 工具需先登入會員（保護運算資源）；瀏覽功能無需登入。</div>
+</div>
+
+<footer>ReStone 循環石材服務平台 — 支持循環經濟，讓石材物盡其用</footer>
+</body>
+</html>
