@@ -553,6 +553,58 @@ def generate_showcase_scene(stone_photo_path, scene_prompt):
         return None
 
 
+def render_sketch_with_gemini(sketch_path, stone_photo_path, hint=''):
+    """草圖渲染：把設計草圖 + 石材照片，用 Gemini 生成寫實產品渲染圖。回傳 PIL Image 或 None。"""
+    global _LAST_SYNTH_ERROR
+    _LAST_SYNTH_ERROR = ''
+    try:
+        from io import BytesIO
+        from PIL import Image
+        from google import genai
+        from google.genai import types
+
+        def part_of(path):
+            with open(path, 'rb') as f:
+                data = f.read()
+            mime = 'image/png' if path.lower().endswith('.png') else 'image/jpeg'
+            return types.Part.from_bytes(data=data, mime_type=mime)
+
+        hint_line = f' The product is a {hint}.' if hint else ''
+        prompt = (
+            'Image 1 is a design SKETCH or line drawing of a product. Image 2 is a real natural stone material sample. '
+            'Produce a photorealistic studio PRODUCT RENDERING of the object shown in the sketch, '
+            'manufactured from the stone material in Image 2 — faithfully match its real colour, veining and pattern. '
+            'Keep the form, proportions and structure faithful to the sketch.' + hint_line +
+            ' Clean neutral studio background, soft realistic lighting, accurate reflections and shadows, '
+            'high-end product photography. No text, no watermark, no people. Return only the rendered image.'
+        )
+        client = genai.Client(api_key=GEMINI_API_KEY)
+        resp = client.models.generate_content(
+            model=GEMINI_IMAGE_MODEL,
+            contents=[prompt, part_of(sketch_path), part_of(stone_photo_path)],
+            config=types.GenerateContentConfig(response_modalities=['TEXT', 'IMAGE']),
+        )
+        parts = getattr(resp, 'parts', None)
+        if not parts:
+            parts = []
+            for cand in (getattr(resp, 'candidates', None) or []):
+                parts += (getattr(getattr(cand, 'content', None), 'parts', None) or [])
+        text_chunks = []
+        for part in (parts or []):
+            inline = getattr(part, 'inline_data', None)
+            if inline and getattr(inline, 'data', None):
+                return Image.open(BytesIO(inline.data)).convert('RGB')
+            if getattr(part, 'text', None):
+                text_chunks.append(part.text)
+        _LAST_SYNTH_ERROR = 'Gemini 未回傳影像。' + (
+            ('模型回應：' + ' '.join(text_chunks)[:160]) if text_chunks else '（無內容）')
+        return None
+    except Exception as e:
+        _LAST_SYNTH_ERROR = f'Gemini {type(e).__name__}: {str(e)[:200]}'
+        print(f'[草圖渲染錯誤] {_LAST_SYNTH_ERROR}')
+        return None
+
+
 def resolve_ai_prompt(stone, custom_prompt=''):
     """決定 inpainting 要用的 prompt（方案 A：讓 AI 實際「看」石材照片）。
     優先序：使用者自訂 > 已快取的 ai_prompt > LLaVA 視覺描述(看真實照片，並快取) > 通用後備。"""
@@ -1846,6 +1898,78 @@ def design_tool():
                            selected_id=selected_id,
                            color_map=COLOR_MAP,
                            replicate_enabled=bool(REPLICATE_API_TOKEN))
+
+
+@app.route('/sketch')
+@customer_required
+def sketch_tool():
+    """草圖渲染頁：上傳草圖 + 選石材 + 描述 → Gemini 生成產品渲染圖"""
+    conn = get_db()
+    stones = conn.execute(
+        'SELECT id, stone_type, stone_name, color, photo FROM stones ORDER BY id DESC'
+    ).fetchall()
+    conn.close()
+    return render_template('sketch.html', stones=stones,
+                           gemini_enabled=bool(GEMINI_API_KEY))
+
+
+@app.route('/api/render-sketch', methods=['POST'])
+def api_render_sketch():
+    """接收草圖 + stone_id + 描述，用 Gemini 生成產品渲染圖（僅限會員）"""
+    from flask import jsonify
+    if not session.get('customer_id'):
+        return jsonify({'error': '請先登入會員才能使用草圖渲染'}), 401
+    if not GEMINI_API_KEY:
+        return jsonify({'error': '草圖渲染需要 Gemini（請設定 GEMINI_API_KEY）'}), 503
+
+    stone_id = request.form.get('stone_id', type=int)
+    sketch   = request.files.get('sketch')
+    hint     = request.form.get('hint', '').strip()[:120]
+    if not stone_id or not sketch:
+        return jsonify({'error': '缺少必要欄位（草圖、石材）'}), 400
+
+    conn = get_db()
+    stone = conn.execute('SELECT * FROM stones WHERE id = ?', (stone_id,)).fetchone()
+    conn.close()
+    if not stone:
+        return jsonify({'error': '找不到指定石材'}), 404
+    if not stone['photo']:
+        return jsonify({'error': '此石材沒有照片，無法做材質渲染'}), 400
+    stone_photo_path = os.path.join(app.config['UPLOAD_FOLDER'], stone['photo'])
+    if not os.path.exists(stone_photo_path):
+        return jsonify({'error': '石材照片檔案不存在'}), 400
+
+    sketch_path = None
+    try:
+        sketch_path = normalize_image_to_jpg_path(sketch, max_size=1280)
+        if not sketch_path:
+            return jsonify({'error': '草圖格式無法解析（支援 JPG / PNG / HEIC / WebP）'}), 400
+
+        result_img = render_sketch_with_gemini(sketch_path, stone_photo_path, hint)
+        if result_img is None:
+            return jsonify({'error': f'草圖渲染失敗：{_LAST_SYNTH_ERROR or "未回傳影像"}'}), 500
+
+        display_name = (stone['stone_name'] if 'stone_name' in stone.keys() and stone['stone_name']
+                        else stone['stone_type'])
+        os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+        filename = f'design_{secrets.token_hex(8)}.jpg'
+        result_img.save(os.path.join(app.config['UPLOAD_FOLDER'], filename), 'JPEG', quality=92)
+        label = f'草圖渲染（{hint}）' if hint else '草圖渲染'
+        design_id = _record_design(session['customer_id'], stone_id, display_name, filename, label)
+        local_url = url_for('static', filename=f'uploads/{filename}')
+        return jsonify({
+            'success': True, 'result_url': local_url, 'local_url': local_url,
+            'saved': True, 'design_id': design_id,
+            'prompt': label + '：' + display_name, 'stone_name': display_name,
+            'engine': 'gemini',
+        })
+    except Exception as e:
+        import traceback; traceback.print_exc()
+        return jsonify({'error': f'草圖渲染失敗：{str(e)[:200]}'}), 500
+    finally:
+        if sketch_path and os.path.exists(sketch_path):
+            try: os.unlink(sketch_path)
+            except Exception: pass
 
 
 @app.route('/admin/api/analyze-photo', methods=['POST'])
