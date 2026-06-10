@@ -605,6 +605,58 @@ def render_sketch_with_gemini(sketch_path, stone_photo_path, hint=''):
         return None
 
 
+def recommend_stones_with_gemini(space_photo_path, stones, top_n=3):
+    """配石推薦：用 Gemini 分析空間照片的風格色調，從石材庫挑出最搭的石材。
+    回傳 {'analysis': str, 'recommendations': [{'stone_id': int, 'reason': str}]}；失敗回 None。"""
+    global _LAST_SYNTH_ERROR
+    _LAST_SYNTH_ERROR = ''
+    try:
+        import json as _json
+        import re as _re
+        from google import genai
+        from google.genai import types
+
+        catalog = '\n'.join(
+            f"- id={s['id']}｜品名：{s['stone_name'] or s['stone_type']}｜分類：{s['stone_type']}"
+            f"｜顏色：{s['color'] or '未標'}｜外觀：{(s['ai_prompt'] or '')[:160]}"
+            for s in stones
+        )
+        with open(space_photo_path, 'rb') as f:
+            img = f.read()
+        mime = 'image/png' if space_photo_path.lower().endswith('.png') else 'image/jpeg'
+        prompt = (
+            '你是室內設計的石材選配顧問。請先觀察這張空間照片的風格、主色調與氛圍，'
+            f'再從下方「循環石材清單」中挑出最適合這個空間的 {top_n} 塊石材（清單不足就全選），'
+            '並針對每塊說明搭配理由。\n\n循環石材清單：\n' + catalog + '\n\n'
+            '請只輸出 JSON（繁體中文），格式：\n'
+            '{"analysis": "空間風格與色調分析（60字內）", '
+            '"recommendations": [{"stone_id": 1, "reason": "推薦理由（40字內）"}]}'
+        )
+        client = genai.Client(api_key=GEMINI_API_KEY)
+        resp = client.models.generate_content(
+            model=GEMINI_VISION_MODEL,
+            contents=[types.Part.from_bytes(data=img, mime_type=mime), prompt],
+            config=types.GenerateContentConfig(response_mime_type='application/json'),
+        )
+        text = (getattr(resp, 'text', '') or '').strip()
+        m = _re.search(r'\{.*\}', text, _re.S)
+        if not m:
+            _LAST_SYNTH_ERROR = 'Gemini 回傳非 JSON：' + text[:120]
+            return None
+        data = _json.loads(m.group(0))
+        valid_ids = {s['id'] for s in stones}
+        recs = [r for r in (data.get('recommendations') or [])
+                if isinstance(r, dict) and r.get('stone_id') in valid_ids][:top_n]
+        if not recs:
+            _LAST_SYNTH_ERROR = 'Gemini 未給出有效推薦'
+            return None
+        return {'analysis': str(data.get('analysis', '')).strip(), 'recommendations': recs}
+    except Exception as e:
+        _LAST_SYNTH_ERROR = f'Gemini {type(e).__name__}: {str(e)[:200]}'
+        print(f'[配石推薦錯誤] {_LAST_SYNTH_ERROR}')
+        return None
+
+
 def resolve_ai_prompt(stone, custom_prompt=''):
     """決定 inpainting 要用的 prompt（方案 A：讓 AI 實際「看」石材照片）。
     優先序：使用者自訂 > 已快取的 ai_prompt > LLaVA 視覺描述(看真實照片，並快取) > 通用後備。"""
@@ -1887,6 +1939,67 @@ def change_password():
 def studio():
     """設計工具功能選擇頁（Hub）：列出材質模擬、草圖渲染等工具，公開可瀏覽。"""
     return render_template('studio.html')
+
+
+@app.route('/match')
+@customer_required
+def match_tool():
+    """配石推薦頁：上傳空間照片 → Gemini 分析風格 → 推薦最搭的循環石材"""
+    return render_template('match.html', gemini_enabled=bool(GEMINI_API_KEY))
+
+
+@app.route('/api/match-stones', methods=['POST'])
+def api_match_stones():
+    """接收空間照片，回傳 AI 配石推薦（僅限會員）"""
+    from flask import jsonify
+    if not session.get('customer_id'):
+        return jsonify({'error': '請先登入會員才能使用配石推薦'}), 401
+    if not GEMINI_API_KEY:
+        return jsonify({'error': '配石推薦需要 Gemini（請設定 GEMINI_API_KEY）'}), 503
+    photo = request.files.get('photo')
+    if not photo:
+        return jsonify({'error': '請上傳空間照片'}), 400
+
+    conn = get_db()
+    stones = conn.execute(
+        "SELECT id, stone_type, stone_name, color, photo, ai_prompt, quantity, unit "
+        "FROM stones WHERE photo IS NOT NULL AND photo != '' ORDER BY id"
+    ).fetchall()
+    conn.close()
+    if not stones:
+        return jsonify({'error': '石材庫目前沒有可推薦的石材'}), 400
+
+    photo_path = None
+    try:
+        photo_path = normalize_image_to_jpg_path(photo, max_size=1280)
+        if not photo_path:
+            return jsonify({'error': '照片格式無法解析（支援 JPG / PNG / HEIC / WebP）'}), 400
+        result = recommend_stones_with_gemini(photo_path, stones)
+        if not result:
+            return jsonify({'error': f'AI 分析失敗：{_LAST_SYNTH_ERROR or "未知原因"}'}), 500
+
+        by_id = {s['id']: s for s in stones}
+        cards = []
+        for rec in result['recommendations']:
+            s = by_id[rec['stone_id']]
+            cards.append({
+                'stone_id': s['id'],
+                'name': s['stone_name'] or s['stone_type'],
+                'stone_type': s['stone_type'],
+                'photo_url': url_for('static', filename=f"uploads/{s['photo']}"),
+                'quantity': f"{s['quantity']} {s['unit'] or '片'}" if s['quantity'] else '',
+                'reason': rec.get('reason', ''),
+                'detail_url': f"/stone/{s['id']}",
+                'simulate_url': f"/design-tool?stone_id={s['id']}",
+            })
+        return jsonify({'success': True, 'analysis': result['analysis'], 'recommendations': cards})
+    except Exception as e:
+        import traceback; traceback.print_exc()
+        return jsonify({'error': f'配石推薦失敗：{str(e)[:200]}'}), 500
+    finally:
+        if photo_path and os.path.exists(photo_path):
+            try: os.unlink(photo_path)
+            except Exception: pass
 
 
 @app.route('/design-tool')
