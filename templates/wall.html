@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>牆面模擬 — ReStone</title>
+  <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/heic2any/0.0.4/heic2any.min.js" defer></script>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{--blue:#2563EB;--blue-light:#EFF6FF;--blue-mid:#BFDBFE;--purple:#7C3AED;--green:#16A34A;
+      --text:#0F172A;--text-muted:#64748B;--text-light:#94A3B8;--border:#E2E8F0;--bg:#F8FAFC;--white:#fff}
+    body{font-family:'Inter','Noto Sans TC',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+    header{background:rgba(255,255,255,.85);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:0 2rem;position:sticky;top:0;z-index:100}
+    .header-inner{max-width:1200px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;height:60px}
+    .logo{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--text)}
+    .logo-icon{width:32px;height:32px}.logo-text{font-size:.92rem;font-weight:700}
+    .hbtn{font-size:.8rem;color:var(--text-muted);text-decoration:none;padding:.4rem 1rem;border-radius:8px;border:1px solid var(--border);font-weight:500;margin-left:.5rem}
+    .hbtn:hover{color:var(--blue);border-color:var(--blue-mid);background:var(--blue-light)}
+    .container{max-width:1200px;margin:1.6rem auto;padding:0 2rem}
+    .page-hero{background:linear-gradient(135deg,#EEF2FF,#FAF5FF);border:1px solid var(--border);border-radius:18px;padding:1.8rem;text-align:center;margin-bottom:1.4rem}
+    .ai-tag{display:inline-block;background:var(--purple);color:#fff;font-size:.7rem;font-weight:700;letter-spacing:.08em;padding:.25rem .7rem;border-radius:99px}
+    .page-hero h1{font-size:1.6rem;font-weight:800;margin:.5rem 0 .3rem;letter-spacing:-.02em}
+    .page-hero p{font-size:.85rem;color:var(--text-muted)}
+    .layout{display:grid;grid-template-columns:1.5fr 1fr;gap:1.4rem;align-items:start}
+    @media(max-width:920px){.layout{grid-template-columns:1fr}}
+    .panel{background:var(--white);border:1px solid var(--border);border-radius:16px;padding:1.4rem}
+    .panel-title{font-size:.95rem;font-weight:700;margin-bottom:1rem;display:flex;align-items:center;gap:.5rem}
+    .step-num{display:inline-flex;width:22px;height:22px;border-radius:50%;background:var(--blue);color:#fff;font-size:.75rem;align-items:center;justify-content:center;font-weight:700;flex-shrink:0}
+    .upload-zone{border:2px dashed var(--blue-mid);border-radius:14px;padding:3rem 1rem;text-align:center;cursor:pointer;transition:all .15s;color:var(--text-muted)}
+    .upload-zone:hover,.upload-zone.dragover{background:var(--blue-light);border-color:var(--blue)}
+    .upload-zone .ic{font-size:2rem;opacity:.5}
+    .canvas-wrap{display:none;position:relative}
+    .canvas-wrap.active{display:block}
+    #wall-canvas{width:100%;border-radius:12px;border:1px solid var(--border);display:block;touch-action:none;cursor:crosshair}
+    .guide{margin-top:.7rem;font-size:.82rem;font-weight:600;color:var(--blue)}
+    .guide.done{color:var(--green)}
+    .canvas-tools{margin-top:.7rem;display:flex;gap:.6rem;flex-wrap:wrap}
+    .tool-btn{font-family:inherit;font-size:.78rem;font-weight:600;color:var(--text-muted);background:var(--white);border:1px solid var(--border);border-radius:8px;padding:.45rem .9rem;cursor:pointer}
+    .tool-btn:hover{color:var(--blue);border-color:var(--blue-mid);background:var(--blue-light)}
+    .stone-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:.7rem;max-height:230px;overflow:auto}
+    .stone-card{border:2px solid var(--border);border-radius:12px;overflow:hidden;cursor:pointer;transition:all .15s;background:#fff}
+    .stone-card:hover{border-color:var(--blue-mid)}
+    .stone-card.selected{border-color:var(--blue);box-shadow:0 0 0 3px var(--blue-light)}
+    .stone-thumb{aspect-ratio:1;background:var(--bg);overflow:hidden}
+    .stone-thumb img{width:100%;height:100%;object-fit:cover;display:block}
+    .stone-name{font-size:.7rem;font-weight:600;padding:.3rem .35rem .05rem;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .stone-dim{font-size:.62rem;color:var(--text-light);text-align:center;padding-bottom:.3rem}
+    .dims{display:grid;grid-template-columns:1fr 1fr;gap:.8rem;margin-top:1.1rem}
+    .dims .field label{font-size:.74rem;font-weight:600;color:var(--text-muted);display:block;margin-bottom:.3rem}
+    .dims .field input{width:100%;font-family:inherit;font-size:.88rem;padding:.55rem .7rem;border:1px solid var(--border);border-radius:9px}
+    .dims .field input:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px var(--blue-light)}
+    .joint-row{margin-top:.9rem;font-size:.82rem;color:var(--text-muted);display:flex;align-items:center;gap:.45rem}
+    .btn-go{width:100%;margin-top:1.2rem;padding:.95rem;border:none;border-radius:12px;color:#fff;font-size:.92rem;font-weight:800;cursor:pointer;font-family:inherit;background:linear-gradient(135deg,var(--blue),var(--purple));box-shadow:0 6px 20px rgba(124,58,237,.25)}
+    .btn-go:disabled{opacity:.5;cursor:not-allowed}
+    .hint-sm{margin-top:.7rem;font-size:.72rem;color:var(--text-light);line-height:1.55}
+    .error-box{display:none;margin-top:1rem;background:#FEE2E2;color:#991B1B;border:1px solid #FECACA;border-radius:10px;padding:.8rem 1rem;font-size:.84rem;line-height:1.5}
+    .error-box.active{display:block}
+    .result-panel{margin-top:1.4rem;display:none}
+    .result-panel.active{display:block}
+    .loading{text-align:center;padding:3rem;color:var(--text-muted)}
+    .spinner{width:38px;height:38px;border:3px solid var(--blue-light);border-top-color:var(--blue);border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 1rem}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    #result-content img{width:100%;border-radius:12px;border:1px solid var(--border)}
+    .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:.8rem;margin-top:1rem}
+    .stat{background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:.85rem 1rem}
+    .stat .k{font-size:.68rem;font-weight:700;color:var(--text-muted);letter-spacing:.05em;margin-bottom:.25rem}
+    .stat .v{font-size:.95rem;font-weight:800}
+    .stat.ok{background:#F0FDF4;border-color:#BBF7D0}.stat.ok .v{color:var(--green)}
+    .stat.bad{background:#FEF2F2;border-color:#FECACA}.stat.bad .v{color:#B91C1C}
+    .result-actions{display:flex;gap:.6rem;flex-wrap:wrap;margin-top:1rem}
+    .result-actions a,.result-actions button{font-family:inherit;font-size:.78rem;font-weight:600;text-decoration:none;color:var(--blue);border:1px solid var(--blue-mid);background:var(--blue-light);padding:.45rem .85rem;border-radius:8px;cursor:pointer}
+    .result-actions .enhance{color:#fff;background:linear-gradient(135deg,var(--blue),var(--purple));border:none}
+    footer{margin-top:3rem;padding:1.5rem;text-align:center;font-size:.75rem;color:var(--text-light);border-top:1px solid var(--border);background:#fff}
+  </style>
+</head>
+<body>
+<header>
+  <div class="header-inner">
+    <a href="/" class="logo">
+      <span class="logo-icon">{% with size=32, sfx='wlhdr' %}{% include '_logo.html' %}{% endwith %}</span>
+      <div class="logo-text">ReStone 循環石材服務平台</div>
+    </a>
+    <div>
+      <a href="/studio" class="hbtn">← 設計工具</a>
+      <a href="/design-tool" class="hbtn">🪨 材質模擬</a>
+      <a href="/my-designs" class="hbtn">🖼 我的設計</a>
+    </div>
+  </div>
+</header>
+
+<div class="container">
+  <div class="page-hero">
+    <span class="ai-tag">🧱 WALL SIMULATOR</span>
+    <h1>牆面模擬</h1>
+    <p>點選牆面四角 → 選循環石材 → 輸入牆面尺寸 → 透視與比例正確的即時模擬（免費・秒出圖）</p>
+  </div>
+
+  <div class="layout">
+    <div class="panel">
+      <div class="panel-title"><span class="step-num">1</span> 上傳空間照片，依序點選牆面四個角</div>
+      <div class="upload-zone" id="upload-zone">
+        <div class="ic">🏠</div>
+        <div>點擊或拖曳上傳室內空間照片<br><span style="font-size:.75rem">JPG / PNG / HEIC（iPhone 照片可直接上傳）</span></div>
+      </div>
+      <input type="file" id="photo-file" accept="image/*,.heic,.heif" style="display:none">
+      <div class="canvas-wrap" id="canvas-wrap">
+        <canvas id="wall-canvas"></canvas>
+        <div class="guide" id="guide">請點選牆面的 <b>① 左上角</b></div>
+        <div class="canvas-tools">
+          <button type="button" class="tool-btn" id="reset-corners">↻ 重設角點</button>
+          <button type="button" class="tool-btn" id="reupload">↻ 重新上傳</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-title"><span class="step-num">2</span> 選石材・輸入牆面尺寸</div>
+      <div class="stone-grid" id="stone-grid">
+        {% for s in stones %}
+        <div class="stone-card" data-id="{{ s.id }}">
+          <div class="stone-thumb"><img src="/static/uploads/{{ s.photo }}" alt="" loading="lazy"></div>
+          <div class="stone-name">{{ s.stone_name or s.stone_type }}</div>
+          <div class="stone-dim">{% if s.width and s.height %}{{ '%g'|format(s.width) }}×{{ '%g'|format(s.height) }}cm{% else %}尺寸未填{% endif %}</div>
+        </div>
+        {% endfor %}
+      </div>
+      <div class="dims">
+        <div class="field">
+          <label>牆面寬度（cm）</label>
+          <input type="number" id="wall-w" value="400" min="50" max="2000" step="10">
+        </div>
+        <div class="field">
+          <label>牆面高度（cm）</label>
+          <input type="number" id="wall-h" value="260" min="50" max="1000" step="10">
+        </div>
+      </div>
+      <label class="joint-row"><input type="checkbox" id="joints" checked> 顯示石材拼縫線（更真實，並呈現分割計畫）</label>
+      <button class="btn-go" id="btn-go" disabled>🧱 牆面模擬</button>
+      <div class="hint-sm">依牆面與石材的實際尺寸計算拼貼比例，並以透視投影貼合四角——比例與透視皆為幾何精準。若牆前有家具遮擋，可在結果使用「AI 擬真強化」修正。</div>
+      <div class="error-box" id="error-box"></div>
+    </div>
+  </div>
+
+  <div class="panel result-panel" id="result-panel">
+    <div class="panel-title"><span class="step-num">✓</span> 模擬結果</div>
+    <div id="result-content"></div>
+  </div>
+</div>
+
+<footer>ReStone 循環石材服務平台 — 支持循環經濟，讓石材物盡其用</footer>
+
+<script>
+const uploadZone = document.getElementById('upload-zone');
+const photoFile  = document.getElementById('photo-file');
+const canvasWrap = document.getElementById('canvas-wrap');
+const cv  = document.getElementById('wall-canvas');
+const ctx = cv.getContext('2d');
+const guide = document.getElementById('guide');
+const btnGo = document.getElementById('btn-go');
+const errorBox = document.getElementById('error-box');
+const resultPanel = document.getElementById('result-panel');
+const resultBox = document.getElementById('result-content');
+
+let img = null;          // 已載入的空間照片
+let uploadBlob = null;   // 要送出的檔案（HEIC 已轉 JPG）
+let corners = [];        // [{x,y}] canvas 座標，順序：左上→右上→右下→左下
+let dragIdx = -1;
+let selectedStoneId = null;
+const LABELS = ['① 左上', '② 右上', '③ 右下', '④ 左下'];
+const COLORS = ['#EF4444', '#F59E0B', '#16A34A', '#2563EB'];
+
+// ── 上傳（含 HEIC 轉檔）──
+async function maybeConvertHeic(file) {
+  const name = (file.name || '').toLowerCase();
+  const isHeic = name.endsWith('.heic') || name.endsWith('.heif')
+              || file.type === 'image/heic' || file.type === 'image/heif';
+  if (!isHeic) return file;
+  if (typeof heic2any === 'undefined') return file;
+  try {
+    const blob = await heic2any({ blob: file, toType: 'image/jpeg', quality: 0.9 });
+    const out = Array.isArray(blob) ? blob[0] : blob;
+    return new File([out], name.replace(/\.(heic|heif)$/i, '.jpg'), { type: 'image/jpeg' });
+  } catch (e) { return file; }
+}
+
+uploadZone.addEventListener('click', () => photoFile.click());
+photoFile.addEventListener('change', async () => {
+  const f = photoFile.files && photoFile.files[0];
+  if (!f) return;
+  uploadBlob = await maybeConvertHeic(f);
+  const im = new Image();
+  im.onload = () => {
+    img = im;
+    const maxSide = 980;
+    let w = im.width, h = im.height;
+    if (Math.max(w, h) > maxSide) { const r = maxSide / Math.max(w, h); w = Math.round(w*r); h = Math.round(h*r); }
+    cv.width = w; cv.height = h;
+    corners = [];
+    uploadZone.style.display = 'none';
+    canvasWrap.classList.add('active');
+    redraw(); refresh();
+  };
+  im.src = URL.createObjectURL(uploadBlob);
+});
+['dragenter','dragover'].forEach(ev => uploadZone.addEventListener(ev, e => { e.preventDefault(); uploadZone.classList.add('dragover'); }));
+uploadZone.addEventListener('dragleave', e => { e.preventDefault(); uploadZone.classList.remove('dragover'); });
+uploadZone.addEventListener('drop', e => {
+  e.preventDefault(); uploadZone.classList.remove('dragover');
+  const files = e.dataTransfer.files;
+  if (!files || !files.length) return;
+  try { const dt = new DataTransfer(); for (const f of files) dt.items.add(f); photoFile.files = dt.files; }
+  catch(err){ photoFile.files = files; }
+  photoFile.dispatchEvent(new Event('change', { bubbles: true }));
+});
+window.addEventListener('dragover', e => { if(!e.target.closest('.upload-zone')) e.preventDefault(); });
+window.addEventListener('drop', e => { if(!e.target.closest('.upload-zone')) e.preventDefault(); });
+
+document.getElementById('reupload').addEventListener('click', () => {
+  photoFile.value = ''; img = null; uploadBlob = null; corners = [];
+  canvasWrap.classList.remove('active'); uploadZone.style.display = 'block';
+  refresh();
+});
+document.getElementById('reset-corners').addEventListener('click', () => { corners = []; redraw(); refresh(); });
+
+// ── 四角點選（支援滑鼠 + 觸控，可拖曳微調）──
+function toCanvas(e) {
+  const r = cv.getBoundingClientRect();
+  return { x: (e.clientX - r.left) * cv.width / r.width,
+           y: (e.clientY - r.top)  * cv.height / r.height };
+}
+function nearIdx(p) {
+  const tol = cv.width / 28;
+  for (let i = 0; i < corners.length; i++) {
+    if (Math.hypot(corners[i].x - p.x, corners[i].y - p.y) < tol) return i;
+  }
+  return -1;
+}
+cv.addEventListener('pointerdown', e => {
+  if (!img) return;
+  e.preventDefault();
+  const p = toCanvas(e);
+  const i = nearIdx(p);
+  if (i >= 0) { dragIdx = i; cv.setPointerCapture(e.pointerId); }
+  else if (corners.length < 4) { corners.push(p); redraw(); refresh(); }
+});
+cv.addEventListener('pointermove', e => {
+  if (dragIdx < 0) return;
+  e.preventDefault();
+  corners[dragIdx] = toCanvas(e);
+  redraw();
+});
+cv.addEventListener('pointerup', e => { dragIdx = -1; refresh(); });
+
+function redraw() {
+  if (!img) return;
+  ctx.clearRect(0, 0, cv.width, cv.height);
+  ctx.drawImage(img, 0, 0, cv.width, cv.height);
+  if (corners.length >= 2) {
+    ctx.beginPath();
+    ctx.moveTo(corners[0].x, corners[0].y);
+    for (let i = 1; i < corners.length; i++) ctx.lineTo(corners[i].x, corners[i].y);
+    if (corners.length === 4) ctx.closePath();
+    if (corners.length === 4) { ctx.fillStyle = 'rgba(37,99,235,0.22)'; ctx.fill(); }
+    ctx.strokeStyle = '#2563EB'; ctx.lineWidth = Math.max(2, cv.width/450); ctx.stroke();
+  }
+  corners.forEach((p, i) => {
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, Math.max(7, cv.width/90), 0, Math.PI*2);
+    ctx.fillStyle = COLORS[i]; ctx.fill();
+    ctx.strokeStyle = '#fff'; ctx.lineWidth = 2.5; ctx.stroke();
+    ctx.fillStyle = '#fff'; ctx.font = `bold ${Math.max(10, cv.width/70)}px Inter`;
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(String(i+1), p.x, p.y);
+  });
+  if (corners.length < 4) {
+    guide.classList.remove('done');
+    guide.innerHTML = '請點選牆面的 <b>' + LABELS[corners.length] + '</b>';
+  } else {
+    guide.classList.add('done');
+    guide.innerHTML = '✓ 四角完成（可直接拖曳圓點微調）';
+  }
+}
+
+// ── 石材選擇 ──
+document.querySelectorAll('.stone-card').forEach(c => c.addEventListener('click', () => {
+  document.querySelectorAll('.stone-card').forEach(x => x.classList.remove('selected'));
+  c.classList.add('selected');
+  selectedStoneId = parseInt(c.dataset.id);
+  refresh();
+}));
+
+function refresh() {
+  btnGo.disabled = !(uploadBlob && corners.length === 4 && selectedStoneId);
+}
+
+// ── 模擬 ──
+let lastDesignId = null;
+btnGo.addEventListener('click', async () => {
+  errorBox.classList.remove('active'); errorBox.textContent = '';
+  btnGo.disabled = true;
+  resultPanel.classList.add('active');
+  resultBox.innerHTML = '<div class="loading"><div class="spinner"></div>計算透視與拼貼中… 數秒內完成</div>';
+  resultPanel.scrollIntoView({behavior:'smooth', block:'center'});
+  try {
+    const fd = new FormData();
+    fd.append('photo', uploadBlob, 'room.jpg');
+    fd.append('stone_id', String(selectedStoneId));
+    fd.append('corners', JSON.stringify(corners.map(p => [p.x/cv.width, p.y/cv.height])));
+    fd.append('wall_w', document.getElementById('wall-w').value);
+    fd.append('wall_h', document.getElementById('wall-h').value);
+    fd.append('joints', document.getElementById('joints').checked ? '1' : '0');
+    const r = await fetch('/api/simulate-wall', { method:'POST', body: fd });
+    const raw = await r.text().catch(()=> '');
+    let data; try { data = JSON.parse(raw); } catch(e){
+      throw new Error('伺服器回應異常（HTTP '+r.status+'）：'+raw.replace(/<[^>]*>/g,' ').slice(0,140));
+    }
+    if (!r.ok || !data.success) throw new Error(data.error || ('HTTP '+r.status));
+    lastDesignId = data.design_id;
+    renderResult(data.local_url, data.stats, data.stone_name);
+  } catch(e){
+    resultPanel.classList.remove('active');
+    errorBox.textContent = '⚠ ' + (e.message || e);
+    errorBox.classList.add('active');
+  } finally { refresh(); }
+});
+
+function renderResult(url, stats, stoneName) {
+  resultBox.innerHTML = '';
+  const im = document.createElement('img'); im.src = url; im.alt = '牆面模擬結果';
+  resultBox.appendChild(im);
+
+  if (stats) {
+    const grid = document.createElement('div'); grid.className = 'stats';
+    const mk = (k, v, cls) => {
+      const d = document.createElement('div'); d.className = 'stat' + (cls ? ' '+cls : '');
+      d.innerHTML = '<div class="k">'+k+'</div>';
+      const vv = document.createElement('div'); vv.className = 'v'; vv.textContent = v;
+      d.appendChild(vv); return d;
+    };
+    grid.appendChild(mk('拼貼計畫', `橫 ${stats.tiles_x} × 直 ${stats.tiles_y} ＝ ${stats.tiles_total} 片`));
+    grid.appendChild(mk('石材規格', stats.tile_size));
+    if (stats.stock_qty) {
+      grid.appendChild(stats.stock_ok
+        ? mk('庫存檢查', `${stats.stock_qty} 片 ✓ 足夠`, 'ok')
+        : mk('庫存檢查', `${stats.stock_qty} 片 ⚠ 不足（差 ${stats.tiles_total - stats.stock_qty} 片）`, 'bad'));
+    }
+    if (stats.carbon) grid.appendChild(mk('減碳效益', `${stats.carbon} CO₂e ≈ ${stats.trees} 棵樹年吸碳`, 'ok'));
+    resultBox.appendChild(grid);
+  }
+
+  const acts = document.createElement('div'); acts.className = 'result-actions';
+  const a1 = document.createElement('a'); a1.href = url; a1.target='_blank'; a1.textContent = '🔍 開啟原圖';
+  const a2 = document.createElement('a'); a2.href = url; a2.setAttribute('download','restone-wall.jpg'); a2.textContent = '↓ 下載圖片';
+  acts.appendChild(a1); acts.appendChild(a2);
+  if (lastDesignId) {
+    const a3 = document.createElement('a'); a3.href = '/my-designs/'+lastDesignId+'/proposal.pdf'; a3.textContent = '📄 設計提案 PDF';
+    acts.appendChild(a3);
+  }
+  const a4 = document.createElement('a'); a4.href = '/my-designs'; a4.textContent = '🖼 我的設計';
+  acts.appendChild(a4);
+  {% if gemini_enabled %}
+  const eb = document.createElement('button'); eb.className = 'enhance'; eb.textContent = '✨ AI 擬真強化';
+  eb.addEventListener('click', () => enhance(eb));
+  acts.appendChild(eb);
+  {% endif %}
+  resultBox.appendChild(acts);
+
+  const note = document.createElement('div');
+  note.style.cssText = 'margin-top:.6rem;font-size:.76rem;color:#16a34a;font-weight:600';
+  note.textContent = '✓ 已自動存入「我的設計」（'+(stoneName||'')+'）· 引擎：本地透視貼合（免費・即時）';
+  resultBox.appendChild(note);
+}
+
+async function enhance(btn) {
+  if (!lastDesignId) return;
+  btn.disabled = true; const orig = btn.textContent; btn.textContent = 'AI 強化中… 15–40 秒';
+  try {
+    const fd = new FormData();
+    fd.append('design_id', String(lastDesignId));
+    if (uploadBlob) fd.append('original', uploadBlob, 'room.jpg');
+    const r = await fetch('/api/enhance-wall', { method:'POST', body: fd });
+    const raw = await r.text().catch(()=> '');
+    let data; try { data = JSON.parse(raw); } catch(e){
+      throw new Error('伺服器回應異常（HTTP '+r.status+'）');
+    }
+    if (!r.ok || !data.success) throw new Error(data.error || ('HTTP '+r.status));
+    lastDesignId = data.design_id;
+    const im = resultBox.querySelector('img');
+    im.src = data.local_url;
+    const pdfA = Array.from(resultBox.querySelectorAll('a')).find(a => a.textContent.includes('PDF'));
+    if (pdfA) pdfA.href = '/my-designs/'+data.design_id+'/proposal.pdf';
+    const dlA = Array.from(resultBox.querySelectorAll('a')).find(a => a.hasAttribute('download'));
+    if (dlA) dlA.href = data.local_url;
+    const opA = Array.from(resultBox.querySelectorAll('a')).find(a => a.textContent.includes('開啟'));
+    if (opA) opA.href = data.local_url;
+    btn.textContent = '✓ 已強化';
+  } catch(e){
+    alert('AI 強化失敗：' + (e.message || e));
+    btn.textContent = orig; btn.disabled = false;
+  }
+}
+</script>
+</body>
+</html>

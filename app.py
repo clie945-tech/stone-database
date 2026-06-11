@@ -605,6 +605,125 @@ def render_sketch_with_gemini(sketch_path, stone_photo_path, hint=''):
         return None
 
 
+def simulate_wall_perspective(design_path, corners_frac, stone_photo_path,
+                              stone_w_cm, stone_h_cm, wall_w_cm, wall_h_cm,
+                              show_joints=True, max_side=1600):
+    """牆面模擬（本地幾何運算，免 AI）：
+    1) 依「牆面實際尺寸 ÷ 石材實際尺寸」計算拼貼片數 → 比例正確
+    2) 石材照片拼貼成平面材質（棋盤式鏡像對花、可加拼縫線）
+    3) 以透視投影把材質精準貼進牆面四角 → 透視正確
+    4) 轉移原牆低頻光影，保留現場明暗
+    corners_frac：[左上,右上,右下,左下] 的 (0~1) 比例座標。
+    回傳 (PIL Image, tiles_x, tiles_y)。"""
+    import math
+    import numpy as np
+    from PIL import Image, ImageDraw, ImageFilter, ImageOps
+
+    design = Image.open(design_path).convert('RGB')
+    if max(design.size) > max_side:
+        r = max_side / max(design.size)
+        design = design.resize((round(design.width * r), round(design.height * r)), Image.LANCZOS)
+    W, H = design.size
+    quad = [(fx * W, fy * H) for fx, fy in corners_frac]
+
+    # 四邊形有效性（鞋帶公式面積 > 影像 0.5%）
+    area = abs(sum(quad[i][0] * quad[(i + 1) % 4][1] - quad[(i + 1) % 4][0] * quad[i][1]
+                   for i in range(4))) / 2
+    if area < W * H * 0.005:
+        raise ValueError('牆面四角範圍太小或無效，請重新點選')
+
+    # 拼貼片數：依實際尺寸換算
+    tiles_x = max(1, math.ceil(wall_w_cm / stone_w_cm))
+    tiles_y = max(1, math.ceil(wall_h_cm / stone_h_cm))
+
+    # 平面材質：每片 cover 裁切，棋盤式鏡像（對花效果）降低重複感
+    tile_w = max(48, min(420, int(1800 / tiles_x)))
+    tile_h = max(48, min(420, int(tile_w * (stone_h_cm / stone_w_cm))))
+    stone = Image.open(stone_photo_path).convert('RGB')
+    sc = max(tile_w / stone.width, tile_h / stone.height)
+    srs = stone.resize((max(1, round(stone.width * sc)), max(1, round(stone.height * sc))), Image.LANCZOS)
+    ox, oy = (srs.width - tile_w) // 2, (srs.height - tile_h) // 2
+    tile = srs.crop((ox, oy, ox + tile_w, oy + tile_h))
+    mir = ImageOps.mirror(tile)
+    tex = Image.new('RGB', (tiles_x * tile_w, tiles_y * tile_h))
+    for j in range(tiles_y):
+        for i in range(tiles_x):
+            t = mir if (i + j) % 2 else tile
+            if j % 2:
+                t = ImageOps.flip(t)
+            tex.paste(t, (i * tile_w, j * tile_h))
+    if show_joints and (tiles_x > 1 or tiles_y > 1):
+        d = ImageDraw.Draw(tex)
+        lw = max(1, tile_w // 120)
+        for i in range(1, tiles_x):
+            d.line([(i * tile_w, 0), (i * tile_w, tex.height)], fill=(108, 108, 108), width=lw)
+        for j in range(1, tiles_y):
+            d.line([(0, j * tile_h), (tex.width, j * tile_h)], fill=(108, 108, 108), width=lw)
+
+    # 透視係數：設計圖四角 → 材質四角（PIL PERSPECTIVE 為輸出→輸入映射）
+    src = [(0, 0), (tex.width, 0), (tex.width, tex.height), (0, tex.height)]
+    A, B = [], []
+    for (x, y), (u, v) in zip(quad, src):
+        A.append([x, y, 1, 0, 0, 0, -u * x, -u * y]); B.append(u)
+        A.append([0, 0, 0, x, y, 1, -v * x, -v * y]); B.append(v)
+    coeffs = np.linalg.solve(np.array(A, dtype=float), np.array(B, dtype=float))
+    warped = tex.transform((W, H), Image.PERSPECTIVE, tuple(coeffs), Image.BICUBIC)
+
+    # 牆面遮罩（羽化接縫）
+    mask = Image.new('L', (W, H), 0)
+    ImageDraw.Draw(mask).polygon([(round(x), round(y)) for x, y in quad], fill=255)
+    mask = mask.filter(ImageFilter.GaussianBlur(1.5))
+
+    # 光影轉移：原牆亮度取低頻（模糊）正規化後乘回石材
+    lum = np.asarray(design.convert('L').filter(ImageFilter.GaussianBlur(max(3, W // 90))), dtype=np.float32)
+    sel = np.asarray(mask, dtype=np.float32) > 128
+    mean_lum = float(lum[sel].mean()) if sel.any() else 128.0
+    if mean_lum < 1e-3:
+        mean_lum = 128.0
+    shading = np.clip(lum / mean_lum, 0.55, 1.5)[..., None]
+    warped_np = np.clip(np.asarray(warped, dtype=np.float32) * shading, 0, 255)
+
+    alpha = (np.asarray(mask, dtype=np.float32) / 255.0)[..., None]
+    out = np.asarray(design, dtype=np.float32) * (1 - alpha) + warped_np * alpha
+    return Image.fromarray(np.clip(out, 0, 255).astype('uint8'), 'RGB'), tiles_x, tiles_y
+
+
+def gemini_edit_image(contents):
+    """共用：呼叫 Gemini 圖像模型並萃取回傳影像。回傳 PIL Image 或 None（原因記在 _LAST_SYNTH_ERROR）。"""
+    global _LAST_SYNTH_ERROR
+    _LAST_SYNTH_ERROR = ''
+    try:
+        from io import BytesIO
+        from PIL import Image
+        from google import genai
+        from google.genai import types
+        client = genai.Client(api_key=GEMINI_API_KEY)
+        resp = client.models.generate_content(
+            model=GEMINI_IMAGE_MODEL,
+            contents=contents,
+            config=types.GenerateContentConfig(response_modalities=['TEXT', 'IMAGE']),
+        )
+        parts = getattr(resp, 'parts', None)
+        if not parts:
+            parts = []
+            for cand in (getattr(resp, 'candidates', None) or []):
+                parts += (getattr(getattr(cand, 'content', None), 'parts', None) or [])
+        text_chunks = []
+        for part in (parts or []):
+            inline = getattr(part, 'inline_data', None)
+            if inline and getattr(inline, 'data', None):
+                return Image.open(BytesIO(inline.data)).convert('RGB')
+            if getattr(part, 'text', None):
+                text_chunks.append(part.text)
+        _LAST_SYNTH_ERROR = 'Gemini 未回傳影像。' + (
+            ('模型回應：' + ' '.join(text_chunks)[:160]) if text_chunks else '（無內容）')
+        return None
+    except Exception as e:
+        _LAST_SYNTH_ERROR = f'Gemini {type(e).__name__}: {str(e)[:200]}'
+        print(f'[Gemini 圖像錯誤] {_LAST_SYNTH_ERROR}')
+        return None
+
+
 def resolve_ai_prompt(stone, custom_prompt=''):
     """決定 inpainting 要用的 prompt（方案 A：讓 AI 實際「看」石材照片）。
     優先序：使用者自訂 > 已快取的 ai_prompt > LLaVA 視覺描述(看真實照片，並快取) > 通用後備。"""
@@ -1887,6 +2006,174 @@ def change_password():
 def studio():
     """設計工具功能選擇頁（Hub）：列出材質模擬、草圖渲染等工具，公開可瀏覽。"""
     return render_template('studio.html')
+
+
+@app.route('/wall')
+@customer_required
+def wall_tool():
+    """牆面模擬頁：點選牆面四角 + 選石材 + 輸入尺寸 → 透視/比例正確的即時模擬"""
+    conn = get_db()
+    stones = conn.execute(
+        "SELECT id, stone_type, stone_name, color, photo, width, height, quantity, unit "
+        "FROM stones WHERE photo IS NOT NULL AND photo != '' ORDER BY id DESC"
+    ).fetchall()
+    conn.close()
+    return render_template('wall.html', stones=stones,
+                           gemini_enabled=bool(GEMINI_API_KEY))
+
+
+@app.route('/api/simulate-wall', methods=['POST'])
+def api_simulate_wall():
+    """牆面模擬：本地幾何運算（透視+比例+光影），即時、免 AI 費用（僅限會員）"""
+    from flask import jsonify
+    import json as _json
+    if not session.get('customer_id'):
+        return jsonify({'error': '請先登入會員才能使用牆面模擬'}), 401
+
+    photo    = request.files.get('photo')
+    stone_id = request.form.get('stone_id', type=int)
+    wall_w   = request.form.get('wall_w', type=float)
+    wall_h   = request.form.get('wall_h', type=float)
+    joints   = request.form.get('joints', '1') == '1'
+    try:
+        corners = _json.loads(request.form.get('corners', ''))
+        assert isinstance(corners, list) and len(corners) == 4
+        corners = [(float(p[0]), float(p[1])) for p in corners]
+        assert all(0 <= x <= 1 and 0 <= y <= 1 for x, y in corners)
+    except Exception:
+        return jsonify({'error': '牆面四角座標無效，請重新點選'}), 400
+    if not photo or not stone_id:
+        return jsonify({'error': '缺少必要欄位（空間照片、石材）'}), 400
+    if not wall_w or not wall_h or not (50 <= wall_w <= 2000) or not (50 <= wall_h <= 1000):
+        return jsonify({'error': '請輸入合理的牆面尺寸（寬 50–2000cm、高 50–1000cm）'}), 400
+
+    conn = get_db()
+    stone = conn.execute('SELECT * FROM stones WHERE id = ?', (stone_id,)).fetchone()
+    conn.close()
+    if not stone or not stone['photo']:
+        return jsonify({'error': '找不到石材或石材沒有照片'}), 404
+    stone_photo_path = os.path.join(app.config['UPLOAD_FOLDER'], stone['photo'])
+    if not os.path.exists(stone_photo_path):
+        return jsonify({'error': '石材照片檔案不存在'}), 400
+
+    # 石材尺寸（未填則以 60×60cm 估算）
+    sw, sh = stone['width'] or 0, stone['height'] or 0
+    estimated = not (sw and sh)
+    if estimated:
+        sw, sh = 60.0, 60.0
+
+    design_path = None
+    try:
+        design_path = normalize_image_to_jpg_path(photo, max_size=1600)
+        if not design_path:
+            return jsonify({'error': '照片格式無法解析（支援 JPG / PNG / HEIC / WebP）'}), 400
+        result_img, tiles_x, tiles_y = simulate_wall_perspective(
+            design_path, corners, stone_photo_path, sw, sh, wall_w, wall_h, joints)
+
+        display_name = (stone['stone_name'] if 'stone_name' in stone.keys() and stone['stone_name']
+                        else stone['stone_type'])
+        os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+        filename = f'design_{secrets.token_hex(8)}.jpg'
+        result_img.save(os.path.join(app.config['UPLOAD_FOLDER'], filename), 'JPEG', quality=92)
+        label = f'牆面模擬（{wall_w/100:.1f}×{wall_h/100:.1f}m・{tiles_x}×{tiles_y} 片）'
+        design_id = _record_design(session['customer_id'], stone_id, display_name, filename, label)
+        local_url = url_for('static', filename=f'uploads/{filename}')
+
+        # 加值：用片數 → 庫存檢查 + 減碳效益
+        tiles_total = tiles_x * tiles_y
+        stock_qty = stone['quantity'] or 0
+        carbon_kg = calculate_carbon_saved(stone['stone_type'], sw, sh,
+                                           stone['thickness'] or 2.0, tiles_total)
+        eq = carbon_equivalents(carbon_kg)
+        return jsonify({
+            'success': True, 'result_url': local_url, 'local_url': local_url,
+            'saved': True, 'design_id': design_id, 'stone_name': display_name,
+            'stats': {
+                'tile_size': f'{sw:g}×{sh:g}cm' + ('（未填尺寸，估算值）' if estimated else ''),
+                'tiles_x': tiles_x, 'tiles_y': tiles_y, 'tiles_total': tiles_total,
+                'stock_qty': stock_qty,
+                'stock_ok': bool(stock_qty and stock_qty >= tiles_total),
+                'carbon': format_carbon(carbon_kg) if carbon_kg > 0 else '',
+                'trees': round(eq['trees'], 1) if carbon_kg > 0 else 0,
+            },
+        })
+    except ValueError as ve:
+        return jsonify({'error': str(ve)}), 400
+    except Exception as e:
+        import traceback; traceback.print_exc()
+        return jsonify({'error': f'牆面模擬失敗：{str(e)[:200]}'}), 500
+    finally:
+        if design_path and os.path.exists(design_path):
+            try: os.unlink(design_path)
+            except Exception: pass
+
+
+@app.route('/api/enhance-wall', methods=['POST'])
+def api_enhance_wall():
+    """牆面模擬的 AI 擬真強化：把幾何貼合結果交給 Gemini 修飾光影/遮擋（僅限會員）"""
+    from flask import jsonify
+    if not session.get('customer_id'):
+        return jsonify({'error': '請先登入會員'}), 401
+    if not GEMINI_API_KEY:
+        return jsonify({'error': 'AI 擬真強化需要 Gemini（請設定 GEMINI_API_KEY）'}), 503
+    design_id = request.form.get('design_id', type=int)
+    if not design_id:
+        return jsonify({'error': '缺少 design_id'}), 400
+    conn = get_db()
+    row = conn.execute('SELECT * FROM synthesis_history WHERE id = ? AND customer_id = ?',
+                       (design_id, session['customer_id'])).fetchone()
+    conn.close()
+    if not row:
+        return jsonify({'error': '找不到該設計'}), 404
+    comp_path = os.path.join(app.config['UPLOAD_FOLDER'], row['image_file'])
+    if not os.path.exists(comp_path):
+        return jsonify({'error': '設計圖檔不存在'}), 400
+
+    original = request.files.get('original')
+    orig_path = None
+    try:
+        from google.genai import types
+        def part_of(path):
+            with open(path, 'rb') as f:
+                data = f.read()
+            mime = 'image/png' if path.lower().endswith('.png') else 'image/jpeg'
+            return types.Part.from_bytes(data=data, mime_type=mime)
+
+        has_orig = False
+        if original and original.filename:
+            orig_path = normalize_image_to_jpg_path(original, max_size=1600)
+            has_orig = bool(orig_path)
+        prompt = (
+            'Image 1 is an interior photo where one wall has been digitally clad with stone panels '
+            '(the tile layout, scale and perspective are already CORRECT). '
+            + ('Image 2 is the original room photo before cladding. ' if has_orig else '') +
+            'Refine Image 1 into a fully photorealistic photograph: blend the stone wall\'s lighting, '
+            'shadows and reflections naturally with the room, keep the stone colour, veining, panel size, '
+            'joints and perspective EXACTLY as shown'
+            + (', and restore any foreground objects (furniture, plants, fixtures) from Image 2 that '
+               'should appear in front of the wall' if has_orig else '') +
+            '. Do not alter anything else in the room. Return only the edited image.'
+        )
+        contents = [prompt, part_of(comp_path)] + ([part_of(orig_path)] if has_orig else [])
+        result_img = gemini_edit_image(contents)
+        if result_img is None:
+            return jsonify({'error': f'AI 強化失敗：{_LAST_SYNTH_ERROR or "未回傳影像"}'}), 500
+
+        os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+        filename = f'design_{secrets.token_hex(8)}.jpg'
+        result_img.save(os.path.join(app.config['UPLOAD_FOLDER'], filename), 'JPEG', quality=92)
+        new_id = _record_design(session['customer_id'], row['stone_id'], row['stone_name'],
+                                filename, (row['prompt'] or '牆面模擬') + '・AI 擬真強化')
+        local_url = url_for('static', filename=f'uploads/{filename}')
+        return jsonify({'success': True, 'result_url': local_url, 'local_url': local_url,
+                        'design_id': new_id})
+    except Exception as e:
+        import traceback; traceback.print_exc()
+        return jsonify({'error': f'AI 強化失敗：{str(e)[:200]}'}), 500
+    finally:
+        if orig_path and os.path.exists(orig_path):
+            try: os.unlink(orig_path)
+            except Exception: pass
 
 
 @app.route('/design-tool')
