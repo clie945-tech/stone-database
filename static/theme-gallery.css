@@ -155,3 +155,20 @@ footer { background: #12100D !important; }
 @media (prefers-reduced-motion: reduce) {
   .hero-badge, .hero h1, .hero-desc, .hero-stats, .hero h1 .accent { animation: none !important; }
 }
+
+/* ── ReStone 金屬反光：字色維持鎏金，暖白光帶每 9 秒掃過一次 ── */
+.hero h1 .accent {
+  background: linear-gradient(115deg,
+    #D4B274 0%, #D4B274 45%, #FFF7E6 50%, #D4B274 55%, #D4B274 100%);
+  background-size: 250% 100%;
+  background-position: 100% 0;
+  -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent; color: transparent;
+  animation: glintSweep 9s linear infinite;
+  filter: drop-shadow(0 0 16px rgba(212,178,116,0.28));
+}
+@keyframes glintSweep {
+  0%   { background-position: 100% 0; }
+  12%  { background-position: 0% 0; }
+  100% { background-position: 0% 0; }
+}
