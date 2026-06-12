@@ -165,3 +165,37 @@ footer { background: rgba(12,18,31,0.82) !important; }
 .price-card .price-main, .price-card .price-stock-value { color: #07131D !important; }
 .price-card .price-label, .price-card .price-unit, .price-card .price-stock-label { color: rgba(7,19,29,0.66) !important; }
 .price-card .price-divider { background: rgba(7,19,29,0.25) !important; }
+
+/* ── Hero 大標題動態（科技版）── */
+/* 進場：徽章→標題→副標→統計 依序浮現 */
+.hero-badge { animation: heroUp .8s cubic-bezier(.22,.8,.3,1) both; }
+.hero h1    { animation: heroUp .9s cubic-bezier(.22,.8,.3,1) .12s both, titleBreath 6s ease-in-out 1.6s infinite; }
+.hero-desc  { animation: heroUp .9s cubic-bezier(.22,.8,.3,1) .28s both; }
+.hero-stats { animation: heroUp .9s cubic-bezier(.22,.8,.3,1) .44s both; }
+@keyframes heroUp {
+  from { opacity: 0; transform: translateY(26px); }
+  to   { opacity: 1; transform: none; }
+}
+/* 中文標題：柔和呼吸光暈 */
+@keyframes titleBreath {
+  0%, 100% { text-shadow: 0 0 0 rgba(165,243,252,0); }
+  50%      { text-shadow: 0 0 34px rgba(165,243,252,0.28); }
+}
+/* ReStone：青→紫流動漸層 + 週期性光帶掃過 */
+.hero h1 .accent {
+  background: linear-gradient(110deg,
+    #22D3EE 0%, #8B5CF6 30%, #22D3EE 52%,
+    #EAFBFF 60%, #22D3EE 68%, #8B5CF6 100%);
+  background-size: 260% 100%;
+  -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent; color: transparent;
+  animation: titleFlow 7s linear infinite;
+  filter: drop-shadow(0 0 24px rgba(34,211,238,0.35));
+}
+@keyframes titleFlow {
+  from { background-position: 0% 0; }
+  to   { background-position: -260% 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero-badge, .hero h1, .hero-desc, .hero-stats, .hero h1 .accent { animation: none !important; }
+}
