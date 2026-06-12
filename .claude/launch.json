@@ -3,9 +3,9 @@
   "configurations": [
     {
       "name": "stone-database",
-      "runtimeExecutable": "bash",
-      "runtimeArgs": ["run.sh"],
-      "autoPort": true
+      "runtimeExecutable": "./venv/bin/python",
+      "runtimeArgs": ["app.py"],
+      "port": 5057
     }
   ]
 }

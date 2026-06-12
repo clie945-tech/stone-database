@@ -1,0 +1,130 @@
+/* ═══════════════════════════════════════════════════════════════
+   ReStone — Dark Gallery Theme（深色石材藝廊主題）
+   原理：覆寫全站共用的 CSS 變數（--bg/--white/--text/--blue…），
+   讓所有頁面一次換裝；少數寫死的顏色用精準選擇器個別覆寫。
+   還原方式：從模板移除本檔的 <link> 與 motion.js 的 <script> 即可。
+   ═══════════════════════════════════════════════════════════════ */
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Noto+Serif+TC:wght@500;600;700;900&display=swap');
+
+:root {
+  /* 暖黑石材底 */
+  --bg:         #0F0E0C;
+  --white:      #1A1714;   /* 卡片/面板表面 */
+  --border:     #2C261E;
+  --text:       #F2EBDF;
+  --text-muted: #A99D89;
+  --text-light: #7C7263;
+  /* 主色：藍 → 鎏金 */
+  --blue:       #D4B274;
+  --blue-dark:  #E2C488;
+  --blue-light: rgba(212, 178, 116, 0.10);
+  --blue-mid:   #5C4D35;
+  --purple:     #C9A86A;
+  --green:      #4ADE80;
+}
+
+/* ── 質感底紋：細微噪點 + 上方金暈 ── */
+body {
+  background-color: var(--bg);
+  background-image:
+    radial-gradient(ellipse 80% 50% at 50% -10%, rgba(212,178,116,0.07), transparent 60%);
+  background-attachment: fixed;
+}
+
+/* ── 標題改用襯線字（藝廊氣質）── */
+h1, h2, .page-title, .hero h1, .page-hero h1 {
+  font-family: 'Cormorant Garamond', 'Noto Serif TC', serif !important;
+  letter-spacing: 0.01em !important;
+}
+.logo-text { letter-spacing: 0.02em; }
+
+/* ── Header：深色毛玻璃 ── */
+header {
+  background: rgba(15, 14, 12, 0.78) !important;
+  border-bottom: 1px solid var(--border) !important;
+}
+
+/* ── 首頁 Hero：暖黑 + 金色光暈 ── */
+.hero { background: transparent !important; }
+.hero::before { opacity: 0.22 !important; }
+.hero::after {
+  background: radial-gradient(ellipse, rgba(212,178,116,0.10) 0%, transparent 70%) !important;
+}
+.hero-badge {
+  background: rgba(212,178,116,0.08) !important;
+  box-shadow: none !important;
+}
+
+/* ── 工具頁 page-hero（原為淺紫漸層）── */
+.page-hero {
+  background: linear-gradient(160deg, #1C1812 0%, #14110D 100%) !important;
+  border-color: var(--border) !important;
+}
+.ai-tag { background: linear-gradient(135deg, #C9A86A, #A07E3E) !important; color: #14110D !important; }
+
+/* ── 寫死的藍紫漸層按鈕 → 鎏金 ── */
+[style*="linear-gradient(135deg,#2563EB,#7C3AED)"],
+.btn-apply, .btn-go, .btn-primary, .btn-save,
+.result-actions .enhance, .rec .acts .sim {
+  background: linear-gradient(135deg, #D4B274 0%, #9A793F 100%) !important;
+  color: #171310 !important;
+  box-shadow: 0 6px 22px rgba(212,178,116,0.22) !important;
+  border: none !important;
+}
+.btn-apply:hover:not(:disabled), .btn-go:hover:not(:disabled) {
+  box-shadow: 0 10px 30px rgba(212,178,116,0.35) !important;
+}
+
+/* ── 首頁減碳統計（寫死的綠）→ 亮綠 ── */
+.stat-num[style*="#10B981"] { color: #4ADE80 !important; }
+[style*="#ECFDF5"] { background: rgba(74,222,128,0.10) !important; color: #6EE7B7 !important; }
+[style*="#065F46"] { color: #6EE7B7 !important; }
+
+/* ── 卡片：石材照片為主角，hover 金邊浮起 ── */
+.stone-card, .tool, .card, .design-card, .shot {
+  transition: transform .35s cubic-bezier(.22,.8,.3,1), box-shadow .35s ease, border-color .35s ease;
+}
+.stone-card:hover, .tool:hover, .card:hover, .design-card:hover, .shot:hover {
+  transform: translateY(-4px);
+  border-color: var(--blue-mid) !important;
+  box-shadow: 0 18px 44px rgba(0,0,0,0.55), 0 0 0 1px rgba(212,178,116,0.25) !important;
+}
+.stone-card img, .design-card img, .shot img { transition: transform .6s cubic-bezier(.22,.8,.3,1); }
+.stone-card:hover img, .design-card:hover img, .shot:hover img { transform: scale(1.05); }
+
+/* ── 淺色提示框 → 深色相容 ── */
+.flash, .flash-success { background: rgba(74,222,128,0.10) !important; color: #6EE7B7 !important; border-color: rgba(74,222,128,0.25) !important; }
+.flash-error, .error-box { background: rgba(248,113,113,0.10) !important; color: #FCA5A5 !important; border-color: rgba(248,113,113,0.3) !important; }
+.warn { background: rgba(212,178,116,0.10) !important; color: #E2C488 !important; border-color: rgba(212,178,116,0.3) !important; }
+
+/* 詢問狀態徽章（淺底）→ 深色相容 */
+.status-pending { background: rgba(212,178,116,0.15) !important; color: #E2C488 !important; }
+.status-replied { background: rgba(74,222,128,0.14) !important; color: #6EE7B7 !important; }
+.status-closed  { background: rgba(255,255,255,0.06) !important; color: var(--text-muted) !important; }
+
+/* 牆面模擬統計卡 */
+.stat.ok  { background: rgba(74,222,128,0.08) !important; border-color: rgba(74,222,128,0.25) !important; }
+.stat.ok .v { color: #4ADE80 !important; }
+.stat.bad { background: rgba(248,113,113,0.08) !important; border-color: rgba(248,113,113,0.3) !important; }
+.stat.bad .v { color: #FCA5A5 !important; }
+
+/* 上傳區虛線 */
+.upload-zone:hover, .upload-zone.dragover { background: rgba(212,178,116,0.06) !important; }
+
+/* 輸入框 */
+input, select, textarea { background: #121009 !important; background-color: #15120E !important; color: var(--text) !important; border-color: var(--border) !important; }
+input:focus, select:focus, textarea:focus { border-color: var(--blue) !important; box-shadow: 0 0 0 3px rgba(212,178,116,0.15) !important; }
+input:read-only { background: #100E0B !important; }
+
+/* footer */
+footer { background: #12100D !important; }
+
+/* ── 進場動畫（由 motion.js 啟用）── */
+.rv { opacity: 0; transform: translateY(16px); }
+.rv.in { opacity: 1; transform: none; transition: opacity .7s ease, transform .7s cubic-bezier(.22,.8,.3,1); }
+
+@media (prefers-reduced-motion: reduce) {
+  .rv { opacity: 1 !important; transform: none !important; }
+  .stone-card, .tool, .card, .design-card, .shot,
+  .stone-card img, .design-card img, .shot img { transition: none !important; }
+}

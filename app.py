@@ -2591,7 +2591,7 @@ def api_apply_stone():
 init_db()
 
 if __name__ == '__main__':
-    port = int(os.environ.get('PORT', 5000))
+    port = int(os.environ.get('PORT', 5057))
     print("\n" + "="*50)
     print("  ReStone 循環石材服務平台 已啟動！")
     print("="*50)
