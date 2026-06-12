@@ -181,21 +181,6 @@ footer { background: rgba(12,18,31,0.82) !important; }
   0%, 100% { text-shadow: 0 0 0 rgba(165,243,252,0); }
   50%      { text-shadow: 0 0 34px rgba(165,243,252,0.28); }
 }
-/* ReStone：青→紫流動漸層 + 週期性光帶掃過 */
-.hero h1 .accent {
-  background: linear-gradient(110deg,
-    #22D3EE 0%, #8B5CF6 30%, #22D3EE 52%,
-    #EAFBFF 60%, #22D3EE 68%, #8B5CF6 100%);
-  background-size: 260% 100%;
-  -webkit-background-clip: text; background-clip: text;
-  -webkit-text-fill-color: transparent; color: transparent;
-  animation: titleFlow 7s linear infinite;
-  filter: drop-shadow(0 0 24px rgba(34,211,238,0.35));
-}
-@keyframes titleFlow {
-  from { background-position: 0% 0; }
-  to   { background-position: -260% 0; }
-}
 @media (prefers-reduced-motion: reduce) {
   .hero-badge, .hero h1, .hero-desc, .hero-stats, .hero h1 .accent { animation: none !important; }
 }

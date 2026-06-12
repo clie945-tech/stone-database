@@ -152,21 +152,6 @@ footer { background: #12100D !important; }
   from { opacity: 0; transform: translateY(26px); }
   to   { opacity: 1; transform: none; }
 }
-/* ReStone：鎏金流光（緩慢、精品感） */
-.hero h1 .accent {
-  background: linear-gradient(110deg,
-    #D4B274 0%, #9A793F 32%, #D4B274 54%,
-    #F7E9C9 62%, #D4B274 70%, #9A793F 100%);
-  background-size: 260% 100%;
-  -webkit-background-clip: text; background-clip: text;
-  -webkit-text-fill-color: transparent; color: transparent;
-  animation: titleFlow 9s linear infinite;
-  filter: drop-shadow(0 0 18px rgba(212,178,116,0.30));
-}
-@keyframes titleFlow {
-  from { background-position: 0% 0; }
-  to   { background-position: -260% 0; }
-}
 @media (prefers-reduced-motion: reduce) {
   .hero-badge, .hero h1, .hero-desc, .hero-stats, .hero h1 .accent { animation: none !important; }
 }
