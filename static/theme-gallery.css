@@ -128,3 +128,17 @@ footer { background: #12100D !important; }
   .stone-card, .tool, .card, .design-card, .shot,
   .stone-card img, .design-card img, .shot img { transition: none !important; }
 }
+
+/* ── 可讀性修正：金色底上的文字一律深色 ── */
+.btn-search, .btn-submit, .btn-save, .hbtn-primary, .step-num,
+.similarity-badge, .btn, .btn-ai-search .ai-tag,
+[style*="background:var(--blue)"] {
+  color: #1A1408 !important;
+}
+.btn-search:hover, .btn:hover, .btn-submit:hover { color: #1A1408 !important; }
+.btn-ai-search { background: rgba(212,178,116,0.10) !important; border-color: rgba(212,178,116,0.4) !important; }
+.btn-ai-search:hover { color: #1A1408 !important; }
+.price-card { background: linear-gradient(135deg, #D4B274, #9A793F) !important; box-shadow: 0 8px 28px rgba(212,178,116,0.2) !important; }
+.price-card .price-main, .price-card .price-stock-value { color: #1A1408 !important; }
+.price-card .price-label, .price-card .price-unit, .price-card .price-stock-label { color: rgba(26,20,8,0.62) !important; }
+.price-card .price-divider { background: rgba(26,20,8,0.25) !important; }

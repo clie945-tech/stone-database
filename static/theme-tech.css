@@ -7,12 +7,12 @@
 
 :root {
   /* 深藍黑科技底 */
-  --bg:         #070A12;
-  --white:      rgba(17, 22, 38, 0.62);   /* 玻璃卡片表面 */
-  --border:     rgba(148, 163, 184, 0.16);
-  --text:       #EDF2FB;
-  --text-muted: #94A3B8;
-  --text-light: #64748B;
+  --bg:         #0C121F;
+  --white:      rgba(30, 38, 60, 0.62);   /* 玻璃卡片表面 */
+  --border:     rgba(148, 163, 184, 0.24);
+  --text:       #F2F6FF;
+  --text-muted: #A8B6CC;
+  --text-light: #7B89A0;
   /* 主色：電光青 ＋ 紫 */
   --blue:       #22D3EE;
   --blue-dark:  #67E8F9;
@@ -23,16 +23,16 @@
 }
 
 /* ── 流動漸層背景（緩慢漂浮的光斑）── */
-html { background: #070A12; }
+html { background: #0C121F; }
 body { background: transparent !important; }
 body::before {
   content: '';
   position: fixed; inset: -25%;
   z-index: -1;
   background:
-    radial-gradient(38% 32% at 22% 28%, rgba(34,211,238,0.16), transparent 62%),
-    radial-gradient(34% 30% at 78% 64%, rgba(139,92,246,0.20), transparent 62%),
-    radial-gradient(28% 26% at 62% 12%, rgba(59,130,246,0.13), transparent 60%);
+    radial-gradient(38% 32% at 22% 28%, rgba(34,211,238,0.20), transparent 62%),
+    radial-gradient(34% 30% at 78% 64%, rgba(139,92,246,0.24), transparent 62%),
+    radial-gradient(28% 26% at 62% 12%, rgba(59,130,246,0.17), transparent 60%);
   animation: meshFloat 16s ease-in-out infinite alternate;
   pointer-events: none;
 }
@@ -49,7 +49,7 @@ h1, h2, .page-title, .hero h1, .page-hero h1, .logo-text {
 
 /* ── Header：深色毛玻璃 + 底部光線 ── */
 header {
-  background: rgba(7, 10, 18, 0.66) !important;
+  background: rgba(12, 18, 31, 0.68) !important;
   border-bottom: 1px solid rgba(34, 211, 238, 0.14) !important;
 }
 
@@ -133,11 +133,11 @@ header {
 
 /* ── 上傳區/輸入框 ── */
 .upload-zone:hover, .upload-zone.dragover { background: rgba(34,211,238,0.06) !important; }
-input, select, textarea { background: rgba(10,14,26,0.7) !important; color: var(--text) !important; border-color: var(--border) !important; }
+input, select, textarea { background: rgba(20,27,46,0.75) !important; color: var(--text) !important; border-color: var(--border) !important; }
 input:focus, select:focus, textarea:focus { border-color: var(--blue) !important; box-shadow: 0 0 0 3px rgba(34,211,238,0.18), 0 0 14px rgba(34,211,238,0.2) !important; }
-input:read-only { background: rgba(8,11,20,0.7) !important; }
+input:read-only { background: rgba(15,21,36,0.75) !important; }
 
-footer { background: rgba(7,10,18,0.8) !important; }
+footer { background: rgba(12,18,31,0.82) !important; }
 
 /* ── 進場動畫（motion.js 啟用）── */
 .rv { opacity: 0; transform: translateY(16px); }
@@ -149,3 +149,19 @@ footer { background: rgba(7,10,18,0.8) !important; }
   .stone-card, .tool, .card, .design-card, .shot,
   .stone-card img, .design-card img, .shot img { transition: none !important; }
 }
+
+/* ── 可讀性修正：亮青/亮底上的文字一律深色 ── */
+.btn-search, .btn-submit, .btn-save, .hbtn-primary, .step-num,
+.similarity-badge, .btn, .btn-ai-search .ai-tag,
+[style*="background:var(--blue)"] {
+  color: #07131D !important;
+}
+.btn-search:hover, .btn:hover, .btn-submit:hover { color: #07131D !important; }
+.btn-ai-search { background: rgba(34,211,238,0.10) !important; border-color: rgba(34,211,238,0.35) !important; }
+.btn-ai-search:hover { color: #07131D !important; }
+
+/* 價格卡：青紫漸層 + 深色字 */
+.price-card { background: linear-gradient(135deg, #22D3EE, #8B5CF6) !important; box-shadow: 0 8px 28px rgba(34,211,238,0.25) !important; }
+.price-card .price-main, .price-card .price-stock-value { color: #07131D !important; }
+.price-card .price-label, .price-card .price-unit, .price-card .price-stock-label { color: rgba(7,19,29,0.66) !important; }
+.price-card .price-divider { background: rgba(7,19,29,0.25) !important; }

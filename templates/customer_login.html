@@ -50,8 +50,8 @@
     .link { display: block; text-align: center; font-size: 0.82rem; color: var(--text-muted); text-decoration: none; font-weight: 500; transition: color 0.15s; }
     .link:hover { color: var(--blue); }
   </style>
-  <link rel="stylesheet" href="/static/theme-gallery.css" id="theme-css">
-  <script>(function(){try{var q=new URLSearchParams(location.search).get("theme");if(q)localStorage.setItem("rs-theme",q);var t=localStorage.getItem("rs-theme")||"gallery";var l=document.getElementById("theme-css");if(t==="tech")l.href="/static/theme-tech.css";else if(t==="light")l.parentNode.removeChild(l);}catch(e){}})();</script>
+  <link rel="stylesheet" href="/static/theme-gallery.css?v=2" id="theme-css">
+  <script>(function(){try{var q=new URLSearchParams(location.search).get("theme");if(q)localStorage.setItem("rs-theme",q);var t=localStorage.getItem("rs-theme")||"gallery";var l=document.getElementById("theme-css");if(t==="tech")l.href="/static/theme-tech.css?v=2";else if(t==="light")l.parentNode.removeChild(l);}catch(e){}})();</script>
   <script src="/static/motion.js" defer></script>
 </head>
 <body>
