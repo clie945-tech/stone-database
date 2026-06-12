@@ -1,0 +1,151 @@
+/* ═══════════════════════════════════════════════════════════════
+   ReStone — Tech Glow Theme（AI 科技未來感主題）
+   深藍黑底 + 流動漸層光斑、玻璃擬態卡片、青紫光暈、按鈕微光動畫。
+   原理同 theme-gallery.css：覆寫 CSS 變數 + 精準覆寫寫死樣式。
+   ═══════════════════════════════════════════════════════════════ */
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&display=swap');
+
+:root {
+  /* 深藍黑科技底 */
+  --bg:         #070A12;
+  --white:      rgba(17, 22, 38, 0.62);   /* 玻璃卡片表面 */
+  --border:     rgba(148, 163, 184, 0.16);
+  --text:       #EDF2FB;
+  --text-muted: #94A3B8;
+  --text-light: #64748B;
+  /* 主色：電光青 ＋ 紫 */
+  --blue:       #22D3EE;
+  --blue-dark:  #67E8F9;
+  --blue-light: rgba(34, 211, 238, 0.10);
+  --blue-mid:   rgba(34, 211, 238, 0.38);
+  --purple:     #8B5CF6;
+  --green:      #34D399;
+}
+
+/* ── 流動漸層背景（緩慢漂浮的光斑）── */
+html { background: #070A12; }
+body { background: transparent !important; }
+body::before {
+  content: '';
+  position: fixed; inset: -25%;
+  z-index: -1;
+  background:
+    radial-gradient(38% 32% at 22% 28%, rgba(34,211,238,0.16), transparent 62%),
+    radial-gradient(34% 30% at 78% 64%, rgba(139,92,246,0.20), transparent 62%),
+    radial-gradient(28% 26% at 62% 12%, rgba(59,130,246,0.13), transparent 60%);
+  animation: meshFloat 16s ease-in-out infinite alternate;
+  pointer-events: none;
+}
+@keyframes meshFloat {
+  from { transform: translate(0, 0) scale(1); }
+  to   { transform: translate(3%, 4%) scale(1.07); }
+}
+
+/* ── 標題字：Space Grotesk（科技幾何感）── */
+h1, h2, .page-title, .hero h1, .page-hero h1, .logo-text {
+  font-family: 'Space Grotesk', 'Noto Sans TC', sans-serif !important;
+  letter-spacing: 0.015em !important;
+}
+
+/* ── Header：深色毛玻璃 + 底部光線 ── */
+header {
+  background: rgba(7, 10, 18, 0.66) !important;
+  border-bottom: 1px solid rgba(34, 211, 238, 0.14) !important;
+}
+
+/* ── 玻璃擬態卡片 ── */
+.panel, .card, .tool, .stone-card, .design-card, .shot, .rec,
+.inquiry-card, .profile-card, .stat, .spec-card {
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+/* ── 首頁 Hero ── */
+.hero { background: transparent !important; }
+.hero::before { opacity: 0.28 !important; }
+.hero::after {
+  background: radial-gradient(ellipse, rgba(34,211,238,0.12) 0%, transparent 70%) !important;
+}
+.hero-badge {
+  background: rgba(34,211,238,0.08) !important;
+  box-shadow: 0 0 18px rgba(34,211,238,0.15) !important;
+}
+
+/* ── 工具頁 page-hero ── */
+.page-hero {
+  background: linear-gradient(140deg, rgba(34,211,238,0.08) 0%, rgba(139,92,246,0.10) 100%) !important;
+  border-color: var(--border) !important;
+}
+.ai-tag {
+  background: linear-gradient(135deg, #22D3EE, #8B5CF6) !important;
+  color: #050810 !important;
+  box-shadow: 0 0 16px rgba(34,211,238,0.4);
+  animation: tagGlow 2.6s ease-in-out infinite;
+}
+@keyframes tagGlow {
+  0%, 100% { box-shadow: 0 0 12px rgba(34,211,238,0.35); }
+  50%      { box-shadow: 0 0 24px rgba(139,92,246,0.55); }
+}
+
+/* ── 主要按鈕：青紫漸層 + 呼吸光暈 ── */
+[style*="linear-gradient(135deg,#2563EB,#7C3AED)"],
+.btn-apply, .btn-go, .btn-primary, .btn-save,
+.result-actions .enhance, .rec .acts .sim {
+  background: linear-gradient(135deg, #22D3EE 0%, #8B5CF6 100%) !important;
+  color: #050810 !important;
+  border: none !important;
+  animation: glowPulse 3s ease-in-out infinite;
+}
+@keyframes glowPulse {
+  0%, 100% { box-shadow: 0 0 16px rgba(34,211,238,0.30), 0 0 38px rgba(139,92,246,0.16); }
+  50%      { box-shadow: 0 0 26px rgba(34,211,238,0.50), 0 0 56px rgba(139,92,246,0.28); }
+}
+.btn-apply:disabled, .btn-go:disabled { animation: none; }
+
+/* ── 首頁減碳統計 ── */
+.stat-num[style*="#10B981"] { color: #2DD4BF !important; text-shadow: 0 0 18px rgba(45,212,191,0.5); }
+[style*="#ECFDF5"] { background: rgba(45,212,191,0.10) !important; color: #5EEAD4 !important; }
+[style*="#065F46"] { color: #5EEAD4 !important; }
+
+/* ── 卡片 hover：青色光暈浮起 ── */
+.stone-card, .tool, .card, .design-card, .shot {
+  transition: transform .35s cubic-bezier(.22,.8,.3,1), box-shadow .35s ease, border-color .35s ease;
+}
+.stone-card:hover, .tool:hover, .card:hover, .design-card:hover, .shot:hover {
+  transform: translateY(-4px);
+  border-color: rgba(34,211,238,0.45) !important;
+  box-shadow: 0 14px 40px rgba(0,0,0,0.5), 0 0 24px rgba(34,211,238,0.18) !important;
+}
+.stone-card img, .design-card img, .shot img { transition: transform .6s cubic-bezier(.22,.8,.3,1); }
+.stone-card:hover img, .design-card:hover img, .shot:hover img { transform: scale(1.05); }
+
+/* ── 提示框/徽章：深色相容 ── */
+.flash, .flash-success { background: rgba(52,211,153,0.10) !important; color: #6EE7B7 !important; border-color: rgba(52,211,153,0.3) !important; }
+.flash-error, .error-box { background: rgba(248,113,113,0.10) !important; color: #FCA5A5 !important; border-color: rgba(248,113,113,0.3) !important; }
+.warn { background: rgba(250,204,21,0.08) !important; color: #FDE68A !important; border-color: rgba(250,204,21,0.25) !important; }
+.status-pending { background: rgba(250,204,21,0.12) !important; color: #FDE68A !important; }
+.status-replied { background: rgba(52,211,153,0.13) !important; color: #6EE7B7 !important; }
+.status-closed  { background: rgba(255,255,255,0.06) !important; color: var(--text-muted) !important; }
+.stat.ok  { background: rgba(52,211,153,0.08) !important; border-color: rgba(52,211,153,0.3) !important; }
+.stat.ok .v { color: #34D399 !important; }
+.stat.bad { background: rgba(248,113,113,0.08) !important; border-color: rgba(248,113,113,0.3) !important; }
+.stat.bad .v { color: #FCA5A5 !important; }
+
+/* ── 上傳區/輸入框 ── */
+.upload-zone:hover, .upload-zone.dragover { background: rgba(34,211,238,0.06) !important; }
+input, select, textarea { background: rgba(10,14,26,0.7) !important; color: var(--text) !important; border-color: var(--border) !important; }
+input:focus, select:focus, textarea:focus { border-color: var(--blue) !important; box-shadow: 0 0 0 3px rgba(34,211,238,0.18), 0 0 14px rgba(34,211,238,0.2) !important; }
+input:read-only { background: rgba(8,11,20,0.7) !important; }
+
+footer { background: rgba(7,10,18,0.8) !important; }
+
+/* ── 進場動畫（motion.js 啟用）── */
+.rv { opacity: 0; transform: translateY(16px); }
+.rv.in { opacity: 1; transform: none; transition: opacity .7s ease, transform .7s cubic-bezier(.22,.8,.3,1); }
+
+@media (prefers-reduced-motion: reduce) {
+  body::before, .ai-tag, .btn-apply, .btn-go, .btn-primary { animation: none !important; }
+  .rv { opacity: 1 !important; transform: none !important; }
+  .stone-card, .tool, .card, .design-card, .shot,
+  .stone-card img, .design-card img, .shot img { transition: none !important; }
+}
