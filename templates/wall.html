@@ -30,7 +30,8 @@
     .step-num{display:inline-flex;width:22px;height:22px;border-radius:50%;background:var(--blue);color:#fff;font-size:.75rem;align-items:center;justify-content:center;font-weight:700;flex-shrink:0}
     .upload-zone{border:2px dashed var(--blue-mid);border-radius:14px;padding:3rem 1rem;text-align:center;cursor:pointer;transition:all .15s;color:var(--text-muted)}
     .upload-zone:hover,.upload-zone.dragover{background:var(--blue-light);border-color:var(--blue)}
-    .upload-zone .ic{font-size:2rem;opacity:.5}
+    .upload-zone .ic{margin-bottom:.5rem;color:var(--blue);opacity:.65}
+    .upload-zone .ic svg{width:34px;height:34px}
     .canvas-wrap{display:none;position:relative}
     .canvas-wrap.active{display:block}
     #wall-canvas{width:100%;border-radius:12px;border:1px solid var(--border);display:block;touch-action:none;cursor:crosshair}
@@ -104,6 +105,7 @@
     <div class="panel">
       <div class="panel-title"><span class="step-num">1</span> 上傳空間照片，依序點選牆面四個角</div>
       <div class="upload-zone" id="upload-zone">
+      <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4"/><path d="m7.5 8.5 4.5-4.5 4.5 4.5"/><path d="M4 16v2.5A1.5 1.5 0 0 0 5.5 20h13a1.5 1.5 0 0 0 1.5-1.5V16"/></svg></div>
       <div>點擊或拖曳上傳室內空間照片<br><span style="font-size:.75rem">JPG / PNG / HEIC（iPhone 照片可直接上傳）</span></div>
       </div>
       <input type="file" id="photo-file" accept="image/*,.heic,.heif" style="display:none">

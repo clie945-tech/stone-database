@@ -29,7 +29,8 @@
     .step-num{display:inline-flex;width:22px;height:22px;border-radius:50%;background:var(--blue);color:#fff;font-size:.75rem;align-items:center;justify-content:center;font-weight:700}
     .upload-zone{border:2px dashed var(--blue-mid);border-radius:14px;padding:2.2rem 1rem;text-align:center;cursor:pointer;transition:all .15s;color:var(--text-muted)}
     .upload-zone:hover,.upload-zone.dragover{background:var(--blue-light);border-color:var(--blue)}
-    .upload-zone .ic{font-size:2rem;opacity:.5}
+    .upload-zone .ic{margin-bottom:.5rem;color:var(--blue);opacity:.65}
+    .upload-zone .ic svg{width:34px;height:34px}
     .preview-wrap{margin-top:1rem;display:none}
     .preview-wrap img{width:100%;border-radius:12px;border:1px solid var(--border)}
     .reupload{margin-top:.6rem;font-size:.78rem;color:var(--blue);background:none;border:none;cursor:pointer;font-weight:600}
@@ -94,6 +95,7 @@
     <div class="panel">
       <div class="panel-title"><span class="step-num">1</span> 上傳設計草圖</div>
       <div class="upload-zone" id="upload-zone">
+      <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4"/><path d="m7.5 8.5 4.5-4.5 4.5 4.5"/><path d="M4 16v2.5A1.5 1.5 0 0 0 5.5 20h13a1.5 1.5 0 0 0 1.5-1.5V16"/></svg></div>
       <div>點擊或拖曳上傳草圖<br><span style="font-size:.75rem">手繪線稿、概念圖皆可（JPG / PNG / HEIC）</span></div>
       </div>
       <input type="file" id="sketch-file" accept="image/*,.heic,.heif" style="display:none">
