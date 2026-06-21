@@ -131,11 +131,11 @@
     <a href="/admin" class="nav-item"><span class="icon">▦</span> 石材管理</a>
     <a href="/admin/add" class="nav-item {% if not stone %}active{% endif %}"><span class="icon">＋</span> 新增石材</a>
     <div class="sidebar-section">系統</div>
-    <a href="/admin/change-password" class="nav-item"><span class="icon">🔑</span> 修改密碼</a>
+    <a href="/admin/change-password" class="nav-item">修改密碼</a>
     <a href="/" class="nav-item" target="_blank"><span class="icon">↗</span> 前台預覽</a>
   </div>
   <div class="sidebar-footer">
-    <div class="admin-name">👤 管理員</div>
+    <div class="admin-name">管理員</div>
     <a href="/admin/logout">登出 →</a>
   </div>
 </nav>
@@ -240,7 +240,7 @@
 
           <div class="section-title">顏色標籤</div>
           <div class="form-group">
-            <label>選擇顏色 <span class="hint">（不選則由 AI 從照片自動偵測 ✨）</span></label>
+            <label>選擇顏色 <span class="hint">（不選則由 AI 從照片自動偵測）</span></label>
             <div class="color-picker">
               {% for code, label, bg, fg in colors %}
               <label class="color-opt">
@@ -252,14 +252,14 @@
             </div>
           </div>
 
-          <div class="section-title">✨ AI 設計工具 Prompt <span class="hint" style="font-weight:400;color:var(--text-muted)">（設計工具合成時使用）</span></div>
+          <div class="section-title">AI 設計工具 Prompt <span class="hint" style="font-weight:400;color:var(--text-muted)">（設計工具合成時使用）</span></div>
           <div class="form-group">
             <label for="ai_prompt">
               石材描述（英文，留空會自動從照片生成）
               {% if stone and stone.photo %}
               <button type="button" id="btn-ai-analyze" data-stone-id="{{ stone.id }}"
                 style="margin-left:0.5rem;padding:4px 10px;background:linear-gradient(135deg,#2563EB,#7C3AED);color:white;border:none;border-radius:6px;font-size:0.72rem;font-weight:700;cursor:pointer">
-                ✨ 用 AI 重新分析照片
+用 AI 重新分析照片
               </button>
               <span id="ai-analyze-status" style="margin-left:0.5rem;font-size:0.72rem;color:var(--text-muted)"></span>
               {% endif %}
@@ -268,7 +268,7 @@
               placeholder="例：deep green serpentine with white veining, polished glossy surface"
               style="width:100%;padding:0.7rem 0.9rem;border:1.5px solid var(--border);border-radius:8px;font-size:0.85rem;font-family:'SF Mono',Consolas,monospace;background:var(--stone-pale);outline:none;resize:vertical">{{ stone.ai_prompt if stone and stone.ai_prompt else '' }}</textarea>
             <div style="font-size:0.72rem;color:var(--text-muted);margin-top:0.3rem;line-height:1.5">
-              💡 新增石材時若留空，系統會自動用視覺 AI 分析照片寫描述。也可手動編輯，例：「<code style="background:#F1F5F9;padding:1px 4px;border-radius:3px">cream beige limestone with subtle fossil patterns</code>」
+新增石材時若留空，系統會自動用視覺 AI 分析照片寫描述。也可手動編輯，例：「<code style="background:#F1F5F9;padding:1px 4px;border-radius:3px">cream beige limestone with subtle fossil patterns</code>」
             </div>
           </div>
 
@@ -286,7 +286,7 @@
               {% endif %}
               <div class="upload-area">
                 <input type="file" name="{{ field }}" accept="image/png,image/jpg,image/jpeg,image/gif,image/webp,image/heic,image/heif,.heic,.heif" onchange="previewPhoto(this, 'preview{{ i }}')" />
-                <div class="upload-icon">📷</div>
+                <div class="upload-icon"></div>
                 <div class="upload-text"><strong>點擊選擇{{ label }}</strong></div>
                 <div class="upload-hint">支援 JPG、PNG、HEIC（iPhone）、GIF、WEBP，最大 32MB</div>
               </div>
@@ -360,7 +360,7 @@
       const status = document.getElementById('ai-analyze-status');
       const ta = document.getElementById('ai_prompt');
       aiBtn.disabled = true;
-      status.textContent = '⏳ AI 分析中…(約 10 秒)';
+      status.textContent = 'AI 分析中…(約 10 秒)';
       try {
         const fd = new FormData();
         fd.append('stone_id', aiBtn.dataset.stoneId);

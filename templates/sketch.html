@@ -73,15 +73,15 @@
     </a>
     <div style="display:flex;gap:.5rem">
       <a href="/" class="hbtn">← 返回首頁</a>
-      <a href="/design-tool" class="hbtn">✨ 材質模擬</a>
-      <a href="/my-designs" class="hbtn">🖼 我的設計</a>
+      <a href="/design-tool" class="hbtn">材質模擬</a>
+      <a href="/my-designs" class="hbtn">我的設計</a>
     </div>
   </div>
 </header>
 
 <div class="container">
   <div class="page-hero">
-    <span class="ai-tag">✨ AI SKETCH RENDER</span>
+    <span class="ai-tag">AI SKETCH RENDER</span>
     <h1>草圖渲染：把概念變成循環石材產品</h1>
     <p>上傳設計草圖 → 選一塊循環石材 → 補一句描述 → AI 生成寫實產品渲染圖</p>
   </div>
@@ -94,8 +94,7 @@
     <div class="panel">
       <div class="panel-title"><span class="step-num">1</span> 上傳設計草圖</div>
       <div class="upload-zone" id="upload-zone">
-        <div class="ic">✏️</div>
-        <div>點擊或拖曳上傳草圖<br><span style="font-size:.75rem">手繪線稿、概念圖皆可（JPG / PNG / HEIC）</span></div>
+      <div>點擊或拖曳上傳草圖<br><span style="font-size:.75rem">手繪線稿、概念圖皆可（JPG / PNG / HEIC）</span></div>
       </div>
       <input type="file" id="sketch-file" accept="image/*,.heic,.heif" style="display:none">
       <div class="preview-wrap" id="preview-wrap">
@@ -204,11 +203,11 @@ btnGo.addEventListener('click', async () => {
     const img = document.createElement('img'); img.alt='產品渲染圖'; img.src = url;
     resultBox.innerHTML = ''; resultBox.appendChild(img);
     const actions = document.createElement('div'); actions.className='result-actions';
-    const a1=document.createElement('a'); a1.href=url; a1.target='_blank'; a1.textContent='🔍 開啟原圖';
+    const a1=document.createElement('a'); a1.href=url; a1.target='_blank'; a1.textContent='開啟原圖';
     const a2=document.createElement('a'); a2.href=url; a2.setAttribute('download','restone-render.jpg'); a2.textContent='↓ 下載圖片';
     actions.appendChild(a1); actions.appendChild(a2);
-    if (data.design_id){ const a3=document.createElement('a'); a3.href='/my-designs/'+data.design_id+'/proposal.pdf'; a3.textContent='📄 設計提案 PDF'; actions.appendChild(a3); }
-    const a4=document.createElement('a'); a4.href='/my-designs'; a4.textContent='🖼 我的設計'; actions.appendChild(a4);
+    if (data.design_id){ const a3=document.createElement('a'); a3.href='/my-designs/'+data.design_id+'/proposal.pdf'; a3.textContent='設計提案 PDF'; actions.appendChild(a3); }
+    const a4=document.createElement('a'); a4.href='/my-designs'; a4.textContent='我的設計'; actions.appendChild(a4);
     resultBox.appendChild(actions);
     const note=document.createElement('div'); note.style.cssText='margin-top:.6rem;font-size:.76rem;color:#16a34a;font-weight:600';
     note.textContent='✓ 已自動存入「我的設計」 · 引擎：Gemini 草圖渲染'; resultBox.appendChild(note);

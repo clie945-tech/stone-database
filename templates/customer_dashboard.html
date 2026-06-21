@@ -110,7 +110,7 @@
     </a>
     <div class="header-right">
       <a href="/" class="btn-link">← 返回石材列表</a>
-      <a href="/my-designs" class="btn-link">🖼 我的設計</a>
+      <a href="/my-designs" class="btn-link">我的設計</a>
       <a href="/customer/logout" class="btn-link">登出</a>
     </div>
   </div>
@@ -211,14 +211,13 @@
           <div class="design-body">
             <div class="design-name">{{ d.stone_name or '石材合成' }}</div>
             <div class="design-date">{{ d.created_at[:16] }}</div>
-            <a href="/my-designs/{{ d.id }}/proposal.pdf" class="design-pdf">📄 提案 PDF</a>
+            <a href="/my-designs/{{ d.id }}/proposal.pdf" class="design-pdf">提案 PDF</a>
           </div>
         </div>
       {% endfor %}
     </div>
   {% else %}
     <div class="empty">
-      <div class="empty-icon">✨</div>
       <h3>尚無設計紀錄</h3>
       <p>前往 <a href="/studio">設計工具</a>，用循環石材設計後作品會顯示在這裡</p>
     </div>

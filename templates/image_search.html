@@ -168,8 +168,8 @@
 
   <div class="page-hero">
     <div class="page-hero-inner">
-      <div class="ai-tag">✨ AI 視覺搜尋</div>
-      <h1>📷 以圖搜圖</h1>
+      <div class="ai-tag">AI 視覺搜尋</div>
+      <h1>以圖搜圖</h1>
       <p>上傳一張參考圖片，AI 將為你在資料庫中找出紋理與色彩最相似的石材</p>
     </div>
   </div>
@@ -186,7 +186,7 @@
       <div class="upload-area" id="uploadArea">
         <input type="file" name="reference" id="refFile" accept="image/*,.heic,.heif" required onchange="previewRef(this)" />
         <div id="placeholderUI">
-          <div class="upload-icon">🖼️</div>
+          <div class="upload-icon"></div>
           <div class="upload-title">點擊或拖曳上傳參考圖片</div>
           <div class="upload-hint">支援 JPG／PNG／HEIC（iPhone）／GIF／WEBP，最大 32MB</div>
         </div>
@@ -201,7 +201,7 @@
         </div>
       </div>
       <div style="text-align:center">
-        <button type="submit" class="btn-search" id="searchBtn" disabled>🔍 開始搜尋相似石材</button>
+        <button type="submit" class="btn-search" id="searchBtn" disabled>開始搜尋相似石材</button>
       </div>
     </form>
   </div>
@@ -224,13 +224,13 @@
 
     {% if not_indexed_count and not_indexed_count > 0 %}
       <div class="notice">
-        ⚠️ 有 <strong>{{ not_indexed_count }}</strong> 筆石材尚未建立 AI 索引（不會出現在搜尋結果中）。
-        管理員可至後台點擊「🔄 重新索引照片」一次性處理所有舊資料。
+        ⚠有 <strong>{{ not_indexed_count }}</strong> 筆石材尚未建立 AI 索引（不會出現在搜尋結果中）。
+        管理員可至後台點擊「重新索引照片」一次性處理所有舊資料。
       </div>
     {% endif %}
 
     <div class="results-header">
-      <div class="results-title">🎯 AI 推薦結果</div>
+      <div class="results-title">AI 推薦結果</div>
       <div class="results-count">找到 {{ results|length }} 筆相似石材（依相似度排序）</div>
     </div>
 
@@ -263,8 +263,7 @@
       </div>
     {% else %}
       <div class="empty">
-        <div class="ic">🔍</div>
-        <h3 style="font-size:1rem;font-weight:700;margin-bottom:0.5rem">沒有找到符合的石材</h3>
+      <h3 style="font-size:1rem;font-weight:700;margin-bottom:0.5rem">沒有找到符合的石材</h3>
         <p style="font-size:0.85rem">資料庫中可能尚未為現有石材建立 AI 索引，請通知管理員執行索引</p>
       </div>
     {% endif %}
@@ -272,7 +271,7 @@
 
 </div>
 
-<footer>ReStone 循環石材服務平台 · ✨ Powered by AI Vision Search</footer>
+<footer>ReStone 循環石材服務平台 ·Powered by AI Vision Search</footer>
 
 <script>
   // 偵測並轉檔 HEIC（iPhone 預設格式，Chrome/Firefox 無法直接預覽）
@@ -309,9 +308,9 @@
 
     // HEIC 轉檔
     btn.disabled = true;
-    btn.textContent = '⏳ 處理中...';
+    btn.textContent = '處理中...';
     const file = await maybeConvertHeic(rawFile);
-    btn.textContent = '🔍 開始 AI 搜尋';
+    btn.textContent = '開始 AI 搜尋';
     if (!file) { input.value = ''; return; }
     // 將轉檔後的 File 寫回 input，確保 form submit 帶上轉檔後的版本
     if (file !== rawFile) {
@@ -337,7 +336,7 @@
   // 表單送出時改文字
   document.getElementById('searchForm').addEventListener('submit', function() {
     const btn = document.getElementById('searchBtn');
-    btn.textContent = '⏳ AI 分析中...';
+    btn.textContent = 'AI 分析中...';
     btn.disabled = true;
   });
 

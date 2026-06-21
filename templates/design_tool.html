@@ -215,9 +215,9 @@
     </a>
     <div style="display:flex;gap:0.5rem">
       <a href="/" class="hbtn">← 返回首頁</a>
-      <a href="/sketch" class="hbtn">✏️ 草圖渲染</a>
-      <a href="/my-designs" class="hbtn">🖼 我的設計</a>
-      <a href="/search/by-image" class="hbtn">📷 以圖搜圖</a>
+      <a href="/sketch" class="hbtn">草圖渲染</a>
+      <a href="/my-designs" class="hbtn">我的設計</a>
+      <a href="/search/by-image" class="hbtn">以圖搜圖</a>
     </div>
   </div>
 </header>
@@ -226,7 +226,7 @@
 
   <div class="page-hero">
     <div class="page-hero-inner">
-      <span class="ai-tag">✨ AI DESIGN TOOL</span>
+      <span class="ai-tag">AI DESIGN TOOL</span>
       <h1>材質模擬</h1>
       <p>上傳設計圖 → 圈選要替換的區域（牆面 / 桌面 / 地板）→ 從石材庫挑材料 → AI 一鍵合成</p>
     </div>
@@ -251,7 +251,7 @@
 
         <label class="upload-zone" id="upload-zone" for="design-file">
           <input type="file" id="design-file" accept="image/*,.heic,.heif">
-          <div class="upload-icon">🖼️</div>
+          <div class="upload-icon"></div>
           <div class="upload-text">點此選擇 / 拖曳上傳設計圖</div>
           <div class="upload-sub">支援 PNG / JPG / HEIC（iPhone），建議 1024×1024 以上</div>
         </label>
@@ -265,7 +265,7 @@
           <label>筆刷大小</label>
           <input type="range" id="brush-size" min="10" max="120" value="40">
           <span id="brush-val" style="font-size:0.78rem;color:var(--text-muted);min-width:30px">40</span>
-          <button type="button" class="tool-btn" id="clear-mask">🗑 清除筆跡</button>
+          <button type="button" class="tool-btn" id="clear-mask">清除筆跡</button>
           <button type="button" class="tool-btn" id="reupload">↻ 重新上傳</button>
         </div>
       </div>
@@ -368,7 +368,7 @@ designFile.addEventListener('change', async e => {
   const origText = uploadZone.querySelector('.upload-text');
   const origSub  = uploadZone.querySelector('.upload-sub');
   const oText = origText.textContent, oSub = origSub.textContent;
-  origText.textContent = '⏳ 處理中…';
+  origText.textContent = '處理中…';
   origSub.textContent = 'iPhone HEIC 格式正在轉檔';
 
   const f = await maybeConvertHeic(raw);
@@ -579,15 +579,15 @@ async function runApply() {
     resultBox.appendChild(img);
     const actions = document.createElement('div');
     actions.className = 'result-actions';
-    const openA = document.createElement('a'); openA.href = safeUrl; openA.target = '_blank'; openA.textContent = '🔍 開啟原圖';
+    const openA = document.createElement('a'); openA.href = safeUrl; openA.target = '_blank'; openA.textContent = '開啟原圖';
     const dlA   = document.createElement('a'); dlA.href = safeUrl; dlA.setAttribute('download', 'restone-design.jpg'); dlA.textContent = '↓ 下載圖片';
     actions.appendChild(openA); actions.appendChild(dlA);
     if (data.saved && data.design_id) {
-      const pdfA = document.createElement('a'); pdfA.href = '/my-designs/' + data.design_id + '/proposal.pdf'; pdfA.textContent = '📄 設計提案 PDF';
+      const pdfA = document.createElement('a'); pdfA.href = '/my-designs/' + data.design_id + '/proposal.pdf'; pdfA.textContent = '設計提案 PDF';
       actions.appendChild(pdfA);
     }
     if (data.saved) {
-      const myA = document.createElement('a'); myA.href = '/my-designs'; myA.textContent = '🖼 我的設計';
+      const myA = document.createElement('a'); myA.href = '/my-designs'; myA.textContent = '我的設計';
       actions.appendChild(myA);
     }
     resultBox.appendChild(actions);
@@ -600,12 +600,12 @@ async function runApply() {
     if (data.engine === 'gemini') {
       const eng = document.createElement('div');
       eng.style.cssText = 'margin-top:0.4rem;font-size:0.74rem;color:#7c3aed;font-weight:700';
-      eng.textContent = '🤖 引擎：Gemini 參考圖合成（使用實際石材照片）';
+      eng.textContent = '引擎：Gemini 參考圖合成（使用實際石材照片）';
       resultBox.appendChild(eng);
     } else if (data.engine === 'flux') {
       const eng = document.createElement('div');
       eng.style.cssText = 'margin-top:0.4rem;font-size:0.72rem;color:#b45309;line-height:1.5';
-      eng.textContent = '⚙ 引擎：Flux（文字生成）' +
+      eng.textContent = '引擎：Flux（文字生成）' +
         (data.gemini_error ? '　｜ Gemini 未啟用原因：' + data.gemini_error : '');
       resultBox.appendChild(eng);
     }

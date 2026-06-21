@@ -87,15 +87,15 @@
     </a>
     <div>
       <a href="/studio" class="hbtn">← 設計工具</a>
-      <a href="/design-tool" class="hbtn">🪨 材質模擬</a>
-      <a href="/my-designs" class="hbtn">🖼 我的設計</a>
+      <a href="/design-tool" class="hbtn">材質模擬</a>
+      <a href="/my-designs" class="hbtn">我的設計</a>
     </div>
   </div>
 </header>
 
 <div class="container">
   <div class="page-hero">
-    <span class="ai-tag">🧱 WALL SIMULATOR</span>
+    <span class="ai-tag">WALL SIMULATOR</span>
     <h1>牆面模擬</h1>
     <p>點選牆面四角 → 選循環石材 → 輸入牆面尺寸 → 透視與比例正確的即時模擬（免費・秒出圖）</p>
   </div>
@@ -104,8 +104,7 @@
     <div class="panel">
       <div class="panel-title"><span class="step-num">1</span> 上傳空間照片，依序點選牆面四個角</div>
       <div class="upload-zone" id="upload-zone">
-        <div class="ic">🏠</div>
-        <div>點擊或拖曳上傳室內空間照片<br><span style="font-size:.75rem">JPG / PNG / HEIC（iPhone 照片可直接上傳）</span></div>
+      <div>點擊或拖曳上傳室內空間照片<br><span style="font-size:.75rem">JPG / PNG / HEIC（iPhone 照片可直接上傳）</span></div>
       </div>
       <input type="file" id="photo-file" accept="image/*,.heic,.heif" style="display:none">
       <div class="canvas-wrap" id="canvas-wrap">
@@ -140,7 +139,7 @@
         </div>
       </div>
       <label class="joint-row"><input type="checkbox" id="joints" checked> 顯示石材拼縫線（更真實，並呈現分割計畫）</label>
-      <button class="btn-go" id="btn-go" disabled>🧱 牆面模擬</button>
+      <button class="btn-go" id="btn-go" disabled>牆面模擬</button>
       <div class="hint-sm">依牆面與石材的實際尺寸計算拼貼比例，並以透視投影貼合四角——比例與透視皆為幾何精準。若牆前有家具遮擋，可在結果使用「AI 擬真強化」修正。</div>
       <div class="error-box" id="error-box"></div>
     </div>
@@ -354,17 +353,17 @@ function renderResult(url, stats, stoneName) {
   }
 
   const acts = document.createElement('div'); acts.className = 'result-actions';
-  const a1 = document.createElement('a'); a1.href = url; a1.target='_blank'; a1.textContent = '🔍 開啟原圖';
+  const a1 = document.createElement('a'); a1.href = url; a1.target='_blank'; a1.textContent = '開啟原圖';
   const a2 = document.createElement('a'); a2.href = url; a2.setAttribute('download','restone-wall.jpg'); a2.textContent = '↓ 下載圖片';
   acts.appendChild(a1); acts.appendChild(a2);
   if (lastDesignId) {
-    const a3 = document.createElement('a'); a3.href = '/my-designs/'+lastDesignId+'/proposal.pdf'; a3.textContent = '📄 設計提案 PDF';
+    const a3 = document.createElement('a'); a3.href = '/my-designs/'+lastDesignId+'/proposal.pdf'; a3.textContent = '設計提案 PDF';
     acts.appendChild(a3);
   }
-  const a4 = document.createElement('a'); a4.href = '/my-designs'; a4.textContent = '🖼 我的設計';
+  const a4 = document.createElement('a'); a4.href = '/my-designs'; a4.textContent = '我的設計';
   acts.appendChild(a4);
   {% if gemini_enabled %}
-  const eb = document.createElement('button'); eb.className = 'enhance'; eb.textContent = '✨ AI 擬真強化';
+  const eb = document.createElement('button'); eb.className = 'enhance'; eb.textContent = 'AI 擬真強化';
   eb.addEventListener('click', () => enhance(eb));
   acts.appendChild(eb);
   {% endif %}

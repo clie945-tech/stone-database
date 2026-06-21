@@ -160,7 +160,7 @@
         <a href="/register" class="hbtn hbtn-primary">免費註冊</a>
       {% endif %}
       <a href="/" class="hbtn">← 返回列表</a>
-      <a href="/admin/login" class="hbtn" style="color:var(--text-muted)">⚙ 系統管理</a>
+      <a href="/admin/login" class="hbtn" style="color:var(--text-muted)">系統管理</a>
     </div>
   </div>
 </header>
@@ -267,7 +267,7 @@
 
   <!-- AI 設計工具入口（僅限會員） -->
   <div class="inquiry-section">
-    <div class="section-title">✨ 套用到我的設計</div>
+    <div class="section-title">套用到我的設計</div>
     {% if session.customer_id %}
       <div class="inquiry-card" style="display:flex;align-items:center;gap:1.2rem;flex-wrap:wrap;background:linear-gradient(135deg,#EFF6FF,#E0E7FF);border-color:#BFDBFE">
         <div style="flex:1;min-width:240px">
@@ -276,7 +276,7 @@
         </div>
         <a href="/design-tool?stone_id={{ stone.id }}"
            style="padding:0.85rem 1.5rem;background:linear-gradient(135deg,#2563EB,#7C3AED);color:white;border-radius:12px;font-weight:700;font-size:0.9rem;text-decoration:none;box-shadow:0 6px 20px rgba(124,58,237,0.25);white-space:nowrap">
-          ✨ 開啟 AI 設計工具 →
+開啟 AI 設計工具 →
         </a>
       </div>
     {% else %}
@@ -284,7 +284,7 @@
         <div style="flex:1;min-width:240px">
           <div style="font-size:0.95rem;font-weight:700;margin-bottom:0.3rem;display:flex;align-items:center;gap:6px">
             <span style="background:#7C3AED;color:white;font-size:0.65rem;font-weight:700;padding:2px 8px;border-radius:50px;letter-spacing:0.05em">會員專屬</span>
-            ✨ AI 設計工具
+AI 設計工具
           </div>
           <div style="font-size:0.82rem;color:var(--text-muted);line-height:1.6">將此石材紋理套用到你的設計圖（牆面、桌面、產品表面）。<strong style="color:var(--text)">請先登入會員</strong>才能使用。</div>
         </div>
@@ -305,7 +305,7 @@
   <!-- 用量計算機 -->
   {% if stone.width and stone.height %}
   <div class="inquiry-section">
-    <div class="section-title">📐 用量計算機</div>
+    <div class="section-title">用量計算機</div>
     <div class="inquiry-card">
       <p style="font-size:0.85rem;color:var(--text-muted);margin-bottom:1.5rem">輸入您的空間尺寸，自動計算所需石材數量與預估費用</p>
       <div class="form-grid-2">
@@ -348,14 +348,14 @@
   </div>
   {% endif %}
 
-  <!-- 🌱 永續貢獻 / 減碳憑證 -->
+  <!--永續貢獻 / 減碳憑證 -->
   {% set _carbon = calc_carbon(stone.stone_type, stone.width, stone.height, stone.thickness, stone.quantity) %}
   {% if _carbon > 0 %}
   {% set _eq = carbon_eq(_carbon) %}
   <div class="inquiry-section">
-    <div class="section-title">🌱 永續貢獻</div>
+    <div class="section-title">永續貢獻</div>
     <div class="inquiry-card" style="background:linear-gradient(135deg,#ECFDF5 0%,#D1FAE5 100%);border:1px solid #10B981;position:relative;overflow:hidden">
-      <div style="position:absolute;right:-30px;top:-30px;font-size:14rem;opacity:0.06;color:#065F46">🌱</div>
+      <div style="position:absolute;right:-30px;top:-30px;font-size:14rem;opacity:0.06;color:#065F46"></div>
       <div style="position:relative">
         <p style="font-size:0.78rem;letter-spacing:0.15em;color:#065F46;font-weight:700;margin-bottom:0.5rem">SUSTAINABILITY IMPACT · 選用此循環石材，您將：</p>
 
@@ -369,24 +369,24 @@
 
         <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem">
           <div style="background:white;border-radius:10px;padding:0.9rem 1rem;border:1px solid #BBF7D0">
-            <div style="font-size:1.8rem;line-height:1">🌳</div>
+            <div style="font-size:1.8rem;line-height:1"></div>
             <div style="font-size:1.4rem;font-weight:900;color:#065F46;margin-top:0.3rem;line-height:1">{{ "{:.1f}".format(_eq.trees) }}</div>
             <div style="font-size:0.75rem;color:#047857;margin-top:0.2rem">棵成樹一年吸收量</div>
           </div>
           <div style="background:white;border-radius:10px;padding:0.9rem 1rem;border:1px solid #BBF7D0">
-            <div style="font-size:1.8rem;line-height:1">🚗</div>
+            <div style="font-size:1.8rem;line-height:1"></div>
             <div style="font-size:1.4rem;font-weight:900;color:#065F46;margin-top:0.3rem;line-height:1">{{ "{:,.0f}".format(_eq.car_km) }}</div>
             <div style="font-size:0.75rem;color:#047857;margin-top:0.2rem">公里汽車排放量</div>
           </div>
           <div style="background:white;border-radius:10px;padding:0.9rem 1rem;border:1px solid #BBF7D0">
-            <div style="font-size:1.8rem;line-height:1">💡</div>
+            <div style="font-size:1.8rem;line-height:1"></div>
             <div style="font-size:1.4rem;font-weight:900;color:#065F46;margin-top:0.3rem;line-height:1">{{ "{:,.0f}".format(_eq.kwh) }}</div>
             <div style="font-size:0.75rem;color:#047857;margin-top:0.2rem">度電的排放量</div>
           </div>
         </div>
 
         <p style="font-size:0.7rem;color:#065F46;opacity:0.7;margin-top:1.2rem;line-height:1.5">
-          📊 計算基準：<strong>ICE Database v3.0</strong>（University of Bath, UK）· 範疇：cradle-to-gate（開採至出廠）·
+計算基準：<strong>ICE Database v3.0</strong>（University of Bath, UK）· 範疇：cradle-to-gate（開採至出廠）·
           換算係數：1 棵成樹/年 ≈ 21 kg CO₂、汽車 ≈ 120 g/km、台電 ≈ 0.495 kg/kWh
         </p>
       </div>
@@ -438,7 +438,7 @@
         </form>
       {% else %}
         <div style="text-align:center;padding:2rem 1rem">
-          <div style="font-size:2rem;opacity:0.2;margin-bottom:0.8rem">🔒</div>
+          <div style="font-size:2rem;opacity:0.2;margin-bottom:0.8rem"></div>
           <div style="font-size:0.95rem;font-weight:700;margin-bottom:0.5rem">詢問訂購為會員專屬功能</div>
           <div style="font-size:0.85rem;color:var(--text-muted);margin-bottom:1.5rem;line-height:1.6">
             登入會員即可向廠商詢問此石材，並可在「我的帳號」中追蹤詢問狀態
@@ -461,7 +461,7 @@
   <!-- 智慧推薦 -->
   {% if recommendations %}
   <div class="inquiry-section">
-    <div class="section-title">✨ 你可能也喜歡</div>
+    <div class="section-title">你可能也喜歡</div>
     <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:1rem">
       {% for r in recommendations %}
         <a href="/stone/{{ r.id }}" style="background:white;border-radius:14px;border:1px solid var(--border);overflow:hidden;text-decoration:none;color:inherit;transition:all 0.2s;display:block" onmouseover="this.style.transform='translateY(-3px)';this.style.boxShadow='0 8px 24px rgba(0,0,0,0.1)'" onmouseout="this.style.transform='';this.style.boxShadow=''">
@@ -491,7 +491,7 @@
 
 <!-- Lightbox -->
 <div class="lightbox" id="lightbox" onclick="closeLightbox()">
-  <div class="lightbox-close" onclick="closeLightbox()">✕</div>
+  <div class="lightbox-close" onclick="closeLightbox()"></div>
   <img id="lightboxImg" src="" alt="" onclick="event.stopPropagation()" />
   <div class="lightbox-hint">點擊任意處關閉 · 按 ESC 離開</div>
 </div>

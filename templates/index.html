@@ -357,7 +357,7 @@
         <a href="/customer/login" class="header-admin">登入</a>
         <a href="/register" class="header-admin" style="background:var(--blue);color:white;border-color:var(--blue)">免費註冊</a>
       {% endif %}
-      <a href="/admin/login" class="header-admin" style="border-color:#CBD5E1;color:var(--text-muted)">⚙ 系統管理</a>
+      <a href="/admin/login" class="header-admin" style="border-color:#CBD5E1;color:var(--text-muted)">系統管理</a>
     </div>
   </div>
 </header>
@@ -382,7 +382,7 @@
       </div>
       {% if total_carbon_kg and total_carbon_kg > 0 %}
       <div class="hero-stat" style="border-left:1px solid var(--border);padding-left:1.5rem">
-        <span class="stat-num" style="color:#10B981">🌱 {{ fmt_carbon(total_carbon_kg) }}</span>
+        <span class="stat-num" style="color:#10B981">{{ fmt_carbon(total_carbon_kg) }}</span>
         <span class="stat-lbl">累積減碳 CO₂e</span>
       </div>
       {% endif %}
@@ -406,8 +406,8 @@
       {% endfor %}
     </select>
     <button type="submit" class="btn-search">搜尋</button>
-    <a href="/search/by-image" class="btn-ai-search" title="上傳圖片找相似石材">📷 以圖搜圖<span class="ai-tag">AI</span></a>
-    <a href="/studio" class="btn-ai-search" title="AI 設計工具：材質模擬、草圖渲染" style="background:linear-gradient(135deg,#2563EB,#7C3AED);color:white;border-color:transparent">✨ 設計工具<span class="ai-tag" style="background:rgba(255,255,255,0.25);color:white">AI</span></a>
+    <a href="/search/by-image" class="btn-ai-search" title="上傳圖片找相似石材">以圖搜圖<span class="ai-tag">AI</span></a>
+    <a href="/studio" class="btn-ai-search" title="AI 設計工具：材質模擬、草圖渲染" style="background:linear-gradient(135deg,#2563EB,#7C3AED);color:white;border-color:transparent">設計工具<span class="ai-tag" style="background:rgba(255,255,255,0.25);color:white">AI</span></a>
     {% if search or selected_type %}
       <a href="/" class="btn-clear">× 清除篩選</a>
     {% endif %}
@@ -481,7 +481,7 @@
             {% set _c = calc_carbon(s.stone_type, s.width, s.height, s.thickness, s.quantity) %}
             {% if _c > 0 %}
               <div style="margin-top:0.6rem;padding:5px 10px;background:#ECFDF5;border-radius:6px;font-size:0.72rem;font-weight:700;color:#065F46;display:inline-flex;align-items:center;gap:4px">
-                🌱 減碳 {{ fmt_carbon(_c) }} CO₂e
+減碳 {{ fmt_carbon(_c) }} CO₂e
               </div>
             {% endif %}
             <div class="card-footer">
