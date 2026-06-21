@@ -172,3 +172,52 @@ footer { background: #12100D !important; }
   12%  { background-position: 0% 0; }
   100% { background-position: 0% 0; }
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   Liquid Glass（暖色玻璃）— 藝廊版的液態玻璃質感（內斂版）
+   ═══════════════════════════════════════════════════════════════ */
+.panel, .card, .tool, .profile-card, .stat, .spec-card, .inquiry-card, .rec,
+.stone-card, .design-card, .shot, .analysis {
+  background: linear-gradient(155deg, rgba(244,235,223,0.10), rgba(244,235,223,0.03)) !important;
+  backdrop-filter: blur(22px) saturate(140%) !important;
+  -webkit-backdrop-filter: blur(22px) saturate(140%) !important;
+  border: 1px solid rgba(212,178,116,0.18) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,247,230,0.18),
+    inset 0 -1px 0 rgba(0,0,0,0.25),
+    0 12px 34px rgba(0,0,0,0.45) !important;
+}
+.tool, .panel, .card { position: relative; }
+.tool::before, .panel::before, .card::before {
+  content: ''; position: absolute; inset: 0 0 auto 0; height: 46%;
+  background: linear-gradient(180deg, rgba(255,247,230,0.08), rgba(255,247,230,0));
+  border-radius: inherit; pointer-events: none; z-index: 0;
+}
+.tool > *, .panel > *, .card > * { position: relative; z-index: 1; }
+.tool:hover, .card:hover, .stone-card:hover, .design-card:hover, .shot:hover {
+  backdrop-filter: blur(26px) saturate(160%) !important;
+  -webkit-backdrop-filter: blur(26px) saturate(160%) !important;
+  border-color: rgba(212,178,116,0.42) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,247,230,0.28),
+    0 18px 46px rgba(0,0,0,0.55),
+    0 0 22px rgba(212,178,116,0.16) !important;
+}
+header {
+  background: linear-gradient(180deg, rgba(26,23,20,0.62), rgba(15,14,12,0.45)) !important;
+  backdrop-filter: blur(24px) saturate(160%) !important;
+  -webkit-backdrop-filter: blur(24px) saturate(160%) !important;
+  box-shadow: inset 0 1px 0 rgba(255,247,230,0.08) !important;
+}
+.hbtn, .btn-link, .header-admin, .hero-badge, .tool-btn, .reupload {
+  background: rgba(244,235,223,0.06) !important;
+  backdrop-filter: blur(14px) saturate(140%) !important;
+  -webkit-backdrop-filter: blur(14px) saturate(140%) !important;
+  border: 1px solid rgba(212,178,116,0.20) !important;
+  box-shadow: inset 0 1px 0 rgba(255,247,230,0.14) !important;
+}
+.tool .ic {
+  background: rgba(244,235,223,0.08) !important;
+  border: 1px solid rgba(212,178,116,0.20);
+  box-shadow: inset 0 1px 0 rgba(255,247,230,0.20);
+}

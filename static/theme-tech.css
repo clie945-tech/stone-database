@@ -204,3 +204,75 @@ footer { background: rgba(12,18,31,0.82) !important; }
   14%  { background-position: 0% 0, 0 0; }
   100% { background-position: 0% 0, 0 0; }
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   Liquid Glass（iOS 風液態玻璃）— 強化玻璃擬態
+   厚霧面模糊 + 頂部高光 + 玻璃鑲邊 + 漂浮陰影 + 頂部光澤
+   ═══════════════════════════════════════════════════════════════ */
+.panel, .card, .tool, .profile-card, .stat, .spec-card, .inquiry-card, .rec,
+.stone-card, .design-card, .shot, .price-card, .analysis {
+  background: linear-gradient(155deg, rgba(255,255,255,0.13), rgba(255,255,255,0.035)) !important;
+  backdrop-filter: blur(24px) saturate(170%) !important;
+  -webkit-backdrop-filter: blur(24px) saturate(170%) !important;
+  border: 1px solid rgba(255,255,255,0.16) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.30),
+    inset 0 -1px 0 rgba(0,0,0,0.18),
+    0 12px 34px rgba(0,0,0,0.34) !important;
+}
+/* 大卡片頂部光澤（液態玻璃的反光面） */
+.tool, .panel, .card { position: relative; }
+.tool::before, .panel::before, .card::before {
+  content: ''; position: absolute; inset: 0 0 auto 0; height: 46%;
+  background: linear-gradient(180deg, rgba(255,255,255,0.12), rgba(255,255,255,0));
+  border-radius: inherit; pointer-events: none; z-index: 0;
+}
+.tool > *, .panel > *, .card > * { position: relative; z-index: 1; }
+
+/* hover：玻璃變更清亮、鑲邊發光、浮起 */
+.tool:hover, .card:hover, .stone-card:hover, .design-card:hover, .shot:hover {
+  backdrop-filter: blur(28px) saturate(190%) !important;
+  -webkit-backdrop-filter: blur(28px) saturate(190%) !important;
+  border-color: rgba(34,211,238,0.40) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.40),
+    0 18px 46px rgba(0,0,0,0.45),
+    0 0 26px rgba(34,211,238,0.20) !important;
+}
+
+/* Header：厚玻璃條 */
+header {
+  background: linear-gradient(180deg, rgba(22,28,46,0.55), rgba(12,18,31,0.40)) !important;
+  backdrop-filter: blur(26px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(26px) saturate(180%) !important;
+  border-bottom: 1px solid rgba(255,255,255,0.10) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.10) !important;
+}
+
+/* 導覽藥丸 / 徽章：玻璃膠囊 */
+.hbtn, .btn-link, .header-admin, .hero-badge, .tool-btn, .reupload {
+  background: rgba(255,255,255,0.07) !important;
+  backdrop-filter: blur(14px) saturate(150%) !important;
+  -webkit-backdrop-filter: blur(14px) saturate(150%) !important;
+  border: 1px solid rgba(255,255,255,0.14) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.18) !important;
+}
+.hbtn:hover, .btn-link:hover, .header-admin:hover {
+  background: rgba(34,211,238,0.12) !important;
+  border-color: rgba(34,211,238,0.35) !important;
+}
+
+/* 輸入框：玻璃面 */
+input, select, textarea {
+  background: rgba(255,255,255,0.06) !important;
+  backdrop-filter: blur(10px) !important;
+  -webkit-backdrop-filter: blur(10px) !important;
+  border: 1px solid rgba(255,255,255,0.14) !important;
+}
+
+/* Studio 工具卡內的圖示色塊：玻璃化 */
+.tool .ic {
+  background: rgba(255,255,255,0.10) !important;
+  border: 1px solid rgba(255,255,255,0.16);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.30);
+}
