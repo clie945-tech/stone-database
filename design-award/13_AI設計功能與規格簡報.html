@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ReStone AI 設計功能與規格簡報</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  :root{--bg:#0C121F;--surface:rgba(255,255,255,.06);--border:rgba(255,255,255,.14);
+        --text:#F2F6FF;--muted:#A8B6CC;--cyan:#22D3EE;--purple:#8B5CF6;--green:#34D399}
+  html,body{height:100%}
+  body{font-family:'Space Grotesk','Noto Sans TC',sans-serif;background:#0C121F;color:var(--text)}
+  body::before{content:'';position:fixed;inset:-25%;z-index:0;
+    background:radial-gradient(38% 32% at 22% 28%,rgba(34,211,238,.18),transparent 62%),
+              radial-gradient(34% 30% at 78% 64%,rgba(139,92,246,.22),transparent 62%);}
+  .deck{position:relative;z-index:1}
+  .slide{min-height:100vh;display:flex;flex-direction:column;justify-content:center;
+         padding:5vh 7vw;scroll-snap-align:start;border-bottom:1px solid rgba(255,255,255,.05)}
+  .deck{scroll-snap-type:y mandatory;height:100vh;overflow-y:scroll}
+  .kick{font-size:.8rem;font-weight:700;letter-spacing:.18em;color:var(--cyan);text-transform:uppercase;margin-bottom:1rem}
+  h1{font-size:clamp(2rem,5vw,3.6rem);font-weight:900;letter-spacing:-.02em;line-height:1.12}
+  h2{font-size:clamp(1.5rem,3.4vw,2.4rem);font-weight:700;margin-bottom:.4rem}
+  .lead{font-size:clamp(1rem,1.8vw,1.25rem);color:var(--muted);line-height:1.7;margin-top:1rem;max-width:60ch}
+  .accent{background:linear-gradient(110deg,var(--cyan),var(--purple));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+  .grid{display:grid;gap:1.1rem;margin-top:2rem}
+  .g2{grid-template-columns:repeat(2,1fr)}.g3{grid-template-columns:repeat(3,1fr)}.g4{grid-template-columns:repeat(4,1fr)}
+  .card{background:var(--surface);backdrop-filter:blur(20px);border:1px solid var(--border);
+        border-radius:16px;padding:1.4rem 1.5rem;box-shadow:inset 0 1px 0 rgba(255,255,255,.18)}
+  .card h3{font-size:1.15rem;font-weight:700;margin-bottom:.5rem}
+  .card .tag{font-size:.7rem;font-weight:700;letter-spacing:.08em;color:var(--cyan);text-transform:uppercase}
+  .card p{font-size:.92rem;color:var(--muted);line-height:1.65}
+  .card ul{list-style:none;margin-top:.6rem}
+  .card li{font-size:.88rem;color:var(--muted);line-height:1.7;padding-left:1.1rem;position:relative}
+  .card li::before{content:'';position:absolute;left:0;top:.62em;width:6px;height:6px;border-radius:50%;background:var(--cyan)}
+  table{width:100%;border-collapse:collapse;margin-top:1.6rem;font-size:.92rem}
+  th,td{text-align:left;padding:.7rem .9rem;border-bottom:1px solid var(--border)}
+  th{font-size:.74rem;letter-spacing:.06em;color:var(--cyan);text-transform:uppercase;font-weight:700}
+  td{color:var(--muted)}td.k{color:var(--text);font-weight:500}
+  .pill{display:inline-block;font-size:.74rem;font-weight:700;padding:.2rem .7rem;border-radius:99px;
+        background:rgba(34,211,238,.12);color:var(--cyan);border:1px solid rgba(34,211,238,.3);margin:.2rem .3rem .2rem 0}
+  .pill.g{background:rgba(52,211,153,.12);color:var(--green);border-color:rgba(52,211,153,.3)}
+  .pill.p{background:rgba(139,92,246,.14);color:#c4b5fd;border-color:rgba(139,92,246,.35)}
+  .num{font-size:clamp(2rem,4vw,3rem);font-weight:900;line-height:1}.num.c{color:var(--cyan)}.num.g{color:var(--green)}.num.p{color:#c4b5fd}
+  .foot{position:fixed;bottom:1.1rem;right:1.6rem;font-size:.72rem;color:var(--muted);z-index:5}
+  .hint{position:fixed;bottom:1.1rem;left:1.6rem;font-size:.72rem;color:var(--muted);z-index:5}
+  @media(max-width:760px){.g2,.g3,.g4{grid-template-columns:1fr}}
+  @media print{
+    body::before{display:none}body{background:#0C121F !important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    .deck{height:auto;overflow:visible}.slide{min-height:auto;page-break-after:always;padding:6vh 6vw}
+    .foot,.hint{display:none}
+  }
+</style>
+</head>
+<body>
+<div class="deck">
+
+  <section class="slide">
+    <div class="kick">ReStone 循環石材服務平台</div>
+    <h1>AI 設計功能<br><span class="accent">與技術規格</span></h1>
+    <p class="lead">一個平台，整合多項 AI 設計工具，讓設計師把循環石材即時帶進設計、加速完成高值化產品。本簡報說明目前已上線的 AI 設計功能與其技術規格。</p>
+    <div style="margin-top:2rem">
+      <span class="pill">Gemini 2.5</span><span class="pill">Flux Fill Pro</span>
+      <span class="pill g">本地幾何運算</span><span class="pill p">三層 Prompt 工程</span>
+    </div>
+  </section>
+
+  <section class="slide">
+    <div class="kick">Overview · 功能總覽</div>
+    <h2>四項 AI 設計工具 + 輔助引擎</h2>
+    <div class="grid g4">
+      <div class="card"><div class="tag">核心</div><h3>材質模擬</h3><p>把循環石材的真實紋理套用到設計圖/空間照片的指定區域。</p></div>
+      <div class="card"><div class="tag">核心</div><h3>牆面模擬</h3><p>點選牆面四角，以正確透視與比例即時貼上石材。</p></div>
+      <div class="card"><div class="tag">核心</div><h3>草圖渲染</h3><p>手繪草圖 + 石材 → 寫實產品渲染圖。</p></div>
+      <div class="card"><div class="tag">輔助</div><h3>視覺辨識 / 以圖搜圖</h3><p>AI 看石材寫描述、以圖找相似石材。</p></div>
+    </div>
+    <p class="lead">加值串接：減碳效益計算、設計提案 PDF、我的設計歷史、後台展覽圖庫。</p>
+  </section>
+
+  <section class="slide">
+    <div class="kick">Feature 01 · 核心</div>
+    <h2>材質模擬 <span style="font-size:1rem;color:var(--muted)">Material Simulation</span></h2>
+    <p class="lead">上傳設計圖或空間照片，圈選要替換的區域（牆面、桌面、家具表面），AI 把所選循環石材的真實材質貼上去，即時預覽。</p>
+    <div class="grid g2">
+      <div class="card"><div class="tag">功能</div><ul>
+        <li>筆刷塗選 + 拖放上傳（支援 HEIC）</li>
+        <li>主力引擎：Gemini 參考圖編輯，直接以實際石材照片為依據</li>
+        <li>後備引擎：Flux Fill Pro 文字 inpainting</li>
+        <li>結果自動存入「我的設計」、可產生提案 PDF</li>
+      </ul></div>
+      <div class="card"><div class="tag">規格</div><ul>
+        <li>模型：<span class="pill">gemini-2.5-flash-image</span></li>
+        <li>後備：<span class="pill">flux-fill-pro</span></li>
+        <li>成本：約 NT$1.2 / 張（Gemini）</li>
+        <li>權限：僅限登入會員（保護運算資源）</li>
+      </ul></div>
+    </div>
+  </section>
+
+  <section class="slide">
+    <div class="kick">Feature 02 · 核心</div>
+    <h2>牆面模擬 <span style="font-size:1rem;color:var(--muted)">Wall Simulator</span></h2>
+    <p class="lead">點選牆面四個角、輸入牆面實際尺寸，系統以幾何運算把石材精準貼合——透視與比例皆為數學精準，並同步顯示用量、庫存與減碳。</p>
+    <div class="grid g2">
+      <div class="card"><div class="tag">功能</div><ul>
+        <li>四角點選（支援觸控、可拖曳微調）</li>
+        <li>透視投影貼合 + 依實際尺寸計算拼貼片數</li>
+        <li>棋盤鏡像對花、可選拼縫線、原牆光影轉移</li>
+        <li>同步顯示：拼貼計畫 / 庫存檢查 / 減碳效益</li>
+      </ul></div>
+      <div class="card"><div class="tag">規格</div><ul>
+        <li>引擎：<span class="pill g">本地幾何運算</span>（Pillow + NumPy）</li>
+        <li>成本：<span class="pill g">免費・即時出圖</span>（不呼叫外部 AI）</li>
+        <li>選配：Gemini AI 擬真強化（光影／遮擋還原）</li>
+        <li>適用：平整牆面、桌面、地板</li>
+      </ul></div>
+    </div>
+  </section>
+
+  <section class="slide">
+    <div class="kick">Feature 03 · 核心</div>
+    <h2>草圖渲染 <span style="font-size:1rem;color:var(--muted)">Sketch Render</span></h2>
+    <p class="lead">上傳手繪草圖或概念線稿，選一塊循環石材，補一句產品描述，AI 把草圖造型 + 真實石材材質生成寫實產品渲染圖——概念秒變提案。</p>
+    <div class="grid g2">
+      <div class="card"><div class="tag">功能</div><ul>
+        <li>草圖（手繪/線稿）+ 石材 + 文字描述</li>
+        <li>免遮罩：整張草圖即產品造型</li>
+        <li>輸出工作室等級產品渲染（可當型錄/提案主圖）</li>
+        <li>自動存入「我的設計」、可出提案 PDF</li>
+      </ul></div>
+      <div class="card"><div class="tag">規格</div><ul>
+        <li>模型：<span class="pill">gemini-2.5-flash-image</span></li>
+        <li>成本：約 NT$1.2 / 張</li>
+        <li>輸入：JPG / PNG / HEIC / WebP</li>
+        <li>權限：僅限登入會員</li>
+      </ul></div>
+    </div>
+  </section>
+
+  <section class="slide">
+    <div class="kick">Supporting · 輔助引擎</div>
+    <h2>讓設計更聰明的底層 AI</h2>
+    <div class="grid g3">
+      <div class="card"><div class="tag">Vision</div><h3>視覺辨識</h3><p>AI「看」石材照片，自動產生精準材質描述（底色、紋路、表面處理），並快取重用。</p>
+        <ul><li><span class="pill">gemini-2.5-flash</span></li><li>後備：LLaVA v1.6</li></ul></div>
+      <div class="card"><div class="tag">Search</div><h3>以圖搜圖</h3><p>上傳參考圖，用感知雜湊（pHash）+ HSV 色彩比對，找出資料庫中最相似的循環石材。</p>
+        <ul><li><span class="pill g">本地運算・免費</span></li><li>ImageHash + 色彩分析</li></ul></div>
+      <div class="card"><div class="tag">Prompt</div><h3>三層 Prompt 工程</h3><p>管理員自訂 ＞ 視覺 AI 自動描述 ＞ 模板後備，確保每塊石材都有可用的高品質生成指令。</p>
+        <ul><li>自動快取至資料庫</li><li>設計師可即時微調</li></ul></div>
+    </div>
+  </section>
+
+  <section class="slide">
+    <div class="kick">Value-add · 加值串接</div>
+    <h2>從「看效果」到「可成案」</h2>
+    <div class="grid g4">
+      <div class="card"><h3>減碳效益</h3><p>依體積 × ICE Database v3.0 碳係數，自動計算每案減碳量與等效（樹／車）。</p></div>
+      <div class="card"><h3>提案 PDF</h3><p>一鍵產出含效果圖、規格、減碳、供應商的 A4 提案，內嵌中文字型。</p></div>
+      <div class="card"><h3>我的設計</h3><p>每位會員自動保留最近 30 張合成作品，回顧設計發展。</p></div>
+      <div class="card"><h3>展覽圖庫</h3><p>後台用 Gemini 批次生成「石材 × 情境」展示圖，供展覽使用。</p></div>
+    </div>
+  </section>
+
+  <section class="slide">
+    <div class="kick">Architecture · 技術規格</div>
+    <h2>多引擎架構與規格</h2>
+    <table>
+      <tr><th>項目</th><th>規格 / 模型</th><th>成本</th></tr>
+      <tr><td class="k">材質模擬（主力）</td><td>Gemini 2.5 Flash Image 參考圖編輯</td><td>~NT$1.2/張</td></tr>
+      <tr><td class="k">材質模擬（後備）</td><td>Flux Fill Pro（Replicate）</td><td>~NT$1.6/張</td></tr>
+      <tr><td class="k">草圖渲染</td><td>Gemini 2.5 Flash Image</td><td>~NT$1.2/張</td></tr>
+      <tr><td class="k">牆面模擬</td><td>本地透視幾何運算（Pillow + NumPy）</td><td>免費・即時</td></tr>
+      <tr><td class="k">視覺辨識</td><td>Gemini 2.5 Flash（後備 LLaVA v1.6）</td><td>極低／免費額度</td></tr>
+      <tr><td class="k">以圖搜圖</td><td>pHash 感知雜湊 + HSV 色彩比對</td><td>免費・本地</td></tr>
+      <tr><td class="k">部署 / 儲存</td><td>Flask + Gunicorn · Railway · SQLite + Volume</td><td>—</td></tr>
+    </table>
+  </section>
+
+  <section class="slide">
+    <div class="kick">Strategy · 成本與合規</div>
+    <h2>務實的資源控管</h2>
+    <div class="grid g3">
+      <div class="card"><div class="num g">4 / 7</div><p style="margin-top:.6rem">逾半數引擎為<strong style="color:var(--text)">本地或免費</strong>運算（牆面模擬、以圖搜圖、色彩偵測等）。</p></div>
+      <div class="card"><div class="num c">會員制</div><p style="margin-top:.6rem">AI 工具<strong style="color:var(--text)">僅限登入會員</strong>，保護 API 運算資源、避免成本暴衝。</p></div>
+      <div class="card"><div class="num p">無中資</div><p style="margin-top:.6rem">技術堆疊皆為<strong style="color:var(--text)">非中資來源</strong>（Google / BFL / 開源），符合資安規範。</p></div>
+    </div>
+    <p class="lead">主力以 Gemini，失敗自動退回 Flux；牆面模擬走本地運算。穩定、低成本、可隨 AI 技術演進同步升級。</p>
+  </section>
+
+  <section class="slide">
+    <div class="kick">Summary</div>
+    <h1>AI × 循環石材<br><span class="accent">加速高值化設計</span></h1>
+    <p class="lead">材質模擬、牆面模擬、草圖渲染三大工具，搭配視覺辨識、減碳計算與提案輸出，把「找到 → 設計 → 成案」一氣呵成——讓每一塊循環石材，都能再次被好好使用。</p>
+    <div style="margin-top:1.6rem;font-size:.85rem;color:var(--muted)">ReStone 循環石材服務平台　·　支持循環經濟，讓石材物盡其用</div>
+  </section>
+
+</div>
+<div class="hint">← → 翻頁　·　F11 全螢幕　·　可列印成 PDF</div>
+<div class="foot">ReStone AI 設計功能與規格</div>
+<script>
+  const deck=document.querySelector('.deck');
+  const slides=[...document.querySelectorAll('.slide')];
+  let i=0;
+  function go(n){i=Math.max(0,Math.min(slides.length-1,n));slides[i].scrollIntoView({behavior:'smooth'});}
+  addEventListener('keydown',e=>{
+    if(e.key==='ArrowRight'||e.key==='ArrowDown'||e.key===' '){e.preventDefault();go(i+1);}
+    if(e.key==='ArrowLeft'||e.key==='ArrowUp'){e.preventDefault();go(i-1);}
+  });
+  deck.addEventListener('scroll',()=>{i=Math.round(deck.scrollTop/innerHeight);});
+</script>
+</body>
+</html>
