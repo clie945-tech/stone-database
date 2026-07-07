@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>跨域共創 — ReStone 循環高值化產品開發</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  :root{--bg:#0C121F;--surface:rgba(255,255,255,.06);--border:rgba(255,255,255,.14);
+        --text:#F2F6FF;--muted:#A8B6CC;--cyan:#22D3EE;--purple:#8B5CF6;--green:#34D399;--coral:#FB923C}
+  html,body{height:100%}
+  body{font-family:'Space Grotesk','Noto Sans TC',sans-serif;background:var(--bg);color:var(--text);
+       display:flex;align-items:center;justify-content:center;min-height:100vh;padding:3vh 3vw}
+  body::before{content:'';position:fixed;inset:-20%;z-index:0;
+    background:radial-gradient(38% 32% at 22% 28%,rgba(34,211,238,.16),transparent 62%),
+              radial-gradient(34% 30% at 78% 64%,rgba(139,92,246,.20),transparent 62%)}
+  .slide{position:relative;z-index:1;width:min(1240px,96vw);aspect-ratio:16/9;min-height:640px;
+         display:flex;flex-direction:column;padding:3.2rem 3.6rem;
+         background:rgba(255,255,255,.02);border:1px solid var(--border);border-radius:24px;
+         box-shadow:inset 0 1px 0 rgba(255,255,255,.12),0 24px 70px rgba(0,0,0,.5)}
+  .kick{font-size:.82rem;font-weight:700;letter-spacing:.2em;color:var(--cyan);text-transform:uppercase}
+  h1{font-size:clamp(1.6rem,3.2vw,2.5rem);font-weight:900;letter-spacing:-.01em;margin:.5rem 0 .3rem;line-height:1.25}
+  h1 .ac{background:linear-gradient(110deg,var(--cyan),var(--purple));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+  .lead{font-size:clamp(.86rem,1.35vw,1.02rem);color:var(--muted);line-height:1.7;max-width:74ch}
+
+  .flow{flex:1;display:grid;grid-template-columns:1fr auto 1.15fr auto 1fr;gap:.9rem;align-items:center;margin:1.6rem 0 1.2rem}
+  .role{background:var(--surface);backdrop-filter:blur(18px);border:1px solid var(--border);border-radius:18px;
+        padding:1.3rem 1.35rem;box-shadow:inset 0 1px 0 rgba(255,255,255,.2)}
+  .role .tag{font-size:.68rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase}
+  .role h2{font-size:1.25rem;font-weight:800;margin:.3rem 0 .55rem}
+  .role ul{list-style:none}
+  .role li{font-size:.84rem;color:var(--muted);line-height:1.75;padding-left:1rem;position:relative}
+  .role li::before{content:'';position:absolute;left:0;top:.66em;width:5px;height:5px;border-radius:50%}
+  .supply .tag{color:var(--coral)} .supply li::before{background:var(--coral)}
+  .demand .tag{color:var(--cyan)}  .demand li::before{background:var(--cyan)}
+  .arrow{font-size:1.5rem;color:var(--muted);font-weight:700;text-align:center}
+  .hub{background:linear-gradient(150deg,rgba(34,211,238,.14),rgba(139,92,246,.16));
+       border:1px solid rgba(34,211,238,.4);border-radius:20px;padding:1.5rem 1.4rem;text-align:center;
+       box-shadow:0 0 34px rgba(34,211,238,.14),inset 0 1px 0 rgba(255,255,255,.24)}
+  .hub .tag{font-size:.68rem;font-weight:700;letter-spacing:.14em;color:var(--cyan);text-transform:uppercase}
+  .hub h2{font-size:1.4rem;font-weight:900;margin:.35rem 0 .6rem}
+  .hub p{font-size:.82rem;color:var(--muted);line-height:1.7}
+  .hub .chips{margin-top:.8rem;display:flex;flex-wrap:wrap;gap:.4rem;justify-content:center}
+  .hub .chip{font-size:.7rem;font-weight:700;padding:.24rem .66rem;border-radius:99px;
+             background:rgba(34,211,238,.12);color:var(--cyan);border:1px solid rgba(34,211,238,.3)}
+
+  .out{display:flex;align-items:center;gap:1.2rem;background:rgba(52,211,153,.08);
+       border:1px solid rgba(52,211,153,.32);border-radius:16px;padding:1rem 1.5rem}
+  .out .big{font-size:1.12rem;font-weight:900;color:var(--green);white-space:nowrap}
+  .out p{font-size:.85rem;color:var(--muted);line-height:1.65}
+  .out p b{color:var(--text);font-weight:700}
+
+  .vals{display:grid;grid-template-columns:repeat(3,1fr);gap:.9rem;margin-top:1rem}
+  .val{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:.8rem 1.1rem;
+       backdrop-filter:blur(14px)}
+  .val b{display:block;font-size:.92rem;font-weight:800;margin-bottom:.2rem}
+  .val span{font-size:.76rem;color:var(--muted);line-height:1.55}
+
+  .foot{margin-top:1.1rem;font-size:.72rem;color:var(--muted);text-align:center;letter-spacing:.04em}
+  @media print{body{padding:0}body::before{display:none}
+    body{background:#0C121F !important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    .slide{width:100%;box-shadow:none;border:none;border-radius:0}}
+  @media(max-width:860px){.slide{aspect-ratio:auto}.flow{grid-template-columns:1fr}.arrow{transform:rotate(90deg)}.vals{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="slide">
+  <div class="kick">ReStone · Cross-domain Co-creation</div>
+  <h1>跨域串聯石材業者 × 設計業者<span class="ac">，共創循環高值化產品</span></h1>
+  <p class="lead">ReStone 以 AI 平台為橋樑，把石材產業的「供給端剩料」與設計產業的「需求端創意」接在一起——供給有出口、創意有材料，循環石材從廢料走向高值化產品。</p>
+
+  <div class="flow">
+    <div class="role supply">
+      <div class="tag">供給端 · Supply</div>
+      <h2>石材業者</h2>
+      <ul>
+        <li>裁切剩料、廢石材上架</li>
+        <li>拍照即建檔（AI 視覺辨識）</li>
+        <li>庫存與詢問管理</li>
+        <li>減碳成效可量化</li>
+      </ul>
+    </div>
+    <div class="arrow">→</div>
+    <div class="hub">
+      <div class="tag">AI Platform</div>
+      <h2>ReStone AI 平台</h2>
+      <p>媒合供需、共享資料，用 AI 把「找料 → 設計 → 成案」壓縮到數分鐘。</p>
+      <div class="chips">
+        <span class="chip">以圖搜圖</span><span class="chip">材質模擬</span>
+        <span class="chip">牆面模擬</span><span class="chip">草圖渲染</span>
+        <span class="chip">減碳計算</span><span class="chip">提案 PDF</span>
+      </div>
+    </div>
+    <div class="arrow">←</div>
+    <div class="role demand">
+      <div class="tag">需求端 · Demand</div>
+      <h2>產品設計師</h2>
+      <ul>
+        <li>快速找到適用循環石材</li>
+        <li>AI 模擬與草圖渲染</li>
+        <li>一鍵產出設計提案</li>
+        <li>直接向業者詢問訂購</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="out">
+    <div class="big">↳ 循環高值化產品</div>
+    <p>雙方在平台上共創：剩料被設計賦予新價值，成為傢俱、檯面、空間材等<b>高值化產品</b>，同步累積<b>可量化的減碳效益</b>——完成材料的循環閉環。</p>
+  </div>
+
+  <div class="vals">
+    <div class="val"><b>剩料變資產</b><span>廢石材上架即商品，24 小時被設計師看見</span></div>
+    <div class="val"><b>AI 加速開發</b><span>選材、試樣、渲染、提案，開發週期大幅縮短</span></div>
+    <div class="val"><b>永續可量化</b><span>每件產品附減碳數據，永續價值說得出、算得清</span></div>
+  </div>
+
+  <div class="foot">ReStone 循環石材服務平台 · 支持循環經濟，讓石材物盡其用</div>
+</div>
+</body>
+</html>
