@@ -137,6 +137,23 @@ input, select, textarea { background: rgba(20,27,46,0.75) !important; color: var
 input:focus, select:focus, textarea:focus { border-color: var(--blue) !important; box-shadow: 0 0 0 3px rgba(34,211,238,0.18), 0 0 14px rgba(34,211,238,0.2) !important; }
 input:read-only { background: rgba(15,21,36,0.75) !important; }
 
+/* 首頁搜尋框：原模板 focus 時寫死 background:white，會讓深色主題下的輸入文字看不見 */
+.search-field { background: rgba(20,27,46,0.75) !important; }
+.search-field:focus-within {
+  background: rgba(20,27,46,0.92) !important;
+  border-color: var(--blue) !important;
+  box-shadow: 0 0 0 3px rgba(34,211,238,0.18), 0 0 14px rgba(34,211,238,0.2) !important;
+}
+/* 擋掉瀏覽器自動填入（autofill）強制的白底／黑字 */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus {
+  -webkit-text-fill-color: var(--text) !important;
+  -webkit-box-shadow: 0 0 0 1000px rgba(20,27,46,0.95) inset !important;
+  caret-color: var(--text) !important;
+  transition: background-color 9999s ease-out 0s;
+}
+
 footer { background: rgba(12,18,31,0.82) !important; }
 
 /* ── 進場動畫（motion.js 啟用）── */

@@ -5,7 +5,8 @@
       "name": "stone-database",
       "runtimeExecutable": "./venv/bin/python",
       "runtimeArgs": ["app.py"],
-      "port": 5057
+      "port": 5057,
+      "autoPort": true
     }
   ]
 }
