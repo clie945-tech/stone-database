@@ -177,11 +177,11 @@ footer { background: rgba(12,18,31,0.82) !important; }
 .btn-ai-search { background: rgba(34,211,238,0.10) !important; border-color: rgba(34,211,238,0.35) !important; }
 .btn-ai-search:hover { color: #07131D !important; }
 
-/* 價格卡：青紫漸層 + 深色字 */
-.price-card { background: linear-gradient(135deg, #22D3EE, #8B5CF6) !important; box-shadow: 0 8px 28px rgba(34,211,238,0.25) !important; }
-.price-card .price-main, .price-card .price-stock-value { color: #07131D !important; }
-.price-card .price-label, .price-card .price-unit, .price-card .price-stock-label { color: rgba(7,19,29,0.66) !important; }
-.price-card .price-divider { background: rgba(7,19,29,0.25) !important; }
+/* 價格卡：沿用液態玻璃深底（與其他卡片一致）；文字改亮色、單價青色強調 */
+.price-card .price-main { color: #67E8F9 !important; text-shadow: 0 0 18px rgba(34,211,238,0.35); }
+.price-card .price-stock-value { color: var(--text) !important; }
+.price-card .price-label, .price-card .price-unit, .price-card .price-stock-label { color: var(--text-muted) !important; }
+.price-card .price-divider { background: rgba(255,255,255,0.14) !important; }
 
 /* ── Hero 大標題動態（科技版）── */
 /* 進場：徽章→標題→副標→統計 依序浮現 */
@@ -247,7 +247,7 @@ footer { background: rgba(12,18,31,0.82) !important; }
 .tool > *, .panel > *, .card > * { position: relative; z-index: 1; }
 
 /* hover：玻璃變更清亮、鑲邊發光、浮起 */
-.tool:hover, .card:hover, .stone-card:hover, .design-card:hover, .shot:hover {
+.tool:hover, .card:hover, .stone-card:hover, .design-card:hover, .shot:hover, .rec:hover {
   backdrop-filter: blur(28px) saturate(190%) !important;
   -webkit-backdrop-filter: blur(28px) saturate(190%) !important;
   border-color: rgba(34,211,238,0.40) !important;
