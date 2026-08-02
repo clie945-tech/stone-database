@@ -19,6 +19,12 @@ ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'webp', 'heic', 'heif'}
 # 每位會員「我的設計」最多保留的合成圖數量，超過時自動刪除最舊的（控制 Volume 容量）
 HISTORY_LIMIT = 30
 
+# 每位會員「每日 AI 生圖」次數上限（控制 Gemini 付費 API 成本）；台灣時區每日 0 點重置。
+# 可在 Railway 用環境變數 AI_DAILY_LIMIT 隨時調整，免改程式。設為 0 表示不限制。
+from datetime import datetime, timezone, timedelta
+AI_DAILY_LIMIT = int(os.environ.get('AI_DAILY_LIMIT', '5'))
+_TPE_TZ = timezone(timedelta(hours=8))  # Asia/Taipei
+
 
 def _setup_upload_symlink():
     """讓 /static/uploads URL 能對應到實際儲存位置（Volume 在不同路徑時用 symlink 連回）"""
@@ -837,6 +843,13 @@ def init_db():
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );
+
+        CREATE TABLE IF NOT EXISTS ai_usage (
+            customer_id INTEGER NOT NULL,
+            day TEXT NOT NULL,
+            count INTEGER NOT NULL DEFAULT 0,
+            PRIMARY KEY (customer_id, day)
+        );
     ''')
 
     # 舊資料庫遷移：補上 photo2, photo3 欄位
@@ -1244,6 +1257,47 @@ def customer_required(f):
             return redirect(url_for('customer_login'))
         return f(*args, **kwargs)
     return decorated
+
+
+# ─── AI 生圖每日配額（控制 Gemini 付費成本）───────────────────────
+def _today_tpe():
+    """台灣時區的今天日期字串（YYYY-MM-DD），供每日配額歸零用。"""
+    return datetime.now(_TPE_TZ).strftime('%Y-%m-%d')
+
+
+def ai_usage_today(customer_id):
+    """回傳該會員今日（台灣時區）已生成的付費 AI 圖數量。"""
+    conn = get_db()
+    row = conn.execute('SELECT count FROM ai_usage WHERE customer_id = ? AND day = ?',
+                       (customer_id, _today_tpe())).fetchone()
+    conn.close()
+    return row['count'] if row else 0
+
+
+def ai_usage_incr(customer_id):
+    """成功生成一張付費 AI 圖後累加當日計數（不存在則建立）。"""
+    conn = get_db()
+    conn.execute(
+        'INSERT INTO ai_usage (customer_id, day, count) VALUES (?, ?, 1) '
+        'ON CONFLICT(customer_id, day) DO UPDATE SET count = count + 1',
+        (customer_id, _today_tpe()))
+    conn.commit()
+    conn.close()
+
+
+def ai_quota_check():
+    """在付費生圖端點開頭呼叫。若已達每日上限，回傳可直接 return 的 (json, status)；否則回傳 None。"""
+    from flask import jsonify
+    if AI_DAILY_LIMIT <= 0:
+        return None  # 0 = 不限制
+    cid = session.get('customer_id')
+    used = ai_usage_today(cid)
+    if used >= AI_DAILY_LIMIT:
+        return jsonify({
+            'error': f'今日 AI 生圖已達上限（每人每日 {AI_DAILY_LIMIT} 張），請明天再試。',
+            'quota_exceeded': True, 'used': used, 'limit': AI_DAILY_LIMIT,
+        }), 429
+    return None
 
 
 # ─── 公開前台 ───────────────────────────────────────────────
@@ -2218,6 +2272,9 @@ def api_enhance_wall():
         return jsonify({'error': '請先登入會員'}), 401
     if not GEMINI_API_KEY:
         return jsonify({'error': 'AI 擬真強化需要 Gemini（請設定 GEMINI_API_KEY）'}), 503
+    _q = ai_quota_check()
+    if _q:
+        return _q
     design_id = request.form.get('design_id', type=int)
     if not design_id:
         return jsonify({'error': '缺少 design_id'}), 400
@@ -2266,6 +2323,7 @@ def api_enhance_wall():
         result_img.save(os.path.join(app.config['UPLOAD_FOLDER'], filename), 'JPEG', quality=92)
         new_id = _record_design(session['customer_id'], row['stone_id'], row['stone_name'],
                                 filename, (row['prompt'] or '牆面模擬') + '・AI 擬真強化')
+        ai_usage_incr(session['customer_id'])
         local_url = url_for('static', filename=f'uploads/{filename}')
         return jsonify({'success': True, 'result_url': local_url, 'local_url': local_url,
                         'design_id': new_id})
@@ -2316,6 +2374,9 @@ def api_render_sketch():
         return jsonify({'error': '請先登入會員才能使用草圖渲染'}), 401
     if not GEMINI_API_KEY:
         return jsonify({'error': '草圖渲染需要 Gemini（請設定 GEMINI_API_KEY）'}), 503
+    _q = ai_quota_check()
+    if _q:
+        return _q
 
     stone_id = request.form.get('stone_id', type=int)
     sketch   = request.files.get('sketch')
@@ -2351,6 +2412,7 @@ def api_render_sketch():
         result_img.save(os.path.join(app.config['UPLOAD_FOLDER'], filename), 'JPEG', quality=92)
         label = f'草圖渲染（{hint}）' if hint else '草圖渲染'
         design_id = _record_design(session['customer_id'], stone_id, display_name, filename, label)
+        ai_usage_incr(session['customer_id'])
         local_url = url_for('static', filename=f'uploads/{filename}')
         return jsonify({
             'success': True, 'result_url': local_url, 'local_url': local_url,
@@ -2550,6 +2612,9 @@ def api_apply_stone():
         return jsonify({'error': '請先登入會員才能使用 AI 設計工具'}), 401
     if not (REPLICATE_API_TOKEN or GEMINI_API_KEY):
         return jsonify({'error': 'AI 功能尚未啟用（請設定 GEMINI_API_KEY 或 REPLICATE_API_TOKEN）'}), 503
+    _q = ai_quota_check()
+    if _q:
+        return _q
 
     stone_id = request.form.get('stone_id', type=int)
     design   = request.files.get('design')
@@ -2595,6 +2660,7 @@ def api_apply_stone():
                 result_img.save(os.path.join(app.config['UPLOAD_FOLDER'], filename), 'JPEG', quality=92)
                 design_id = _record_design(session['customer_id'], stone_id, display_name,
                                            filename, 'Gemini 參考圖合成（使用實際石材照片）')
+                ai_usage_incr(session['customer_id'])
                 local_url = url_for('static', filename=f'uploads/{filename}')
                 return jsonify({
                     'success': True, 'result_url': local_url, 'local_url': local_url,
@@ -2662,6 +2728,7 @@ def api_apply_stone():
         # 存入「我的設計」歷史（下載到 Volume，自動保留最近 HISTORY_LIMIT 張）
         saved_file, design_id = save_synthesis_history(
             session['customer_id'], stone_id, display_name, result_url, prompt)
+        ai_usage_incr(session['customer_id'])
         local_url = url_for('static', filename=f'uploads/{saved_file}') if saved_file else None
 
         return jsonify({
