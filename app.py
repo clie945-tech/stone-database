@@ -1426,6 +1426,9 @@ def register():
                 conn.commit()
                 customer = conn.execute('SELECT * FROM customers WHERE email = ?', (email,)).fetchone()
                 conn.close()
+                # 角色互斥：註冊自動登入會員時清除任何管理員身分
+                session.pop('admin', None)
+                session.pop('admin_name', None)
                 session['customer_id']    = customer['id']
                 session['customer_name']  = customer['name']
                 session['customer_email'] = customer['email']
@@ -1446,6 +1449,9 @@ def customer_login():
         customer = conn.execute('SELECT * FROM customers WHERE email = ?', (email,)).fetchone()
         conn.close()
         if customer and check_password_hash(customer['password'], password):
+            # 角色互斥：登入會員即清除任何管理員身分
+            session.pop('admin', None)
+            session.pop('admin_name', None)
             session['customer_id']    = customer['id']
             session['customer_name']  = customer['name']
             session['customer_email'] = customer['email']
@@ -1577,6 +1583,10 @@ def login():
         admin = conn.execute('SELECT * FROM admin_users WHERE username = ?', (username,)).fetchone()
         conn.close()
         if admin and check_password_hash(admin['password'], password):
+            # 角色互斥：登入管理員即清除任何會員身分
+            session.pop('customer_id', None)
+            session.pop('customer_name', None)
+            session.pop('customer_email', None)
             session['admin'] = True
             session['admin_name'] = admin['username']
             return redirect(url_for('admin_dashboard'))
