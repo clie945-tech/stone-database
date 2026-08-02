@@ -6,7 +6,7 @@
   function init() {
     // ── 進場動畫：常見卡片/面板自動套用,進入視窗時交錯浮現 ──
     var SELECTOR = '.stone-card, .tool, .card, .design-card, .shot, .rec, ' +
-                   '.inquiry-card, .stat, .spec-card, .panel, .profile-card';
+                   '.inquiry-card, .stat, .spec-card, .panel, .profile-card, .news-item';
     var els = Array.prototype.slice.call(document.querySelectorAll(SELECTOR));
     if ('IntersectionObserver' in window && els.length) {
       var io = new IntersectionObserver(function (entries) {
