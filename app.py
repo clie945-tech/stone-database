@@ -827,6 +827,16 @@ def init_db():
             image_file TEXT,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );
+
+        CREATE TABLE IF NOT EXISTS announcements (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            title TEXT NOT NULL,
+            content TEXT,
+            is_published INTEGER DEFAULT 1,
+            pinned INTEGER DEFAULT 0,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
     ''')
 
     # 舊資料庫遷移：補上 photo2, photo3 欄位
@@ -1280,12 +1290,18 @@ def index():
         calculate_carbon_saved(s['stone_type'], s['width'], s['height'], s['thickness'], s['quantity'])
         for s in all_stones
     )
+
+    # 最新消息（僅顯示已發布，置頂優先，取最新 3 則）
+    announcements = conn.execute(
+        'SELECT * FROM announcements WHERE is_published = 1 '
+        'ORDER BY pinned DESC, created_at DESC LIMIT 3'
+    ).fetchall()
     conn.close()
 
     return render_template('index.html', stones=stones, types=types,
                            search=search, selected_type=stone_type, total=total,
                            colors=COLORS, color_map=COLOR_MAP, selected_color=color,
-                           total_carbon_kg=total_carbon_kg)
+                           total_carbon_kg=total_carbon_kg, announcements=announcements)
 
 
 @app.route('/stone/<int:id>')
@@ -1619,6 +1635,82 @@ def admin_dashboard():
     return render_template('admin.html', stones=stones, total=total,
                            new_inquiries=new_inquiries,
                            total_carbon_kg=total_carbon_kg)
+
+
+# ─── 最新消息管理 ───────────────────────────────────────────────
+@app.route('/admin/news')
+@admin_required
+def admin_news():
+    conn = get_db()
+    items = conn.execute(
+        'SELECT * FROM announcements ORDER BY pinned DESC, created_at DESC'
+    ).fetchall()
+    editing = None
+    edit_id = request.args.get('edit', type=int)
+    if edit_id:
+        editing = conn.execute(
+            'SELECT * FROM announcements WHERE id = ?', (edit_id,)).fetchone()
+    conn.close()
+    return render_template('admin_news.html', items=items, editing=editing)
+
+
+@app.route('/admin/news/save', methods=['POST'])
+@admin_required
+def admin_news_save():
+    nid          = request.form.get('id', type=int)
+    title        = request.form.get('title', '').strip()
+    content      = request.form.get('content', '').strip()
+    is_published = 1 if request.form.get('is_published') else 0
+    pinned       = 1 if request.form.get('pinned') else 0
+    if not title:
+        flash('標題為必填', 'error')
+        return redirect(url_for('admin_news', edit=nid) if nid else url_for('admin_news'))
+    conn = get_db()
+    if nid:
+        conn.execute(
+            'UPDATE announcements SET title=?, content=?, is_published=?, pinned=?, '
+            'updated_at=CURRENT_TIMESTAMP WHERE id=?',
+            (title, content, is_published, pinned, nid))
+        flash('公告已更新', 'success')
+    else:
+        conn.execute(
+            'INSERT INTO announcements (title, content, is_published, pinned) VALUES (?,?,?,?)',
+            (title, content, is_published, pinned))
+        flash('公告已新增', 'success')
+    conn.commit()
+    conn.close()
+    return redirect(url_for('admin_news'))
+
+
+@app.route('/admin/news/<int:id>/delete', methods=['POST'])
+@admin_required
+def admin_news_delete(id):
+    conn = get_db()
+    conn.execute('DELETE FROM announcements WHERE id = ?', (id,))
+    conn.commit()
+    conn.close()
+    flash('公告已刪除', 'success')
+    return redirect(url_for('admin_news'))
+
+
+@app.route('/admin/news/<int:id>/toggle', methods=['POST'])
+@admin_required
+def admin_news_toggle(id):
+    conn = get_db()
+    conn.execute('UPDATE announcements SET is_published = 1 - is_published WHERE id = ?', (id,))
+    conn.commit()
+    conn.close()
+    return redirect(url_for('admin_news'))
+
+
+@app.route('/admin/news/<int:id>/pin', methods=['POST'])
+@admin_required
+def admin_news_pin(id):
+    conn = get_db()
+    conn.execute('UPDATE announcements SET pinned = 1 - pinned WHERE id = ?', (id,))
+    conn.commit()
+    conn.close()
+    return redirect(url_for('admin_news'))
 
 
 @app.route('/admin/inquiries')

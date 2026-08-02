@@ -227,7 +227,7 @@ footer { background: rgba(12,18,31,0.82) !important; }
    厚霧面模糊 + 頂部高光 + 玻璃鑲邊 + 漂浮陰影 + 頂部光澤
    ═══════════════════════════════════════════════════════════════ */
 .panel, .card, .tool, .profile-card, .stat, .spec-card, .inquiry-card, .rec,
-.stone-card, .design-card, .shot, .price-card, .analysis {
+.stone-card, .design-card, .shot, .price-card, .analysis, .news-item {
   background: linear-gradient(155deg, rgba(255,255,255,0.13), rgba(255,255,255,0.035)) !important;
   backdrop-filter: blur(24px) saturate(170%) !important;
   -webkit-backdrop-filter: blur(24px) saturate(170%) !important;
@@ -247,7 +247,7 @@ footer { background: rgba(12,18,31,0.82) !important; }
 .tool > *, .panel > *, .card > * { position: relative; z-index: 1; }
 
 /* hover：玻璃變更清亮、鑲邊發光、浮起 */
-.tool:hover, .card:hover, .stone-card:hover, .design-card:hover, .shot:hover, .rec:hover {
+.tool:hover, .card:hover, .stone-card:hover, .design-card:hover, .shot:hover, .rec:hover, .news-item:hover {
   backdrop-filter: blur(28px) saturate(190%) !important;
   -webkit-backdrop-filter: blur(28px) saturate(190%) !important;
   border-color: rgba(34,211,238,0.40) !important;

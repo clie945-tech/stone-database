@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>最新消息 — ReStone 管理後台</title>
+  <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --blue: #2563EB; --blue-light: #EFF6FF; --blue-mid: #BFDBFE;
+      --text: #0F172A; --text-muted: #64748B; --text-light: #94A3B8;
+      --border: #E2E8F0; --bg: #F8FAFC; --white: #FFFFFF;
+      --sidebar-w: 224px;
+    }
+    body { font-family: 'Inter', 'Noto Sans TC', sans-serif; background: var(--bg); color: var(--text); }
+
+    /* ── Sidebar ── */
+    .sidebar { position: fixed; top: 0; left: 0; bottom: 0; width: var(--sidebar-w); background: var(--white); border-right: 1px solid var(--border); display: flex; flex-direction: column; z-index: 200; }
+    .sidebar-logo { padding: 1.4rem 1.2rem; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 10px; }
+    .sidebar-logo-icon { width: 34px; height: 34px; flex-shrink: 0; }
+    .sidebar-logo-text { font-size: 0.85rem; font-weight: 700; line-height: 1.3; }
+    .sidebar-logo-sub  { font-size: 0.65rem; color: var(--text-muted); }
+    .sidebar-section { padding: 1.2rem 1rem 0.3rem; font-size: 0.68rem; font-weight: 600; color: var(--text-light); letter-spacing: 0.08em; text-transform: uppercase; }
+    .sidebar-nav { flex: 1; padding: 0.4rem 0.6rem; }
+    .nav-item { display: flex; align-items: center; gap: 9px; padding: 0.6rem 0.8rem; font-size: 0.85rem; color: var(--text-muted); text-decoration: none; transition: all 0.15s; border-radius: 8px; margin: 2px 0; }
+    .nav-item:hover { color: var(--text); background: var(--bg); }
+    .nav-item.active { color: var(--blue); background: var(--blue-light); font-weight: 600; }
+    .nav-item .icon { font-size: 0.95rem; width: 18px; text-align: center; flex-shrink: 0; }
+    .sidebar-footer { padding: 1rem 1.2rem; border-top: 1px solid var(--border); font-size: 0.75rem; }
+    .sidebar-footer .admin-name { color: var(--text); font-weight: 600; margin-bottom: 3px; font-size: 0.82rem; }
+    .sidebar-footer a { color: var(--text-muted); text-decoration: none; transition: color 0.15s; }
+    .sidebar-footer a:hover { color: var(--blue); }
+
+    /* ── Main ── */
+    .main-wrap { margin-left: var(--sidebar-w); min-height: 100vh; }
+    .topbar { background: var(--white); border-bottom: 1px solid var(--border); padding: 0 2rem; height: 56px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; box-shadow: 0 1px 4px rgba(0,0,0,0.04); }
+    .topbar-title { font-size: 0.95rem; font-weight: 700; }
+
+    .btn { display: inline-flex; align-items: center; gap: 6px; padding: 0.5rem 1rem; border-radius: 8px; font-size: 0.85rem; font-weight: 600; cursor: pointer; text-decoration: none; border: none; transition: all 0.15s; font-family: inherit; }
+    .btn-primary { background: var(--blue); color: white; }
+    .btn-primary:hover { background: #1D4ED8; }
+    .btn-secondary { background: var(--bg); color: var(--text-muted); border: 1px solid var(--border); }
+    .btn-secondary:hover { color: var(--text); background: #F1F5F9; }
+    .btn-danger { background: #FEF2F2; color: #B91C1C; border: 1px solid #FECACA; }
+    .btn-danger:hover { background: #FEE2E2; }
+    .btn-sm { padding: 0.32rem 0.7rem; font-size: 0.76rem; }
+
+    .content { padding: 2rem; max-width: 960px; }
+
+    .flash { padding: 0.75rem 1.2rem; border-radius: 8px; margin-bottom: 1.5rem; font-size: 0.85rem; }
+    .flash-success { background: #F0FDF4; border: 1px solid #BBF7D0; color: #166534; }
+    .flash-error   { background: #FEF2F2; border: 1px solid #FECACA; color: #B91C1C; }
+
+    /* ── Form card ── */
+    .card { background: var(--white); border-radius: 12px; border: 1px solid var(--border); overflow: hidden; margin-bottom: 2rem; }
+    .card-head { padding: 1rem 1.5rem; border-bottom: 1px solid var(--border); font-size: 0.92rem; font-weight: 700; }
+    .card-body { padding: 1.5rem; }
+    .field { margin-bottom: 1.1rem; }
+    .field:last-child { margin-bottom: 0; }
+    .field label { display: block; font-size: 0.8rem; font-weight: 600; margin-bottom: 0.4rem; }
+    .field .req { color: #EF4444; }
+    .field input[type=text], .field textarea {
+      width: 100%; padding: 0.7rem 0.9rem; border: 1.5px solid var(--border); border-radius: 9px;
+      font-size: 0.88rem; font-family: inherit; color: var(--text); background: var(--bg); outline: none; transition: all 0.15s;
+    }
+    .field input[type=text]:focus, .field textarea:focus { border-color: var(--blue); background: #fff; box-shadow: 0 0 0 3px rgba(37,99,235,0.1); }
+    .field textarea { min-height: 120px; resize: vertical; line-height: 1.7; }
+    .checks { display: flex; gap: 1.5rem; flex-wrap: wrap; }
+    .check { display: flex; align-items: center; gap: 7px; font-size: 0.85rem; font-weight: 500; cursor: pointer; }
+    .check input { width: 16px; height: 16px; accent-color: var(--blue); cursor: pointer; }
+    .form-actions { margin-top: 1.4rem; display: flex; gap: 0.6rem; align-items: center; }
+    .form-hint { font-size: 0.76rem; color: var(--text-light); }
+
+    /* ── List table ── */
+    table { width: 100%; border-collapse: collapse; }
+    th { padding: 0.7rem 1rem; text-align: left; font-size: 0.72rem; font-weight: 600; color: var(--text-muted); letter-spacing: 0.06em; text-transform: uppercase; background: var(--bg); border-bottom: 1px solid var(--border); white-space: nowrap; }
+    td { padding: 0.85rem 1rem; border-bottom: 1px solid var(--border); font-size: 0.85rem; vertical-align: top; }
+    tr:last-child td { border-bottom: none; }
+    .n-title { font-weight: 600; color: var(--text); }
+    .n-body { font-size: 0.78rem; color: var(--text-muted); margin-top: 3px; line-height: 1.5; max-width: 360px; white-space: pre-line;
+      display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    .n-date { font-size: 0.76rem; color: var(--text-light); white-space: nowrap; }
+    .tag { display: inline-block; padding: 2px 9px; border-radius: 99px; font-size: 0.7rem; font-weight: 700; }
+    .tag-on  { background: #DCFCE7; color: #166534; }
+    .tag-off { background: #F1F5F9; color: var(--text-muted); }
+    .tag-pin { background: var(--blue-light); color: var(--blue); margin-left: 4px; }
+    .row-actions { display: flex; gap: 0.35rem; flex-wrap: wrap; }
+    .row-actions form { display: inline; }
+    .empty { text-align: center; padding: 3rem; color: var(--text-muted); font-size: 0.85rem; }
+
+    @media (max-width: 768px) {
+      .sidebar { transform: translateX(-100%); }
+      .main-wrap { margin-left: 0; }
+    }
+  </style>
+</head>
+<body>
+
+<nav class="sidebar">
+  <div class="sidebar-logo">
+    <span class="sidebar-logo-icon">{% with size=34, sfx='sb' %}{% include '_logo.html' %}{% endwith %}</span>
+    <div>
+      <div class="sidebar-logo-text">ReStone 循環石材服務平台</div>
+      <div class="sidebar-logo-sub">管理後台</div>
+    </div>
+  </div>
+  <div class="sidebar-nav">
+    <div class="sidebar-section">管理</div>
+    <a href="/admin" class="nav-item"><span class="icon">▦</span> 石材管理</a>
+    <a href="/admin/add" class="nav-item"><span class="icon">＋</span> 新增石材</a>
+    <a href="/admin/inquiries" class="nav-item"><span class="icon">✉</span> 詢問管理</a>
+    <a href="/admin/customers" class="nav-item">會員管理</a>
+    <a href="/admin/news" class="nav-item active"><span class="icon">▣</span> 最新消息</a>
+    <div class="sidebar-section">系統</div>
+    <a href="/admin/change-password" class="nav-item">修改密碼</a>
+    <a href="/" class="nav-item" target="_blank"><span class="icon">↗</span> 前台預覽</a>
+  </div>
+  <div class="sidebar-footer">
+    <div class="admin-name">管理員</div>
+    <a href="/admin/logout">登出 →</a>
+  </div>
+</nav>
+
+<div class="main-wrap">
+  <div class="topbar">
+    <div class="topbar-title">最新消息</div>
+  </div>
+
+  <div class="content">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% for category, msg in messages %}<div class="flash flash-{{ category }}">{{ msg }}</div>{% endfor %}
+    {% endwith %}
+
+    <!-- 新增 / 編輯表單 -->
+    <div class="card">
+      <div class="card-head">{% if editing %}編輯公告{% else %}新增公告{% endif %}</div>
+      <div class="card-body">
+        <form method="POST" action="/admin/news/save">
+          {% if editing %}<input type="hidden" name="id" value="{{ editing.id }}">{% endif %}
+          <div class="field">
+            <label>標題 <span class="req">*</span></label>
+            <input type="text" name="title" placeholder="例如：本平台將於文博會展出" value="{{ editing.title if editing else '' }}" required>
+          </div>
+          <div class="field">
+            <label>內容</label>
+            <textarea name="content" placeholder="公告內容，可換行分段…">{{ editing.content if editing else '' }}</textarea>
+          </div>
+          <div class="field">
+            <div class="checks">
+              <label class="check"><input type="checkbox" name="is_published" {% if editing is none or editing.is_published %}checked{% endif %}> 顯示於首頁</label>
+              <label class="check"><input type="checkbox" name="pinned" {% if editing and editing.pinned %}checked{% endif %}> 置頂</label>
+            </div>
+          </div>
+          <div class="form-actions">
+            <button type="submit" class="btn btn-primary">{% if editing %}更新公告{% else %}新增公告{% endif %}</button>
+            {% if editing %}<a href="/admin/news" class="btn btn-secondary">取消編輯</a>{% endif %}
+            <span class="form-hint">首頁只顯示「已勾選顯示」的最新 3 則，置頂者優先。</span>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- 公告清單 -->
+    <div class="card">
+      <div class="card-head">所有公告 <span style="color:var(--text-muted);font-weight:400;font-size:0.82rem">共 {{ items|length }} 則</span></div>
+      {% if items %}
+      <table>
+        <thead><tr><th>狀態</th><th>公告</th><th>更新時間</th><th style="text-align:right">操作</th></tr></thead>
+        <tbody>
+          {% for a in items %}
+          <tr>
+            <td style="white-space:nowrap">
+              {% if a.is_published %}<span class="tag tag-on">顯示中</span>{% else %}<span class="tag tag-off">已隱藏</span>{% endif %}
+              {% if a.pinned %}<span class="tag tag-pin">置頂</span>{% endif %}
+            </td>
+            <td>
+              <div class="n-title">{{ a.title }}</div>
+              {% if a.content %}<div class="n-body">{{ a.content }}</div>{% endif %}
+            </td>
+            <td class="n-date">{{ (a.updated_at or a.created_at)[:16] }}</td>
+            <td>
+              <div class="row-actions" style="justify-content:flex-end">
+                <a href="/admin/news?edit={{ a.id }}" class="btn btn-secondary btn-sm">編輯</a>
+                <form method="POST" action="/admin/news/{{ a.id }}/toggle">
+                  <button type="submit" class="btn btn-secondary btn-sm">{% if a.is_published %}隱藏{% else %}顯示{% endif %}</button>
+                </form>
+                <form method="POST" action="/admin/news/{{ a.id }}/pin">
+                  <button type="submit" class="btn btn-secondary btn-sm">{% if a.pinned %}取消置頂{% else %}置頂{% endif %}</button>
+                </form>
+                <form method="POST" action="/admin/news/{{ a.id }}/delete" onsubmit="return confirm('確定刪除這則公告？此動作無法復原。')">
+                  <button type="submit" class="btn btn-danger btn-sm">刪除</button>
+                </form>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% else %}
+      <div class="empty">尚無任何公告，使用上方表單新增第一則。</div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

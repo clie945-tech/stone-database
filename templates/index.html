@@ -140,6 +140,20 @@
     .stat-lbl { display: block; font-size: 0.65rem; color: var(--text-muted); margin-top: 5px; letter-spacing: 0.06em; text-transform: uppercase; }
 
     /* ── Search ── */
+    /* ── 最新消息 ── */
+    .news-section { max-width: 1280px; margin: 2.2rem auto 0; padding: 0 2rem; }
+    .news-head { display: flex; align-items: baseline; gap: 0.7rem; margin-bottom: 1rem; }
+    .news-kicker { font-size: 0.66rem; font-weight: 700; letter-spacing: 0.2em; color: var(--blue); text-transform: uppercase; }
+    .news-title { font-size: 1.3rem; font-weight: 800; letter-spacing: -0.02em; }
+    .news-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem; }
+    .news-item { position: relative; background: var(--white); border: 1px solid var(--border); border-radius: 14px; padding: 1.2rem 1.3rem; transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s; }
+    .news-item.pinned { border-color: var(--blue-mid); }
+    .news-pin { position: absolute; top: 1rem; right: 1rem; font-size: 0.62rem; font-weight: 700; color: var(--blue); background: var(--blue-light); padding: 2px 9px; border-radius: 99px; letter-spacing: 0.05em; }
+    .news-date { font-size: 0.72rem; color: var(--text-light); margin-bottom: 0.4rem; letter-spacing: 0.03em; }
+    .news-item-title { font-size: 1rem; font-weight: 700; line-height: 1.45; margin-bottom: 0.5rem; padding-right: 3rem; }
+    .news-content { font-size: 0.85rem; color: var(--text-muted); line-height: 1.75; white-space: pre-line; }
+    @media (max-width: 640px) { .news-list { grid-template-columns: 1fr; } }
+
     .search-bar {
       background: var(--white);
       border-bottom: 1px solid var(--border);
@@ -334,7 +348,7 @@
       .hero-stat { padding: 0.8rem 1.4rem; }
     }
   </style>
-  <link rel="stylesheet" href="/static/theme-tech.css?v=9">
+  <link rel="stylesheet" href="/static/theme-tech.css?v=10">
   <script src="/static/motion.js" defer></script>
 </head>
 <body>
@@ -388,6 +402,26 @@
     </div>
   </div>
 </section>
+
+<!-- 最新消息 -->
+{% if announcements %}
+<section class="news-section rv">
+  <div class="news-head">
+    <span class="news-kicker">News</span>
+    <h2 class="news-title">最新消息</h2>
+  </div>
+  <div class="news-list">
+    {% for a in announcements %}
+    <article class="news-item{% if a.pinned %} pinned{% endif %}">
+      {% if a.pinned %}<span class="news-pin">置頂</span>{% endif %}
+      <div class="news-date">{{ a.created_at[:10] }}</div>
+      <h3 class="news-item-title">{{ a.title }}</h3>
+      {% if a.content %}<div class="news-content">{{ a.content }}</div>{% endif %}
+    </article>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
 
 <!-- Search -->
 <div class="search-bar">
