@@ -799,6 +799,7 @@ def init_db():
             email TEXT NOT NULL UNIQUE,
             phone TEXT,
             password TEXT NOT NULL,
+            is_vip INTEGER DEFAULT 0,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );
 
@@ -896,6 +897,13 @@ def init_db():
             conn.commit()
         except Exception:
             pass
+
+    # 會員身分欄位（is_vip：1 = VIP 不限生圖數量，0 = 一般依每日上限）
+    try:
+        conn.execute("ALTER TABLE customers ADD COLUMN is_vip INTEGER DEFAULT 0")
+        conn.commit()
+    except Exception:
+        pass
 
     # 建立預設管理員帳號
     cursor = conn.execute('SELECT COUNT(*) FROM admin_users')
@@ -1285,12 +1293,25 @@ def ai_usage_incr(customer_id):
     conn.close()
 
 
+def is_vip_customer(customer_id):
+    """該會員是否為 VIP（不限生圖數量）。"""
+    conn = get_db()
+    try:
+        row = conn.execute('SELECT is_vip FROM customers WHERE id = ?', (customer_id,)).fetchone()
+    except Exception:
+        row = None
+    conn.close()
+    return bool(row and row['is_vip'])
+
+
 def ai_quota_check():
     """在付費生圖端點開頭呼叫。若已達每日上限，回傳可直接 return 的 (json, status)；否則回傳 None。"""
     from flask import jsonify
     if AI_DAILY_LIMIT <= 0:
-        return None  # 0 = 不限制
+        return None  # 0 = 全站不限制
     cid = session.get('customer_id')
+    if is_vip_customer(cid):
+        return None  # VIP 不限量
     used = ai_usage_today(cid)
     if used >= AI_DAILY_LIMIT:
         return jsonify({
@@ -1981,8 +2002,26 @@ def delete_stone(id):
 def admin_customers():
     conn = get_db()
     customers = conn.execute('SELECT * FROM customers ORDER BY created_at DESC').fetchall()
+    # 今日各會員生圖用量（台灣時區），供後台顯示
+    usage_rows = conn.execute('SELECT customer_id, count FROM ai_usage WHERE day = ?',
+                              (_today_tpe(),)).fetchall()
     conn.close()
-    return render_template('admin_customers.html', customers=customers)
+    usage_today = {r['customer_id']: r['count'] for r in usage_rows}
+    return render_template('admin_customers.html', customers=customers,
+                           ai_daily_limit=AI_DAILY_LIMIT, usage_today=usage_today)
+
+
+@app.route('/admin/customers/<int:id>/vip', methods=['POST'])
+@admin_required
+def admin_customer_vip(id):
+    conn = get_db()
+    conn.execute('UPDATE customers SET is_vip = 1 - COALESCE(is_vip, 0) WHERE id = ?', (id,))
+    conn.commit()
+    row = conn.execute('SELECT name, is_vip FROM customers WHERE id = ?', (id,)).fetchone()
+    conn.close()
+    if row:
+        flash(f'已將「{row["name"]}」設為{"VIP 會員（不限生圖數量）" if row["is_vip"] else "一般會員"}', 'success')
+    return redirect(url_for('admin_customers'))
 
 
 # ─── AI 圖片功能：以圖搜圖 ────────────────────────────────────
