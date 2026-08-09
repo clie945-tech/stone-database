@@ -69,11 +69,24 @@
     .upload-icon svg { width: 38px; height: 38px; }
     .upload-title { font-size: 1.05rem; font-weight: 700; color: var(--text); margin-bottom: 0.3rem; }
     .upload-hint { font-size: 0.8rem; color: var(--text-muted); }
-    .preview-row { display: flex; align-items: center; gap: 1rem; }
-    .preview-row img { width: 80px; height: 80px; object-fit: cover; border-radius: 10px; border: 1px solid var(--border); }
-    .preview-info { flex: 1; text-align: left; }
-    .preview-info .name { font-size: 0.88rem; font-weight: 600; color: var(--text); }
-    .preview-info .hint { font-size: 0.75rem; color: var(--text-muted); margin-top: 4px; }
+    /* ── 圈選比對範圍 ── */
+    /* 有檔案時 file input 不可攔截事件，否則會吃掉拖拉圈選 */
+    .upload-area.has-file input[type="file"] { pointer-events: none; }
+    .crop-wrap { position: relative; display: inline-block; max-width: 100%; line-height: 0;
+                 border-radius: 12px; overflow: hidden; border: 1px solid var(--border); }
+    .crop-wrap img { display: block; max-width: 100%; max-height: 340px; width: auto; user-select: none; -webkit-user-drag: none; }
+    .crop-layer { position: absolute; inset: 0; cursor: crosshair; touch-action: none; }
+    .crop-box { position: absolute; display: none; border: 2px solid var(--blue);
+                box-shadow: 0 0 0 9999px rgba(15,23,42,0.5); border-radius: 3px; pointer-events: none; }
+    .crop-box.active { display: block; }
+    .crop-tools { display: flex; gap: 0.5rem; justify-content: center; align-items: center;
+                  flex-wrap: wrap; margin-top: 0.9rem; }
+    .crop-tip { font-size: 0.8rem; color: var(--text-muted); }
+    .crop-tip b { color: var(--blue); font-weight: 700; }
+    .mini-btn { font-family: inherit; font-size: 0.78rem; font-weight: 600; padding: 0.4rem 0.9rem;
+                border-radius: 8px; border: 1px solid var(--border); background: white;
+                color: var(--text-muted); cursor: pointer; transition: all 0.15s; }
+    .mini-btn:hover { color: var(--blue); border-color: var(--blue-mid); background: var(--blue-light); }
 
     .btn-search {
       display: inline-block; padding: 0.85rem 2.5rem; margin-top: 1.2rem;
@@ -191,15 +204,21 @@
           <div class="upload-hint">支援 JPG／PNG／HEIC（iPhone）／GIF／WEBP，最大 32MB</div>
         </div>
         <div id="previewUI" style="display:none">
-          <div class="preview-row">
+          <div class="crop-wrap" id="cropWrap">
             <img id="previewImg" src="" alt="預覽" />
-            <div class="preview-info">
-              <div class="name" id="previewName">已選擇檔案</div>
-              <div class="hint">準備好就點下方按鈕開始 AI 搜尋</div>
-            </div>
+            <div class="crop-layer" id="cropLayer"><div class="crop-box" id="cropBox"></div></div>
+          </div>
+          <div class="crop-tools">
+            <span class="crop-tip" id="cropTip">在圖片上<b>拖曳框出石材區域</b>，只比對框內（避免背景干擾）</span>
+            <button type="button" class="mini-btn" id="clearCrop" style="display:none">清除圈選</button>
+            <button type="button" class="mini-btn" id="changeImg">更換圖片</button>
           </div>
         </div>
       </div>
+      <input type="hidden" name="crop_l" id="cropL">
+      <input type="hidden" name="crop_t" id="cropT">
+      <input type="hidden" name="crop_r" id="cropR">
+      <input type="hidden" name="crop_b" id="cropB">
       <div style="text-align:center">
         <button type="submit" class="btn-search" id="searchBtn" disabled>開始搜尋相似石材</button>
       </div>
@@ -212,7 +231,8 @@
       <img src="{{ reference_url }}" alt="參考圖" />
       <div class="reference-info">
         <div class="reference-label">YOUR REFERENCE</div>
-        <div class="reference-title">參考圖片分析結果</div>
+        <div class="reference-title">{% if cropped %}圈選範圍分析結果{% else %}參考圖片分析結果{% endif %}</div>
+        {% if cropped %}<div style="font-size:0.78rem;color:var(--blue);margin-bottom:0.4rem">✓ 已排除背景，只比對你圈選的區域</div>{% endif %}
         {% if detected_color %}
           <span>偵測到主要色系：</span>
           <span class="detected-color" style="background:{{ detected_color[2] }};color:{{ detected_color[3] }}">{{ detected_color[1] }}</span>
@@ -221,6 +241,13 @@
         {% endif %}
       </div>
     </div>
+
+    {% if stale_count and stale_count > 0 %}
+      <div class="notice">
+        ⚠有 <strong>{{ stale_count }}</strong> 筆石材仍使用舊版比對方式（準確率較低）。
+        管理員可至後台點擊「重新索引照片」升級為新版視覺特徵，搜尋會更準。
+      </div>
+    {% endif %}
 
     {% if not_indexed_count and not_indexed_count > 0 %}
       <div class="notice">
@@ -324,14 +351,87 @@
     const reader = new FileReader();
     reader.onload = (e) => {
       document.getElementById('previewImg').src = e.target.result;
-      document.getElementById('previewName').textContent = file.name;
       document.getElementById('placeholderUI').style.display = 'none';
       document.getElementById('previewUI').style.display = 'block';
       area.classList.add('has-file');
       btn.disabled = false;
+      if (window.resetCrop) window.resetCrop();   // 換圖時清掉舊的圈選
     };
     reader.readAsDataURL(file);
   }
+
+  // ── 圈選比對範圍：在預覽圖上拖曳出矩形，只比對框內區域 ──
+  (() => {
+    const layer = document.getElementById('cropLayer');
+    const boxEl = document.getElementById('cropBox');
+    const tip   = document.getElementById('cropTip');
+    const clearBtn = document.getElementById('clearCrop');
+    const fields = ['cropL', 'cropT', 'cropR', 'cropB'].map(id => document.getElementById(id));
+    if (!layer) return;
+
+    let dragging = false, sx = 0, sy = 0;
+
+    const reset = () => {
+      boxEl.classList.remove('active');
+      fields.forEach(f => f.value = '');
+      clearBtn.style.display = 'none';
+      tip.innerHTML = '在圖片上<b>拖曳框出石材區域</b>，只比對框內（避免背景干擾）';
+    };
+    window.resetCrop = reset;
+    clearBtn.addEventListener('click', reset);
+
+    document.getElementById('changeImg').addEventListener('click', () => {
+      document.getElementById('refFile').click();
+    });
+
+    const pos = (ev) => {
+      const r = layer.getBoundingClientRect();
+      return {
+        x: Math.max(0, Math.min(ev.clientX - r.left, r.width)),
+        y: Math.max(0, Math.min(ev.clientY - r.top, r.height)),
+        w: r.width, h: r.height,
+      };
+    };
+
+    const draw = (p) => {
+      const l = Math.min(sx, p.x), t = Math.min(sy, p.y);
+      const w = Math.abs(p.x - sx), h = Math.abs(p.y - sy);
+      Object.assign(boxEl.style, { left: l + 'px', top: t + 'px', width: w + 'px', height: h + 'px' });
+      boxEl.classList.add('active');
+      return { l, t, w, h, cw: p.w, ch: p.h };
+    };
+
+    layer.addEventListener('pointerdown', (ev) => {
+      const p = pos(ev);
+      dragging = true; sx = p.x; sy = p.y;
+      layer.setPointerCapture(ev.pointerId);
+      draw(p);
+      ev.preventDefault();
+    });
+
+    layer.addEventListener('pointermove', (ev) => {
+      if (!dragging) return;
+      draw(pos(ev));
+      ev.preventDefault();
+    });
+
+    const finish = (ev) => {
+      if (!dragging) return;
+      dragging = false;
+      const g = draw(pos(ev));
+      // 太小的框視為誤觸，直接取消
+      if (g.w < 12 || g.h < 12) { reset(); return; }
+      fields[0].value = (g.l / g.cw).toFixed(4);
+      fields[1].value = (g.t / g.ch).toFixed(4);
+      fields[2].value = ((g.l + g.w) / g.cw).toFixed(4);
+      fields[3].value = ((g.t + g.h) / g.ch).toFixed(4);
+      clearBtn.style.display = '';
+      const pct = Math.round((g.w * g.h) / (g.cw * g.ch) * 100);
+      tip.innerHTML = `已圈選<b>約 ${pct}%</b> 的畫面範圍，只比對框內區域`;
+    };
+    layer.addEventListener('pointerup', finish);
+    layer.addEventListener('pointercancel', () => { dragging = false; });
+  })();
 
   // 表單送出時改文字
   document.getElementById('searchForm').addEventListener('submit', function() {

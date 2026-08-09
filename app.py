@@ -296,6 +296,143 @@ def rgb_distance(rgb1_str, rgb2_str):
         return 441.0
 
 
+# ─── 石材視覺特徵（以圖搜圖用）─────────────────────────────────
+# pHash 是為「同一張圖的不同版本」設計的，對石材這種隨機紋理容易誤判：
+# 同一塊石材換角度就找不到、不同石材只要明暗分布像就誤判。
+# 改用「HSV 色彩直方圖 + 紋理統計量」，對角度與光線變化穩健得多。
+FEATURE_VERSION = 2
+
+
+def extract_stone_features(img):
+    """從 PIL Image 抽出石材視覺特徵（色彩直方圖 + 紋理統計），回傳 dict。"""
+    import numpy as np
+    from PIL import Image
+
+    if img.mode != 'RGB':
+        img = img.convert('RGB')
+    img = img.resize((256, 256), Image.BILINEAR)   # 統一尺度，消除解析度差異
+
+    hsv = np.asarray(img.convert('HSV'), dtype=np.float32)
+    h, s, v = hsv[..., 0] / 255.0, hsv[..., 1] / 255.0, hsv[..., 2] / 255.0
+
+    # 色相：石材多為灰白米色，低飽和像素的色相無意義 → 另計為「無彩色」bin，
+    # 這樣「兩張都是灰白石材」會正確地互相匹配，而不是被當成沒有共同色相。
+    chromatic = s > 0.18
+    h_hist = np.zeros(13, dtype=np.float32)
+    if chromatic.any():
+        np.add.at(h_hist, np.clip((h[chromatic] * 12).astype(int), 0, 11), 1.0)
+    h_hist[12] = float((~chromatic).sum())
+    h_hist /= max(1.0, float(h_hist.sum()))
+
+    s_hist = np.histogram(s, bins=5, range=(0.0, 1.0))[0].astype(np.float32)
+    s_hist /= max(1.0, float(s_hist.sum()))
+    v_hist = np.histogram(v, bins=8, range=(0.0, 1.0))[0].astype(np.float32)
+    v_hist /= max(1.0, float(v_hist.sum()))
+
+    # 紋理：明度梯度描述「紋理強度」，縮圖後仍存的梯度比例描述「紋理粗細」
+    detail = float(np.abs(np.diff(v, axis=1)).mean() + np.abs(np.diff(v, axis=0)).mean())
+    contrast = float(v.std())
+    small = np.asarray(img.convert('L').resize((64, 64), Image.BILINEAR), dtype=np.float32) / 255.0
+    coarse = float(np.abs(np.diff(small, axis=1)).mean() + np.abs(np.diff(small, axis=0)).mean())
+    scale = min(coarse / detail, 4.0) if detail > 1e-6 else 0.0
+
+    return {
+        'v': FEATURE_VERSION,
+        'h': [round(float(x), 5) for x in h_hist],
+        's': [round(float(x), 5) for x in s_hist],
+        'vv': [round(float(x), 5) for x in v_hist],
+        't': [round(contrast, 5), round(detail, 5), round(scale, 5)],
+    }
+
+
+def features_to_json(feat):
+    import json
+    return json.dumps(feat, separators=(',', ':')) if feat else ''
+
+
+def features_from_json(raw):
+    import json
+    if not raw:
+        return None
+    try:
+        f = json.loads(raw)
+        return f if isinstance(f, dict) and f.get('v') == FEATURE_VERSION else None
+    except Exception:
+        return None
+
+
+def _hist_distance(a, b):
+    """直方圖交集距離（0 = 完全相同，1 = 完全不同）"""
+    return max(0.0, 1.0 - sum(min(x, y) for x, y in zip(a, b)))
+
+
+def feature_distance(f1, f2):
+    """兩組石材特徵的距離（0 = 相同，1 = 完全不同）。色彩 62% + 紋理 38%。"""
+    if not f1 or not f2:
+        return 1.0
+    try:
+        dh = _hist_distance(f1['h'], f2['h'])
+        ds = _hist_distance(f1['s'], f2['s'])
+        dv = _hist_distance(f1['vv'], f2['vv'])
+        t1, t2 = f1['t'], f2['t']
+        # 三個紋理量各以典型滿量程正規化後平均
+        dt = min(1.0, (abs(t1[0] - t2[0]) / 0.35
+                       + abs(t1[1] - t2[1]) / 0.12
+                       + abs(t1[2] - t2[2]) / 3.0) / 3.0)
+        return dh * 0.28 + ds * 0.12 + dv * 0.22 + dt * 0.38
+    except Exception:
+        return 1.0
+
+
+def analyze_image_full(src, box=None):
+    """分析圖片，回傳 (color_code, phash, rgb_str, features_json)。
+    box 為 (left, top, right, bottom) 的 0-1 比例值，用於只分析圈選範圍。"""
+    try:
+        from PIL import Image
+        if hasattr(src, 'read'):
+            src.seek(0)
+            img = Image.open(src).convert('RGB')
+        else:
+            img = Image.open(src).convert('RGB')
+
+        if box:
+            W, H = img.size
+            l, t, r, b = box
+            l, t = max(0.0, min(l, 1.0)), max(0.0, min(t, 1.0))
+            r, b = max(0.0, min(r, 1.0)), max(0.0, min(b, 1.0))
+            px = (int(l * W), int(t * H), int(r * W), int(b * H))
+            # 太小的框不裁（避免誤觸產生無意義的結果）
+            if px[2] - px[0] >= 16 and px[3] - px[1] >= 16:
+                img = img.crop(px)
+
+        color_code, rgb_str = _dominant_color(img)
+        import imagehash
+        phash = str(imagehash.phash(img))
+        feats = extract_stone_features(img)
+        return (color_code, phash, rgb_str, features_to_json(feats))
+    except Exception as e:
+        print(f'[圖片分析失敗] {e}')
+        return ('', '', '', '')
+
+
+def _dominant_color(img):
+    """量化取主色，回傳 (color_code, 'r,g,b')。"""
+    from PIL import Image
+    thumb = img.copy()
+    thumb.thumbnail((150, 150))
+    try:
+        paletted = thumb.convert('P', palette=Image.Palette.ADAPTIVE, colors=5)
+    except AttributeError:
+        paletted = thumb.convert('P', palette=Image.ADAPTIVE, colors=5)
+    palette = paletted.getpalette() or []
+    color_counts = sorted(paletted.getcolors() or [], reverse=True)
+    if color_counts and palette:
+        idx = color_counts[0][1]
+        r, g, b = palette[idx * 3], palette[idx * 3 + 1], palette[idx * 3 + 2]
+        return (classify_rgb(r, g, b), f'{r},{g},{b}')
+    return ('', '')
+
+
 def send_email_safe(subject, recipients, html_body):
     """安全發送 Email，若未設定則略過"""
     if not app.config.get('MAIL_USERNAME'):
@@ -864,6 +1001,13 @@ def init_db():
     # 顏色標籤欄位遷移
     try:
         conn.execute("ALTER TABLE stones ADD COLUMN color TEXT DEFAULT ''")
+        conn.commit()
+    except Exception:
+        pass
+
+    # 石材視覺特徵欄位（以圖搜圖 v2：HSV 直方圖 + 紋理統計，JSON 字串）
+    try:
+        conn.execute("ALTER TABLE stones ADD COLUMN features TEXT DEFAULT ''")
         conn.commit()
     except Exception:
         pass
@@ -1849,10 +1993,10 @@ def add_stone():
         if main_photo_attempted and not photo:
             flash('⚠ 主照片上傳失敗，請檢查檔案格式（PNG/JPG/HEIC/GIF/WebP）或檔案大小（≤32MB）', 'error')
 
-        # 主照片 AI 分析：自動偵測顏色 + 計算雜湊
-        image_hash, dominant_rgb = '', ''
+        # 主照片 AI 分析：自動偵測顏色 + 計算雜湊 + 視覺特徵（以圖搜圖用）
+        image_hash, dominant_rgb, features = '', '', ''
         if photo:
-            auto_color, image_hash, dominant_rgb = analyze_image(
+            auto_color, image_hash, dominant_rgb, features = analyze_image_full(
                 os.path.join(app.config['UPLOAD_FOLDER'], photo))
             if not color and auto_color:
                 color = auto_color  # 未選顏色則套用自動偵測
@@ -1869,11 +2013,11 @@ def add_stone():
         conn.execute('''
             INSERT INTO stones (stone_type, stone_name, photo, photo2, photo3,
                                 width, height, thickness, quantity, unit, price, vendor, description, color,
-                                image_hash, dominant_rgb, ai_prompt)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                                image_hash, dominant_rgb, features, ai_prompt)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ''', (stone_type, stone_name, photo, photo2, photo3,
               width, height, thickness, quantity, unit, price, vendor, description, color,
-              image_hash, dominant_rgb, ai_prompt))
+              image_hash, dominant_rgb, features, ai_prompt))
         conn.commit()
         conn.close()
 
@@ -1940,8 +2084,9 @@ def edit_stone(id):
         # 主照片若有變更或缺少分析資料，則重新分析
         image_hash = stone['image_hash'] if 'image_hash' in stone.keys() else ''
         dominant_rgb = stone['dominant_rgb'] if 'dominant_rgb' in stone.keys() else ''
-        if photos[0] and (main_photo_changed or not image_hash):
-            auto_color, image_hash, dominant_rgb = analyze_image(
+        features = stone['features'] if 'features' in stone.keys() else ''
+        if photos[0] and (main_photo_changed or not image_hash or not features):
+            auto_color, image_hash, dominant_rgb, features = analyze_image_full(
                 os.path.join(app.config['UPLOAD_FOLDER'], photos[0]))
             if not color and auto_color:
                 color = auto_color
@@ -1961,12 +2106,12 @@ def edit_stone(id):
             SET stone_type=?, stone_name=?, photo=?, photo2=?, photo3=?,
                 width=?, height=?, thickness=?,
                 quantity=?, unit=?, price=?, vendor=?, description=?, color=?,
-                image_hash=?, dominant_rgb=?, ai_prompt=?,
+                image_hash=?, dominant_rgb=?, features=?, ai_prompt=?,
                 updated_at=CURRENT_TIMESTAMP
             WHERE id=?
         ''', (stone_type, stone_name, photos[0], photos[1], photos[2],
               width, height, thickness, quantity, unit, price, vendor, description, color,
-              image_hash, dominant_rgb, ai_prompt, id))
+              image_hash, dominant_rgb, features, ai_prompt, id))
         conn.commit()
         conn.close()
 
@@ -2052,10 +2197,30 @@ def search_by_image():
             flash('無法讀取此圖片，請改用 JPG 或 PNG 格式', 'error')
             return redirect(url_for('search_by_image'))
 
-        ref_b64 = base64.b64encode(ref_bytes).decode()
-        ref_data_url = f'data:image/jpeg;base64,{ref_b64}'
+        # 圈選範圍（0-1 比例）：只比對框內的石材區域，避免背景干擾
+        def _frac(name):
+            try:
+                return max(0.0, min(1.0, float(request.form.get(name, ''))))
+            except (TypeError, ValueError):
+                return None
+        cl, ct, cr, cb = _frac('crop_l'), _frac('crop_t'), _frac('crop_r'), _frac('crop_b')
+        box = None
+        if None not in (cl, ct, cr, cb) and cr - cl > 0.02 and cb - ct > 0.02:
+            box = (cl, ct, cr, cb)
 
-        ref_color, ref_hash, ref_rgb = analyze_image(BytesIO(ref_bytes))
+        # 預覽圖：有圈選就顯示裁切後的區域，讓使用者看到實際比對的範圍
+        if box:
+            W, H = img.size
+            crop_img = img.crop((int(cl * W), int(ct * H), int(cr * W), int(cb * H)))
+            cbuf = BytesIO()
+            crop_img.save(cbuf, 'JPEG', quality=88)
+            preview_bytes = cbuf.getvalue()
+        else:
+            preview_bytes = ref_bytes
+        ref_data_url = 'data:image/jpeg;base64,' + base64.b64encode(preview_bytes).decode()
+
+        ref_color, ref_hash, ref_rgb, ref_feat_json = analyze_image_full(BytesIO(ref_bytes), box=box)
+        ref_feat = features_from_json(ref_feat_json)
 
         if not ref_hash:
             flash('無法分析此圖片，請改用其他圖', 'error')
@@ -2067,17 +2232,23 @@ def search_by_image():
         conn.close()
 
         results = []
+        stale = 0          # 尚未建立新版特徵、只能用舊方式比對的筆數
         for s in stones:
             sh = s['image_hash'] if 'image_hash' in s.keys() else ''
             sr = s['dominant_rgb'] if 'dominant_rgb' in s.keys() else ''
-            if not sh:
+            sf = features_from_json(s['features'] if 'features' in s.keys() else '')
+            if not sh and not sf:
                 continue
-            h_dist = hash_distance(ref_hash, sh)            # 0-64
-            c_dist = rgb_distance(ref_rgb, sr) if sr else 220  # 0-441
-            # 綜合分數：紋理 50% + 色彩 50%（越小越相似）
-            norm = (h_dist / 64.0) * 0.5 + (c_dist / 441.0) * 0.5
-            similarity = round(max(0.0, (1.0 - norm)) * 100, 1)
-            results.append((s, similarity))
+            if ref_feat and sf:
+                # 主要：色彩直方圖 + 紋理特徵（對角度/光線穩健）
+                # 輔助：pHash 佔少量權重，讓「完全同一張圖」仍能拿到滿分
+                d = feature_distance(ref_feat, sf) * 0.85 + (hash_distance(ref_hash, sh) / 64.0) * 0.15
+            else:
+                # 後備：該石材尚未重新索引，沿用舊的 pHash + 主色比對
+                stale += 1
+                d = (hash_distance(ref_hash, sh) / 64.0) * 0.5 + \
+                    ((rgb_distance(ref_rgb, sr) if sr else 220) / 441.0) * 0.5
+            results.append((s, round(max(0.0, 1.0 - d) * 100, 1)))
 
         results.sort(key=lambda x: x[1], reverse=True)
         results = results[:12]
@@ -2085,6 +2256,8 @@ def search_by_image():
         return render_template('image_search.html',
                                results=results,
                                reference_url=ref_data_url,
+                               cropped=bool(box),
+                               stale_count=stale,
                                detected_color=COLOR_MAP.get(ref_color),
                                color_map=COLOR_MAP,
                                not_indexed_count=sum(1 for s in stones
@@ -2105,18 +2278,18 @@ def reindex_images():
         path = os.path.join(app.config['UPLOAD_FOLDER'], s['photo'])
         if not os.path.exists(path):
             continue
-        auto_color, phash, rgb = analyze_image(path)
+        auto_color, phash, rgb, feats = analyze_image_full(path)
         if not phash:
             continue
         new_color = s['color'] if s['color'] else auto_color
         if not s['color'] and auto_color:
             color_filled += 1
-        conn.execute('UPDATE stones SET image_hash=?, dominant_rgb=?, color=? WHERE id=?',
-                     (phash, rgb, new_color, s['id']))
+        conn.execute('UPDATE stones SET image_hash=?, dominant_rgb=?, features=?, color=? WHERE id=?',
+                     (phash, rgb, feats, new_color, s['id']))
         updated += 1
     conn.commit()
     conn.close()
-    flash(f'✅ 已重新索引 {updated} 筆石材，自動補上 {color_filled} 筆顏色標籤', 'success')
+    flash(f'✅ 已重新索引 {updated} 筆石材（含新版視覺特徵），自動補上 {color_filled} 筆顏色標籤', 'success')
     return redirect(url_for('admin_dashboard'))
 
 
