@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="zh-TW">
+<html lang="{{ html_lang }}">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>詢問管理 — ReStone</title>
+  <title>{{ t('詢問管理 — ReStone') }}</title>
   <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -74,33 +74,34 @@
   <div class="sidebar-logo">
     <span class="sidebar-logo-icon">{% with size=34, sfx='sb' %}{% include '_logo.html' %}{% endwith %}</span>
     <div>
-      <div class="sidebar-logo-text">ReStone 循環石材服務平台</div>
-      <div class="sidebar-logo-sub">管理後台</div>
+      <div class="sidebar-logo-text">{{ t('ReStone 循環石材服務平台') }}</div>
+      <div class="sidebar-logo-sub">{{ t('管理後台') }}</div>
     </div>
   </div>
   <div class="sidebar-nav">
-    <div class="sidebar-section">管理</div>
-    <a href="/admin" class="nav-item"><span class="icon">▦</span> 石材管理</a>
-    <a href="/admin/add" class="nav-item"><span class="icon">＋</span> 新增石材</a>
-    <a href="/admin/inquiries" class="nav-item active"><span class="icon">✉</span> 詢問管理</a>
-    <a href="/admin/customers" class="nav-item">會員管理</a>
-    <a href="/admin/news" class="nav-item"><span class="icon">▣</span> 最新消息</a>
-    <div class="sidebar-section">系統</div>
-    <a href="/admin/change-password" class="nav-item">修改密碼</a>
-    <a href="/" class="nav-item" target="_blank"><span class="icon">↗</span> 前台預覽</a>
+    <div class="sidebar-section">{{ t('管理') }}</div>
+    <a href="/admin" class="nav-item"><span class="icon">▦</span> {{ t('石材管理') }}</a>
+    <a href="/admin/add" class="nav-item"><span class="icon">＋</span> {{ t('新增石材') }}</a>
+    <a href="/admin/inquiries" class="nav-item active"><span class="icon">✉</span> {{ t('詢問管理') }}</a>
+    <a href="/admin/customers" class="nav-item">{{ t('會員管理') }}</a>
+    <a href="/admin/news" class="nav-item"><span class="icon">▣</span> {{ t('最新消息') }}</a>
+    <div class="sidebar-section">{{ t('系統') }}</div>
+    <a href="/admin/change-password" class="nav-item">{{ t('修改密碼') }}</a>
+    <a href="/" class="nav-item" target="_blank"><span class="icon">↗</span> {{ t('前台預覽') }}</a>
   </div>
   <div class="sidebar-footer">
     <div class="admin-name">{{ session.admin_name }}</div>
-    <a href="/admin/logout">登出 →</a>
+    <a href="/admin/logout">{{ t('登出 →') }}</a>
   </div>
 </nav>
 
 <div class="main-wrap">
   <div class="topbar">
-    <div class="topbar-title">詢問管理</div>
+    <div class="topbar-title">{{ t('詢問管理') }}</div>
     <div>
-      <a href="/admin/export/inquiries" style="display:inline-flex;align-items:center;gap:6px;padding:0.5rem 1rem;border-radius:8px;font-size:0.85rem;font-weight:600;background:#F8FAFC;color:#64748B;border:1px solid #E2E8F0;text-decoration:none;transition:all 0.15s" onmouseover="this.style.color='#0F172A'" onmouseout="this.style.color='#64748B'">↓ 匯出 Excel</a>
+      <a href="/admin/export/inquiries" style="display:inline-flex;align-items:center;gap:6px;padding:0.5rem 1rem;border-radius:8px;font-size:0.85rem;font-weight:600;background:#F8FAFC;color:#64748B;border:1px solid #E2E8F0;text-decoration:none;transition:all 0.15s" onmouseover="this.style.color='#0F172A'" onmouseout="this.style.color='#64748B'">{{ t('↓ 匯出 Excel') }}</a>
     </div>
+      {% include '_langswitch.html' %}
   </div>
   <div class="content">
     {% with messages = get_flashed_messages(with_categories=true) %}
@@ -111,18 +112,18 @@
 
     <div class="table-card">
       <div class="table-header">
-        <h3>所有詢問記錄</h3>
+        <h3>{{ t('所有詢問記錄') }}</h3>
         <span>共 {{ inquiries|length }} 筆</span>
       </div>
       <table>
         <thead>
           <tr>
-            <th>石材</th>
-            <th>聯絡人</th>
-            <th>數量</th>
-            <th>訊息</th>
-            <th>時間</th>
-            <th>狀態</th>
+            <th>{{ t('石材') }}</th>
+            <th>{{ t('聯絡人') }}</th>
+            <th>{{ t('數量') }}</th>
+            <th>{{ t('訊息') }}</th>
+            <th>{{ t('時間') }}</th>
+            <th>{{ t('狀態') }}</th>
           </tr>
         </thead>
         <tbody>
@@ -143,17 +144,17 @@
                 <td>
                   <form class="status-form" method="post" action="/admin/inquiry/{{ inq.id }}/status">
                     <select name="status">
-                      <option value="pending"  {% if inq.status == 'pending'  %}selected{% endif %}>待回覆</option>
-                      <option value="replied"  {% if inq.status == 'replied'  %}selected{% endif %}>已回覆</option>
-                      <option value="closed"   {% if inq.status == 'closed'   %}selected{% endif %}>已結案</option>
+                      <option value="pending"  {% if inq.status == 'pending'  %}selected{% endif %}>{{ t('待回覆') }}</option>
+                      <option value="replied"  {% if inq.status == 'replied'  %}selected{% endif %}>{{ t('已回覆') }}</option>
+                      <option value="closed"   {% if inq.status == 'closed'   %}selected{% endif %}>{{ t('已結案') }}</option>
                     </select>
-                    <button type="submit">更新</button>
+                    <button type="submit">{{ t('更新') }}</button>
                   </form>
                 </td>
               </tr>
             {% endfor %}
           {% else %}
-            <tr class="empty-row"><td colspan="6">目前尚無詢問記錄</td></tr>
+            <tr class="empty-row"><td colspan="6">{{ t('目前尚無詢問記錄') }}</td></tr>
           {% endif %}
         </tbody>
       </table>

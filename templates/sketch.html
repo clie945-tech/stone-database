@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="zh-TW">
+<html lang="{{ html_lang }}">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>草圖渲染 — ReStone</title>
+  <title>{{ t('草圖渲染 — ReStone') }}</title>
   <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
@@ -69,12 +69,13 @@
   <div class="header-inner">
     <a href="/" class="logo">
       <span class="logo-icon">{% with size=32, sfx='skhdr' %}{% include '_logo.html' %}{% endwith %}</span>
-      <div class="logo-text">ReStone 循環石材服務平台</div>
+      <div class="logo-text">{{ t('ReStone 循環石材服務平台') }}</div>
     </a>
     <div style="display:flex;gap:.5rem">
-      <a href="/" class="hbtn">← 返回首頁</a>
-      <a href="/design-tool" class="hbtn">材質模擬</a>
-      <a href="/my-designs" class="hbtn">我的設計</a>
+      {% include '_langswitch.html' %}
+      <a href="/" class="hbtn">{{ t('← 返回首頁') }}</a>
+      <a href="/design-tool" class="hbtn">{{ t('材質模擬') }}</a>
+      <a href="/my-designs" class="hbtn">{{ t('我的設計') }}</a>
     </div>
   </div>
 </header>
@@ -82,36 +83,36 @@
 <div class="container">
   <div class="page-hero">
     <span class="ai-tag">AI SKETCH RENDER</span>
-    <h1>草圖渲染：把概念變成循環石材產品</h1>
-    <p>上傳設計草圖 → 選一塊循環石材 → 補一句描述 → AI 生成寫實產品渲染圖</p>
+    <h1>{{ t('草圖渲染：把概念變成循環石材產品') }}</h1>
+    <p>{{ t('上傳設計草圖 → 選一塊循環石材 → 補一句描述 → AI 生成寫實產品渲染圖') }}</p>
   </div>
 
   {% if not gemini_enabled %}
-    <div class="warn">⚠ 此功能需要 Gemini（尚未設定 GEMINI_API_KEY），目前無法使用。</div>
+    <div class="warn">{{ t('⚠ 此功能需要 Gemini（尚未設定 GEMINI_API_KEY），目前無法使用。') }}</div>
   {% endif %}
 
   <div class="layout">
     <div class="panel">
-      <div class="panel-title"><span class="step-num">1</span> 上傳設計草圖</div>
+      <div class="panel-title"><span class="step-num">1</span> {{ t('上傳設計草圖') }}</div>
       <div class="upload-zone" id="upload-zone">
       <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4"/><path d="m7.5 8.5 4.5-4.5 4.5 4.5"/><path d="M4 16v2.5A1.5 1.5 0 0 0 5.5 20h13a1.5 1.5 0 0 0 1.5-1.5V16"/></svg></div>
-      <div>點擊或拖曳上傳草圖<br><span style="font-size:.75rem">手繪線稿、概念圖皆可（JPG / PNG / HEIC）</span></div>
+      <div>{{ t('點擊或拖曳上傳草圖') }}<br><span style="font-size:.75rem">{{ t('手繪線稿、概念圖皆可（JPG / PNG / HEIC）') }}</span></div>
       </div>
       <input type="file" id="sketch-file" accept="image/*,.heic,.heif" style="display:none">
       <div class="preview-wrap" id="preview-wrap">
-        <img id="preview-img" alt="草圖預覽">
-        <button class="reupload" id="reupload">↻ 重新上傳</button>
+        <img id="preview-img" alt="{{ t('草圖預覽') }}">
+        <button class="reupload" id="reupload">{{ t('↻ 重新上傳') }}</button>
       </div>
 
       <div class="field">
-        <label>產品類型 / 補充描述（選填，但建議填）</label>
-        <input type="text" id="hint" maxlength="120" placeholder="例：方正極簡邊桌、圓形吊燈底座、洗手檯面…">
-        <div class="hint">描述越具體，AI 越能抓對造型與風格。</div>
+        <label>{{ t('產品類型 / 補充描述（選填，但建議填）') }}</label>
+        <input type="text" id="hint" maxlength="120" placeholder="{{ t('例：方正極簡邊桌、圓形吊燈底座、洗手檯面…') }}">
+        <div class="hint">{{ t('描述越具體，AI 越能抓對造型與風格。') }}</div>
       </div>
     </div>
 
     <div class="panel">
-      <div class="panel-title"><span class="step-num">2</span> 選擇循環石材</div>
+      <div class="panel-title"><span class="step-num">2</span> {{ t('選擇循環石材') }}</div>
       <div class="stone-grid" id="stone-grid">
         {% for s in stones %}
         <div class="stone-card" data-id="{{ s.id }}">
@@ -120,18 +121,18 @@
         </div>
         {% endfor %}
       </div>
-      <button class="btn-go" id="btn-go" disabled>設計生成</button>
+      <button class="btn-go" id="btn-go" disabled>{{ t('設計生成') }}</button>
       <div class="error-box" id="error-box"></div>
     </div>
   </div>
 
   <div class="panel result-panel" id="result-panel">
-    <div class="panel-title"><span class="step-num">✓</span> 渲染結果</div>
+    <div class="panel-title"><span class="step-num">✓</span> {{ t('渲染結果') }}</div>
     <div id="result-content"></div>
   </div>
 </div>
 
-<footer>ReStone 循環石材服務平台 — 支持循環經濟，讓石材物盡其用</footer>
+<footer>{{ t('ReStone 循環石材服務平台 — 支持循環經濟，讓石材物盡其用') }}</footer>
 
 <script>
 const uploadZone = document.getElementById('upload-zone');

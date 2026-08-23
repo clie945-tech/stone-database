@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="zh-TW">
+<html lang="{{ html_lang }}">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ReStone 循環石材服務平台</title>
+  <title>{{ t('ReStone 循環石材服務平台') }}</title>
   <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -359,18 +359,19 @@
       <span class="logo-icon">{% with size=48, sfx='hdr' %}{% include '_logo.html' %}{% endwith %}</span>
       <div>
         <div class="logo-text">ReStone</div>
-        <div class="logo-sub">循環石材服務平台</div>
+        <div class="logo-sub">{{ t('循環石材服務平台') }}</div>
       </div>
     </a>
     <div class="header-right">
+      {% include '_langswitch.html' %}
       {% if session.customer_id %}
         <a href="/my-account" class="header-admin">{{ session.customer_name }} 的帳號</a>
-        <a href="/customer/logout" class="header-admin">登出</a>
+        <a href="/customer/logout" class="header-admin">{{ t('登出') }}</a>
       {% else %}
-        <a href="/customer/login" class="header-admin">登入</a>
-        <a href="/register" class="header-admin" style="background:var(--blue);color:white;border-color:var(--blue)">免費註冊</a>
+        <a href="/customer/login" class="header-admin">{{ t('登入') }}</a>
+        <a href="/register" class="header-admin" style="background:var(--blue);color:white;border-color:var(--blue)">{{ t('免費註冊') }}</a>
       {% endif %}
-      <a href="/admin/login" class="header-admin" style="border-color:#CBD5E1;color:var(--text-muted)">系統管理</a>
+      <a href="/admin/login" class="header-admin" style="border-color:#CBD5E1;color:var(--text-muted)">{{ t('系統管理') }}</a>
     </div>
   </div>
 </header>
@@ -380,23 +381,23 @@
   <div class="hero-inner">
     <div class="hero-badge">
       <div class="badge-dot"></div>
-      即時庫存系統 · LIVE INVENTORY
+      {{ t('即時庫存系統 · LIVE INVENTORY') }}
     </div>
-    <h1><span class="accent">ReStone</span><br>循環石材服務平台</h1>
-    <p class="hero-desc">探索可再利用的優質石材，連結設計師與供應商，<br>共同支持循環經濟與永續設計</p>
+    <h1><span class="accent">ReStone</span><br>{{ t('循環石材服務平台') }}</h1>
+    <p class="hero-desc">{{ t('探索可再利用的優質石材，連結設計師與供應商，') }}<br>{{ t('共同支持循環經濟與永續設計') }}</p>
     <div class="hero-stats">
       <div class="hero-stat">
         <span class="stat-num">{{ total }}</span>
-        <span class="stat-lbl">石材項目</span>
+        <span class="stat-lbl">{{ t('石材項目') }}</span>
       </div>
       <div class="hero-stat">
         <span class="stat-num">{{ types|length }}</span>
-        <span class="stat-lbl">石材種類</span>
+        <span class="stat-lbl">{{ t('石材種類') }}</span>
       </div>
       {% if total_carbon_kg and total_carbon_kg > 0 %}
       <div class="hero-stat" style="border-left:1px solid var(--border);padding-left:1.5rem">
         <span class="stat-num" style="color:#10B981">{{ fmt_carbon(total_carbon_kg) }}</span>
-        <span class="stat-lbl">累積減碳 CO₂e</span>
+        <span class="stat-lbl">{{ t('累積減碳 CO₂e') }}</span>
       </div>
       {% endif %}
     </div>
@@ -408,12 +409,12 @@
 <section class="news-section">
   <div class="news-head">
     <span class="news-kicker">News</span>
-    <h2 class="news-title">最新消息</h2>
+    <h2 class="news-title">{{ t('最新消息') }}</h2>
   </div>
   <div class="news-list">
     {% for a in announcements %}
     <article class="news-item{% if a.pinned %} pinned{% endif %}">
-      {% if a.pinned %}<span class="news-pin">置頂</span>{% endif %}
+      {% if a.pinned %}<span class="news-pin">{{ t('置頂') }}</span>{% endif %}
       <div class="news-date">{{ a.created_at[:10] }}</div>
       <h3 class="news-item-title">{{ a.title }}</h3>
       {% if a.content %}<div class="news-content">{{ a.content }}</div>{% endif %}
@@ -430,19 +431,19 @@
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
         <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
       </svg>
-      <input type="text" name="search" placeholder="搜尋石材種類、廠商名稱..." value="{{ search }}" />
+      <input type="text" name="search" placeholder="{{ t('搜尋石材種類、廠商名稱...') }}" value="{{ search }}" />
     </div>
     <select class="filter-sel" name="type">
-      <option value="">全部種類</option>
+      <option value="">{{ t('全部種類') }}</option>
       {% for t in types %}
         <option value="{{ t.stone_type }}" {% if t.stone_type == selected_type %}selected{% endif %}>{{ t.stone_type }}</option>
       {% endfor %}
     </select>
-    <button type="submit" class="btn-search">搜尋</button>
-    <a href="/search/by-image" class="btn-ai-search" title="上傳圖片找相似石材">以圖搜圖<span class="ai-tag">AI</span></a>
-    <a href="/studio" class="btn-ai-search" title="AI 設計工具：材質模擬、草圖渲染" style="background:linear-gradient(135deg,#2563EB,#7C3AED);color:white;border-color:transparent">設計工具<span class="ai-tag" style="background:rgba(255,255,255,0.25);color:white">AI</span></a>
+    <button type="submit" class="btn-search">{{ t('搜尋') }}</button>
+    <a href="/search/by-image" class="btn-ai-search" title="{{ t('上傳圖片找相似石材') }}">{{ t('以圖搜圖') }}<span class="ai-tag">AI</span></a>
+    <a href="/studio" class="btn-ai-search" title="{{ t('AI 設計工具：材質模擬、草圖渲染') }}" style="background:linear-gradient(135deg,#2563EB,#7C3AED);color:white;border-color:transparent">{{ t('設計工具') }}<span class="ai-tag" style="background:rgba(255,255,255,0.25);color:white">AI</span></a>
     {% if search or selected_type %}
-      <a href="/" class="btn-clear">× 清除篩選</a>
+      <a href="/" class="btn-clear">{{ t('× 清除篩選') }}</a>
     {% endif %}
   </form>
 </div>
@@ -451,9 +452,9 @@
 {% if colors %}
 <div class="color-filter">
   <div class="color-filter-inner">
-    <span class="color-filter-label">顏色：</span>
+    <span class="color-filter-label">{{ t('顏色：') }}</span>
     <a href="/?{% if search %}search={{ search }}&{% endif %}{% if selected_type %}type={{ selected_type }}&{% endif %}"
-       class="cpill cpill-all {% if not selected_color %}active{% endif %}">全部</a>
+       class="cpill cpill-all {% if not selected_color %}active{% endif %}">{{ t('全部') }}</a>
     {% for code, label, bg, fg in colors %}
       <a href="/?{% if search %}search={{ search }}&{% endif %}{% if selected_type %}type={{ selected_type }}&{% endif %}color={{ code }}"
          class="cpill {% if selected_color == code %}active{% endif %}"
@@ -485,7 +486,7 @@
             {% else %}
               <div class="card-img-placeholder">
                 <div class="ph-icon">◈</div>
-                <span>暫無照片</span>
+                <span>{{ t('暫無照片') }}</span>
               </div>
             {% endif %}
             <div class="card-type-badge">{{ s.stone_type }}</div>
@@ -522,7 +523,7 @@
                 {% if s.price %}
                   NT${{ "{:,.0f}".format(s.price) }}<small> / {{ s.unit or '片' }}</small>
                 {% else %}
-                  <span style="font-size:0.8rem;color:var(--text-muted);font-weight:500">價格洽詢</span>
+                  <span style="font-size:0.8rem;color:var(--text-muted);font-weight:500">{{ t('價格洽詢') }}</span>
                 {% endif %}
               </div>
               <div class="card-stock">
@@ -545,8 +546,8 @@
 </main>
 
 <footer>
-  <div class="footer-logo">ReStone 循環石材服務平台</div>
-  支持循環經濟 · 讓石材物盡其用
+  <div class="footer-logo">{{ t('ReStone 循環石材服務平台') }}</div>
+  {{ t('支持循環經濟 · 讓石材物盡其用') }}
 </footer>
 
 </body>

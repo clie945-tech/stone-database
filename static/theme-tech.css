@@ -297,3 +297,10 @@ input, select, textarea {
 /* ── 導覽/CTA 按鈕文字統一接近白色（玻璃底上可讀）── */
 .header-admin, .btn-ai-search { color: #EDF3FF !important; }
 .header-admin:hover, .btn-ai-search:hover { color: #FFFFFF !important; }
+
+/* ── 語言切換器（深色主題）── */
+.langsw { background: rgba(255,255,255,.06) !important; border-color: rgba(255,255,255,.14) !important;
+          backdrop-filter: blur(14px) saturate(150%); -webkit-backdrop-filter: blur(14px) saturate(150%); }
+.langsw-btn { color: var(--text-muted) !important; }
+.langsw-btn:hover { color: #07131D !important; background: rgba(34,211,238,.75) !important; }
+.langsw-btn.on { color: #07131D !important; background: linear-gradient(135deg,#22D3EE,#8B5CF6) !important; }

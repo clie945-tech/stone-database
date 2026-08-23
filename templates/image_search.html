@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="zh-TW">
+<html lang="{{ html_lang }}">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>以圖搜圖 — ReStone</title>
+  <title>{{ t('以圖搜圖 — ReStone') }}</title>
   <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -171,9 +171,10 @@
   <div class="header-inner">
     <a href="/" class="logo">
       <span class="logo-icon">{% with size=32, sfx='hdr' %}{% include '_logo.html' %}{% endwith %}</span>
-      <div class="logo-text">ReStone 循環石材服務平台</div>
+      <div class="logo-text">{{ t('ReStone 循環石材服務平台') }}</div>
     </a>
-    <a href="/" class="hbtn">← 返回首頁</a>
+    {% include '_langswitch.html' %}
+    <a href="/" class="hbtn">{{ t('← 返回首頁') }}</a>
   </div>
 </header>
 
@@ -181,9 +182,9 @@
 
   <div class="page-hero">
     <div class="page-hero-inner">
-      <div class="ai-tag">AI 視覺搜尋</div>
-      <h1>以圖搜圖</h1>
-      <p>上傳一張參考圖片，AI 將為你在資料庫中找出紋理與色彩最相似的石材</p>
+      <div class="ai-tag">{{ t('AI 視覺搜尋') }}</div>
+      <h1>{{ t('以圖搜圖') }}</h1>
+      <p>{{ t('上傳一張參考圖片，AI 將為你在資料庫中找出紋理與色彩最相似的石材') }}</p>
     </div>
   </div>
 
@@ -200,18 +201,18 @@
         <input type="file" name="reference" id="refFile" accept="image/*,.heic,.heif" required onchange="previewRef(this)" />
         <div id="placeholderUI">
           <div class="upload-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg></div>
-          <div class="upload-title">點擊或拖曳上傳參考圖片</div>
-          <div class="upload-hint">支援 JPG／PNG／HEIC（iPhone）／GIF／WEBP，最大 32MB</div>
+          <div class="upload-title">{{ t('點擊或拖曳上傳參考圖片') }}</div>
+          <div class="upload-hint">{{ t('支援 JPG／PNG／HEIC（iPhone）／GIF／WEBP，最大 32MB') }}</div>
         </div>
         <div id="previewUI" style="display:none">
           <div class="crop-wrap" id="cropWrap">
-            <img id="previewImg" src="" alt="預覽" />
+            <img id="previewImg" src="" alt="{{ t('預覽') }}" />
             <div class="crop-layer" id="cropLayer"><div class="crop-box" id="cropBox"></div></div>
           </div>
           <div class="crop-tools">
-            <span class="crop-tip" id="cropTip">在圖片上<b>拖曳框出石材區域</b>，只比對框內（避免背景干擾）</span>
-            <button type="button" class="mini-btn" id="clearCrop" style="display:none">清除圈選</button>
-            <button type="button" class="mini-btn" id="changeImg">更換圖片</button>
+            <span class="crop-tip" id="cropTip">{{ t('在圖片上') }}<b>{{ t('拖曳框出石材區域') }}</b>{{ t('，只比對框內（避免背景干擾）') }}</span>
+            <button type="button" class="mini-btn" id="clearCrop" style="display:none">{{ t('清除圈選') }}</button>
+            <button type="button" class="mini-btn" id="changeImg">{{ t('更換圖片') }}</button>
           </div>
         </div>
       </div>
@@ -220,7 +221,7 @@
       <input type="hidden" name="crop_r" id="cropR">
       <input type="hidden" name="crop_b" id="cropB">
       <div style="text-align:center">
-        <button type="submit" class="btn-search" id="searchBtn" disabled>開始搜尋相似石材</button>
+        <button type="submit" class="btn-search" id="searchBtn" disabled>{{ t('開始搜尋相似石材') }}</button>
       </div>
     </form>
   </div>
@@ -228,36 +229,36 @@
   {% if results is not none %}
     <!-- 參考資訊卡 -->
     <div class="reference-card">
-      <img src="{{ reference_url }}" alt="參考圖" />
+      <img src="{{ reference_url }}" alt="{{ t('參考圖') }}" />
       <div class="reference-info">
         <div class="reference-label">YOUR REFERENCE</div>
         <div class="reference-title">{% if cropped %}圈選範圍分析結果{% else %}參考圖片分析結果{% endif %}</div>
-        {% if cropped %}<div style="font-size:0.78rem;color:var(--blue);margin-bottom:0.4rem">✓ 已排除背景，只比對你圈選的區域</div>{% endif %}
+        {% if cropped %}<div style="font-size:0.78rem;color:var(--blue);margin-bottom:0.4rem">{{ t('✓ 已排除背景，只比對你圈選的區域') }}</div>{% endif %}
         {% if detected_color %}
-          <span>偵測到主要色系：</span>
+          <span>{{ t('偵測到主要色系：') }}</span>
           <span class="detected-color" style="background:{{ detected_color[2] }};color:{{ detected_color[3] }}">{{ detected_color[1] }}</span>
         {% else %}
-          <span style="font-size:0.85rem;color:var(--text-muted)">無法判定主色（可能為多彩石材）</span>
+          <span style="font-size:0.85rem;color:var(--text-muted)">{{ t('無法判定主色（可能為多彩石材）') }}</span>
         {% endif %}
       </div>
     </div>
 
     {% if stale_count and stale_count > 0 %}
       <div class="notice">
-        ⚠有 <strong>{{ stale_count }}</strong> 筆石材仍使用舊版比對方式（準確率較低）。
-        管理員可至後台點擊「重新索引照片」升級為新版視覺特徵，搜尋會更準。
+        {{ t('⚠有') }} <strong>{{ stale_count }}</strong> {{ t('筆石材仍使用舊版比對方式（準確率較低）。
+        管理員可至後台點擊「重新索引照片」升級為新版視覺特徵，搜尋會更準。') }}
       </div>
     {% endif %}
 
     {% if not_indexed_count and not_indexed_count > 0 %}
       <div class="notice">
-        ⚠有 <strong>{{ not_indexed_count }}</strong> 筆石材尚未建立 AI 索引（不會出現在搜尋結果中）。
-        管理員可至後台點擊「重新索引照片」一次性處理所有舊資料。
+        {{ t('⚠有') }} <strong>{{ not_indexed_count }}</strong> {{ t('筆石材尚未建立 AI 索引（不會出現在搜尋結果中）。
+        管理員可至後台點擊「重新索引照片」一次性處理所有舊資料。') }}
       </div>
     {% endif %}
 
     <div class="results-header">
-      <div class="results-title">AI 推薦結果</div>
+      <div class="results-title">{{ t('AI 推薦結果') }}</div>
       <div class="results-count">找到 {{ results|length }} 筆相似石材（依相似度排序）</div>
     </div>
 
@@ -290,15 +291,15 @@
       </div>
     {% else %}
       <div class="empty">
-      <h3 style="font-size:1rem;font-weight:700;margin-bottom:0.5rem">沒有找到符合的石材</h3>
-        <p style="font-size:0.85rem">資料庫中可能尚未為現有石材建立 AI 索引，請通知管理員執行索引</p>
+      <h3 style="font-size:1rem;font-weight:700;margin-bottom:0.5rem">{{ t('沒有找到符合的石材') }}</h3>
+        <p style="font-size:0.85rem">{{ t('資料庫中可能尚未為現有石材建立 AI 索引，請通知管理員執行索引') }}</p>
       </div>
     {% endif %}
   {% endif %}
 
 </div>
 
-<footer>ReStone 循環石材服務平台 ·Powered by AI Vision Search</footer>
+<footer>{{ t('ReStone 循環石材服務平台 ·Powered by AI Vision Search') }}</footer>
 
 <script>
   // 偵測並轉檔 HEIC（iPhone 預設格式，Chrome/Firefox 無法直接預覽）

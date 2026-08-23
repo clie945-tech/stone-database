@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="zh-TW">
+<html lang="{{ html_lang }}">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>會員登入 — ReStone</title>
+  <title>{{ t('會員登入 — ReStone') }}</title>
   <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -54,13 +54,14 @@
   <script src="/static/motion.js?v=1" defer></script>
 </head>
 <body>
+<div style="position:fixed;top:1rem;right:1rem;z-index:999">{% include '_langswitch.html' %}</div>
 <div class="wrap">
   <div class="logo">
-    <a href="/"><span class="logo-icon">{% with size=32, sfx='hdr' %}{% include '_logo.html' %}{% endwith %}</span><div class="logo-text">ReStone 循環石材服務平台</div></a>
+    <a href="/"><span class="logo-icon">{% with size=32, sfx='hdr' %}{% include '_logo.html' %}{% endwith %}</span><div class="logo-text">{{ t('ReStone 循環石材服務平台') }}</div></a>
   </div>
   <div class="card">
-    <div class="card-title">會員登入</div>
-    <div class="card-sub">登入以查看您的詢問紀錄</div>
+    <div class="card-title">{{ t('會員登入') }}</div>
+    <div class="card-sub">{{ t('登入以查看您的詢問紀錄') }}</div>
 
     {% with messages = get_flashed_messages(with_categories=true) %}
       {% for category, message in messages %}
@@ -74,16 +75,16 @@
         <input type="email" name="email" placeholder="your@email.com" required autofocus />
       </div>
       <div class="form-group">
-        <label>密碼</label>
-        <input type="password" name="password" placeholder="輸入密碼" required />
+        <label>{{ t('密碼') }}</label>
+        <input type="password" name="password" placeholder="{{ t('輸入密碼') }}" required />
       </div>
-      <button type="submit" class="btn">登入</button>
+      <button type="submit" class="btn">{{ t('登入') }}</button>
     </form>
 
-    <div class="divider"><span>或</span></div>
+    <div class="divider"><span>{{ t('或') }}</span></div>
     <div class="links">
-      <a href="/register" class="link">還沒有帳號？立即註冊 →</a>
-      <a href="/" class="link">← 返回首頁</a>
+      <a href="/register" class="link">{{ t('還沒有帳號？立即註冊 →') }}</a>
+      <a href="/" class="link">{{ t('← 返回首頁') }}</a>
     </div>
   </div>
 </div>

@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="zh-TW">
+<html lang="{{ html_lang }}">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>會員管理 — ReStone</title>
+  <title>{{ t('會員管理 — ReStone') }}</title>
   <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -66,26 +66,27 @@
 <nav class="sidebar">
   <div class="sidebar-logo">
     <span class="sidebar-logo-icon">{% with size=34, sfx='sb' %}{% include '_logo.html' %}{% endwith %}</span>
-    <div><div class="sidebar-logo-text">ReStone 循環石材服務平台</div><div class="sidebar-logo-sub">管理後台</div></div>
+    <div><div class="sidebar-logo-text">{{ t('ReStone 循環石材服務平台') }}</div><div class="sidebar-logo-sub">{{ t('管理後台') }}</div></div>
   </div>
   <div class="sidebar-nav">
-    <div class="sidebar-section">管理</div>
-    <a href="/admin" class="nav-item"><span class="icon">▦</span> 石材管理</a>
-    <a href="/admin/add" class="nav-item"><span class="icon">＋</span> 新增石材</a>
-    <a href="/admin/inquiries" class="nav-item"><span class="icon">✉</span> 詢問管理</a>
-    <a href="/admin/customers" class="nav-item active">會員管理</a>
-    <a href="/admin/news" class="nav-item"><span class="icon">▣</span> 最新消息</a>
-    <div class="sidebar-section">系統</div>
-    <a href="/admin/change-password" class="nav-item">修改密碼</a>
-    <a href="/" class="nav-item" target="_blank"><span class="icon">↗</span> 前台預覽</a>
+    <div class="sidebar-section">{{ t('管理') }}</div>
+    <a href="/admin" class="nav-item"><span class="icon">▦</span> {{ t('石材管理') }}</a>
+    <a href="/admin/add" class="nav-item"><span class="icon">＋</span> {{ t('新增石材') }}</a>
+    <a href="/admin/inquiries" class="nav-item"><span class="icon">✉</span> {{ t('詢問管理') }}</a>
+    <a href="/admin/customers" class="nav-item active">{{ t('會員管理') }}</a>
+    <a href="/admin/news" class="nav-item"><span class="icon">▣</span> {{ t('最新消息') }}</a>
+    <div class="sidebar-section">{{ t('系統') }}</div>
+    <a href="/admin/change-password" class="nav-item">{{ t('修改密碼') }}</a>
+    <a href="/" class="nav-item" target="_blank"><span class="icon">↗</span> {{ t('前台預覽') }}</a>
   </div>
   <div class="sidebar-footer">
     <div class="admin-name">{{ session.admin_name }}</div>
-    <a href="/admin/logout">登出 →</a>
+    <a href="/admin/logout">{{ t('登出 →') }}</a>
   </div>
 </nav>
 <div class="main-wrap">
-  <div class="topbar"><div class="topbar-title">會員管理</div></div>
+  <div class="topbar"><div class="topbar-title">{{ t('會員管理') }}</div>    {% include '_langswitch.html' %}
+  </div>
   <div class="content">
     {% with messages = get_flashed_messages(with_categories=true) %}
       {% for category, msg in messages %}<div class="flash flash-{{ category }}">{{ msg }}</div>{% endfor %}
@@ -93,12 +94,12 @@
 
     <div class="table-card">
       <div class="table-header">
-        <h3>所有會員</h3>
+        <h3>{{ t('所有會員') }}</h3>
         <span>共 {{ customers|length }} 位</span>
       </div>
       <table>
         <thead>
-          <tr><th>姓名</th><th>Email</th><th>電話</th><th>身分</th><th>今日生圖</th><th>註冊時間</th><th>操作</th></tr>
+          <tr><th>{{ t('姓名') }}</th><th>Email</th><th>{{ t('電話') }}</th><th>{{ t('身分') }}</th><th>{{ t('今日生圖') }}</th><th>{{ t('註冊時間') }}</th><th>{{ t('操作') }}</th></tr>
         </thead>
         <tbody>
           {% if customers %}
@@ -109,24 +110,24 @@
                 <td>{{ c.phone or '—' }}</td>
                 <td>
                   {% if c.is_vip %}<span class="tier tier-vip">VIP</span>
-                  {% else %}<span class="tier tier-normal">一般</span>{% endif %}
+                  {% else %}<span class="tier tier-normal">{{ t('一般') }}</span>{% endif %}
                 </td>
                 <td>
-                  {% if c.is_vip %}<span class="usage unlimited">無限制</span>
-                  {% elif ai_daily_limit <= 0 %}<span class="usage unlimited">無限制（全站）</span>
+                  {% if c.is_vip %}<span class="usage unlimited">{{ t('無限制') }}</span>
+                  {% elif ai_daily_limit <= 0 %}<span class="usage unlimited">{{ t('無限制（全站）') }}</span>
                   {% else %}<span class="usage">{{ usage_today.get(c.id, 0) }} / {{ ai_daily_limit }}</span>{% endif %}
                 </td>
                 <td style="color:var(--text-muted);font-size:0.8rem">{{ c.created_at[:10] }}</td>
                 <td>
                   <form method="POST" action="/admin/customers/{{ c.id }}/vip" style="display:inline">
-                    {% if c.is_vip %}<button type="submit" class="btn-tier btn-demote">改回一般</button>
-                    {% else %}<button type="submit" class="btn-tier btn-promote">設為 VIP</button>{% endif %}
+                    {% if c.is_vip %}<button type="submit" class="btn-tier btn-demote">{{ t('改回一般') }}</button>
+                    {% else %}<button type="submit" class="btn-tier btn-promote">{{ t('設為 VIP') }}</button>{% endif %}
                   </form>
                 </td>
               </tr>
             {% endfor %}
           {% else %}
-            <tr class="empty-row"><td colspan="7">尚無會員資料</td></tr>
+            <tr class="empty-row"><td colspan="7">{{ t('尚無會員資料') }}</td></tr>
           {% endif %}
         </tbody>
       </table>

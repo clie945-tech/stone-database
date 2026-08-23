@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="zh-TW">
+<html lang="{{ html_lang }}">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -122,28 +122,29 @@
   <div class="sidebar-logo">
     <span class="sidebar-logo-icon">{% with size=34, sfx='sb' %}{% include '_logo.html' %}{% endwith %}</span>
     <div>
-      <div class="sidebar-logo-text">ReStone 循環石材服務平台</div>
-      <div class="sidebar-logo-sub">管理後台</div>
+      <div class="sidebar-logo-text">{{ t('ReStone 循環石材服務平台') }}</div>
+      <div class="sidebar-logo-sub">{{ t('管理後台') }}</div>
     </div>
   </div>
   <div class="sidebar-nav">
-    <div class="sidebar-section">管理</div>
-    <a href="/admin" class="nav-item"><span class="icon">▦</span> 石材管理</a>
-    <a href="/admin/add" class="nav-item {% if not stone %}active{% endif %}"><span class="icon">＋</span> 新增石材</a>
-    <div class="sidebar-section">系統</div>
-    <a href="/admin/change-password" class="nav-item">修改密碼</a>
-    <a href="/" class="nav-item" target="_blank"><span class="icon">↗</span> 前台預覽</a>
+    <div class="sidebar-section">{{ t('管理') }}</div>
+    <a href="/admin" class="nav-item"><span class="icon">▦</span> {{ t('石材管理') }}</a>
+    <a href="/admin/add" class="nav-item {% if not stone %}active{% endif %}"><span class="icon">＋</span> {{ t('新增石材') }}</a>
+    <div class="sidebar-section">{{ t('系統') }}</div>
+    <a href="/admin/change-password" class="nav-item">{{ t('修改密碼') }}</a>
+    <a href="/" class="nav-item" target="_blank"><span class="icon">↗</span> {{ t('前台預覽') }}</a>
   </div>
   <div class="sidebar-footer">
-    <div class="admin-name">管理員</div>
-    <a href="/admin/logout">登出 →</a>
+    <div class="admin-name">{{ t('管理員') }}</div>
+    <a href="/admin/logout">{{ t('登出 →') }}</a>
   </div>
 </nav>
 
 <div class="main-wrap">
   <div class="topbar">
     <div class="topbar-title">{{ title }}</div>
-    <a href="/admin" class="btn btn-secondary">← 返回列表</a>
+    <a href="/admin" class="btn btn-secondary">{{ t('← 返回列表') }}</a>
+      {% include '_langswitch.html' %}
   </div>
 
   <div class="content">
@@ -158,29 +159,29 @@
       <form method="post" enctype="multipart/form-data">
         <div class="form-body">
 
-          <div class="section-title">基本資訊</div>
+          <div class="section-title">{{ t('基本資訊') }}</div>
 
           <div class="form-group">
-            <label for="stone_name">石材名稱 / 品名 <span class="hint" style="color:var(--text-muted);font-weight:400;font-size:0.78rem">（選填，例：帝諾、卡拉拉白、銀狐）</span></label>
+            <label for="stone_name">{{ t('石材名稱 / 品名') }} <span class="hint" style="color:var(--text-muted);font-weight:400;font-size:0.78rem">{{ t('（選填，例：帝諾、卡拉拉白、銀狐）') }}</span></label>
             <input type="text" id="stone_name" name="stone_name"
                    value="{{ stone.stone_name if stone and stone.stone_name else '' }}"
-                   placeholder="輸入此石材的具體品名（前台會顯示為主標題）" />
+                   placeholder="{{ t('輸入此石材的具體品名（前台會顯示為主標題）') }}" />
           </div>
 
           <div class="form-grid">
             <div class="form-group">
-              <label for="stone_type">石材種類 / 分類 <span class="required">*</span></label>
+              <label for="stone_type">{{ t('石材種類 / 分類') }} <span class="required">*</span></label>
               <select id="stone_type" name="stone_type" required>
-                <option value="" disabled {% if not stone %}selected{% endif %}>請選擇石材種類</option>
+                <option value="" disabled {% if not stone %}selected{% endif %}>{{ t('請選擇石材種類') }}</option>
                 {% for t in ['大理石', '蛇紋石', '化石', '花崗岩'] %}
                   <option value="{{ t }}" {% if stone and stone.stone_type == t %}selected{% endif %}>{{ t }}</option>
                 {% endfor %}
               </select>
             </div>
             <div class="form-group">
-              <label for="vendor">廠商名稱</label>
+              <label for="vendor">{{ t('廠商名稱') }}</label>
               <select id="vendor" name="vendor">
-                <option value="">請選擇廠商</option>
+                <option value="">{{ t('請選擇廠商') }}</option>
                 {% for v in vendors %}
                   <option value="{{ v }}" {% if stone and stone.vendor == v %}selected{% endif %}>{{ v }}</option>
                 {% endfor %}
@@ -192,55 +193,55 @@
             </div>
           </div>
 
-          <div class="section-title">尺寸規格</div>
+          <div class="section-title">{{ t('尺寸規格') }}</div>
           <div class="form-grid-3">
             <div class="form-group">
-              <label for="width">寬度 <span class="hint">(cm)</span></label>
-              <input type="number" id="width" name="width" step="0.1" min="0" value="{{ stone.width if stone and stone.width else '' }}" placeholder="例：60" />
+              <label for="width">{{ t('寬度') }} <span class="hint">(cm)</span></label>
+              <input type="number" id="width" name="width" step="0.1" min="0" value="{{ stone.width if stone and stone.width else '' }}" placeholder="{{ t('例：60') }}" />
             </div>
             <div class="form-group">
-              <label for="height">高度／長度 <span class="hint">(cm)</span></label>
-              <input type="number" id="height" name="height" step="0.1" min="0" value="{{ stone.height if stone and stone.height else '' }}" placeholder="例：120" />
+              <label for="height">{{ t('高度／長度') }} <span class="hint">(cm)</span></label>
+              <input type="number" id="height" name="height" step="0.1" min="0" value="{{ stone.height if stone and stone.height else '' }}" placeholder="{{ t('例：120') }}" />
             </div>
             <div class="form-group">
-              <label for="thickness">厚度 <span class="hint">(cm)</span></label>
-              <input type="number" id="thickness" name="thickness" step="0.1" min="0" value="{{ stone.thickness if stone and stone.thickness else '' }}" placeholder="例：2" />
+              <label for="thickness">{{ t('厚度') }} <span class="hint">(cm)</span></label>
+              <input type="number" id="thickness" name="thickness" step="0.1" min="0" value="{{ stone.thickness if stone and stone.thickness else '' }}" placeholder="{{ t('例：2') }}" />
             </div>
           </div>
 
-          <div class="section-title">庫存與價格</div>
+          <div class="section-title">{{ t('庫存與價格') }}</div>
           <div class="form-grid">
             <div class="form-group">
-              <label for="quantity">庫存數量</label>
-              <input type="number" id="quantity" name="quantity" min="0" value="{{ stone.quantity if stone and stone.quantity else '' }}" placeholder="例：50" />
+              <label for="quantity">{{ t('庫存數量') }}</label>
+              <input type="number" id="quantity" name="quantity" min="0" value="{{ stone.quantity if stone and stone.quantity else '' }}" placeholder="{{ t('例：50') }}" />
             </div>
             <div class="form-group">
-              <label for="unit">單位</label>
+              <label for="unit">{{ t('單位') }}</label>
               <select id="unit" name="unit">
-                <option value="片"  {% if not stone or stone.unit == '片'  %}selected{% endif %}>片</option>
-                <option value="塊"  {% if stone and stone.unit == '塊'  %}selected{% endif %}>塊</option>
-                <option value="坪"  {% if stone and stone.unit == '坪'  %}selected{% endif %}>坪</option>
+                <option value="片"  {% if not stone or stone.unit == '片'  %}selected{% endif %}>{{ t('片') }}</option>
+                <option value="塊"  {% if stone and stone.unit == '塊'  %}selected{% endif %}>{{ t('塊') }}</option>
+                <option value="坪"  {% if stone and stone.unit == '坪'  %}selected{% endif %}>{{ t('坪') }}</option>
                 <option value="m²" {% if stone and stone.unit == 'm²' %}selected{% endif %}>m²</option>
                 <option value="kg"  {% if stone and stone.unit == 'kg'  %}selected{% endif %}>kg</option>
-                <option value="噸"  {% if stone and stone.unit == '噸'  %}selected{% endif %}>噸</option>
-                <option value="件"  {% if stone and stone.unit == '件'  %}selected{% endif %}>件</option>
+                <option value="噸"  {% if stone and stone.unit == '噸'  %}selected{% endif %}>{{ t('噸') }}</option>
+                <option value="件"  {% if stone and stone.unit == '件'  %}selected{% endif %}>{{ t('件') }}</option>
               </select>
             </div>
             <div class="form-group form-full">
-              <label for="price">單價 <span class="hint">(NT$，留空表示洽詢)</span></label>
-              <input type="number" id="price" name="price" step="1" min="0" value="{{ stone.price if stone and stone.price else '' }}" placeholder="例：1200" />
+              <label for="price">{{ t('單價') }} <span class="hint">{{ t('(NT$，留空表示洽詢)') }}</span></label>
+              <input type="number" id="price" name="price" step="1" min="0" value="{{ stone.price if stone and stone.price else '' }}" placeholder="{{ t('例：1200') }}" />
             </div>
           </div>
 
-          <div class="section-title">備註說明</div>
+          <div class="section-title">{{ t('備註說明') }}</div>
           <div class="form-group">
-            <label for="description">備註</label>
-            <textarea id="description" name="description" placeholder="石材的特色、狀況說明、注意事項...">{{ stone.description if stone and stone.description else '' }}</textarea>
+            <label for="description">{{ t('備註') }}</label>
+            <textarea id="description" name="description" placeholder="{{ t('石材的特色、狀況說明、注意事項...') }}">{{ stone.description if stone and stone.description else '' }}</textarea>
           </div>
 
-          <div class="section-title">顏色標籤</div>
+          <div class="section-title">{{ t('顏色標籤') }}</div>
           <div class="form-group">
-            <label>選擇顏色 <span class="hint">（不選則由 AI 從照片自動偵測）</span></label>
+            <label>{{ t('選擇顏色') }} <span class="hint">{{ t('（不選則由 AI 從照片自動偵測）') }}</span></label>
             <div class="color-picker">
               {% for code, label, bg, fg in colors %}
               <label class="color-opt">
@@ -252,43 +253,43 @@
             </div>
           </div>
 
-          <div class="section-title">AI 設計工具 Prompt <span class="hint" style="font-weight:400;color:var(--text-muted)">（設計工具合成時使用）</span></div>
+          <div class="section-title">{{ t('AI 設計工具 Prompt') }} <span class="hint" style="font-weight:400;color:var(--text-muted)">{{ t('（設計工具合成時使用）') }}</span></div>
           <div class="form-group">
             <label for="ai_prompt">
               石材描述（英文，留空會自動從照片生成）
               {% if stone and stone.photo %}
               <button type="button" id="btn-ai-analyze" data-stone-id="{{ stone.id }}"
                 style="margin-left:0.5rem;padding:4px 10px;background:linear-gradient(135deg,#2563EB,#7C3AED);color:white;border:none;border-radius:6px;font-size:0.72rem;font-weight:700;cursor:pointer">
-用 AI 重新分析照片
+{{ t('用 AI 重新分析照片') }}
               </button>
               <span id="ai-analyze-status" style="margin-left:0.5rem;font-size:0.72rem;color:var(--text-muted)"></span>
               {% endif %}
             </label>
             <textarea id="ai_prompt" name="ai_prompt" rows="2"
-              placeholder="例：deep green serpentine with white veining, polished glossy surface"
+              placeholder="{{ t('例：deep green serpentine with white veining, polished glossy surface') }}"
               style="width:100%;padding:0.7rem 0.9rem;border:1.5px solid var(--border);border-radius:8px;font-size:0.85rem;font-family:'SF Mono',Consolas,monospace;background:var(--stone-pale);outline:none;resize:vertical">{{ stone.ai_prompt if stone and stone.ai_prompt else '' }}</textarea>
             <div style="font-size:0.72rem;color:var(--text-muted);margin-top:0.3rem;line-height:1.5">
-新增石材時若留空，系統會自動用視覺 AI 分析照片寫描述。也可手動編輯，例：「<code style="background:#F1F5F9;padding:1px 4px;border-radius:3px">cream beige limestone with subtle fossil patterns</code>」
+{{ t('新增石材時若留空，系統會自動用視覺 AI 分析照片寫描述。也可手動編輯，例：「') }}<code style="background:#F1F5F9;padding:1px 4px;border-radius:3px">cream beige limestone with subtle fossil patterns</code>」
             </div>
           </div>
 
-          <div class="section-title">石材照片（最多 3 張）</div>
+          <div class="section-title">{{ t('石材照片（最多 3 張）') }}</div>
           {% for i in range(1, 4) %}
             {% set field = 'photo' if i == 1 else 'photo' ~ i %}
             {% set label = '主要照片' if i == 1 else '照片 ' ~ i %}
             <div style="margin-bottom:1.2rem">
-              <p style="font-size:0.8rem;font-weight:600;color:var(--text);margin-bottom:0.5rem">{{ label }}{% if i == 1 %} <span style="color:#EF4444">（建議上傳）</span>{% else %} <span style="color:var(--text-light)">（選填）</span>{% endif %}</p>
+              <p style="font-size:0.8rem;font-weight:600;color:var(--text);margin-bottom:0.5rem">{{ label }}{% if i == 1 %} <span style="color:#EF4444">{{ t('（建議上傳）') }}</span>{% else %} <span style="color:var(--text-light)">{{ t('（選填）') }}</span>{% endif %}</p>
               {% if stone and stone[field] %}
                 <div class="current-photo">
                   <img src="/static/uploads/{{ stone[field] }}" alt="目前照片{{ i }}" />
-                  <p>目前照片（上傳新照片將取代此圖）</p>
+                  <p>{{ t('目前照片（上傳新照片將取代此圖）') }}</p>
                 </div>
               {% endif %}
               <div class="upload-area">
                 <input type="file" name="{{ field }}" accept="image/png,image/jpg,image/jpeg,image/gif,image/webp,image/heic,image/heif,.heic,.heif" onchange="previewPhoto(this, 'preview{{ i }}')" />
                 <div class="upload-icon"></div>
                 <div class="upload-text"><strong>點擊選擇{{ label }}</strong></div>
-                <div class="upload-hint">支援 JPG、PNG、HEIC（iPhone）、GIF、WEBP，最大 32MB</div>
+                <div class="upload-hint">{{ t('支援 JPG、PNG、HEIC（iPhone）、GIF、WEBP，最大 32MB') }}</div>
               </div>
               <div id="preview{{ i }}" style="display:none;margin-top:0.75rem">
                 <img style="width:120px;height:120px;object-fit:cover;border-radius:8px;border:2px solid var(--blue)" src="" alt="" />
@@ -298,7 +299,7 @@
         </div>
 
         <div class="form-footer">
-          <a href="/admin" class="btn btn-secondary">取消</a>
+          <a href="/admin" class="btn btn-secondary">{{ t('取消') }}</a>
           <button type="submit" class="btn btn-primary">{% if stone %}儲存變更{% else %}新增石材{% endif %}</button>
         </div>
       </form>

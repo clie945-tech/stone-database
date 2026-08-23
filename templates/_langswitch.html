@@ -1,0 +1,19 @@
+{# 語言切換器：中 / EN / 日 —— 內聯樣式，可嵌入任何頁面的 header #}
+<div class="langsw" role="group" aria-label="Language">
+  {% for code, label in LANGS.items() %}
+    <a href="{{ url_for('set_lang', code=code) }}"
+       class="langsw-btn{% if code == current_lang %} on{% endif %}"
+       hreflang="{{ code }}" title="{{ label }}"
+       {% if code == current_lang %}aria-current="true"{% endif %}>{{
+         {'zh':'中','en':'EN','ja':'日'}[code] }}</a>
+  {% endfor %}
+</div>
+<style>
+  .langsw{display:inline-flex;align-items:center;gap:2px;padding:2px;border-radius:9px;
+          border:1px solid var(--border,#E2E8F0);background:var(--white,#fff);vertical-align:middle}
+  .langsw-btn{display:inline-block;padding:.24rem .5rem;border-radius:7px;font-size:.74rem;
+              font-weight:700;line-height:1.2;text-decoration:none;color:var(--text-muted,#64748B);
+              transition:all .15s;min-width:26px;text-align:center}
+  .langsw-btn:hover{color:var(--blue,#2563EB);background:var(--blue-light,#EFF6FF)}
+  .langsw-btn.on{color:#fff;background:var(--blue,#2563EB)}
+</style>

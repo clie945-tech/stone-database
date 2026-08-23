@@ -7,6 +7,7 @@ import secrets
 from werkzeug.utils import secure_filename
 from werkzeug.security import generate_password_hash, check_password_hash
 from functools import wraps
+from translations import LANGS, DEFAULT_LANG, HTML_LANG, translate
 
 app = Flask(__name__)
 app.secret_key = 'stone-circular-db-secret-2024'
@@ -196,6 +197,51 @@ def format_carbon(kg_co2):
     if kg_co2 < 1000:
         return f"{kg_co2:.1f} kg"
     return f"{kg_co2 / 1000:.2f} t"
+
+
+# ─── 多語系（中文 / English / 日本語）──────────────────────────
+def current_lang():
+    """決定目前語言：session 選擇 > 瀏覽器語言 > 預設中文。"""
+    lang = session.get('lang')
+    if lang in LANGS:
+        return lang
+    # 首次到訪：依瀏覽器 Accept-Language 自動判斷（展場外賓可直接看到母語）
+    best = request.accept_languages.best_match(['zh', 'zh-TW', 'zh-CN', 'en', 'ja'])
+    if best:
+        if best.startswith('ja'):
+            return 'ja'
+        if best.startswith('en'):
+            return 'en'
+    return DEFAULT_LANG
+
+
+def _(msg):
+    """把系統訊息翻成使用者目前語言；不在請求情境時回傳原文。"""
+    try:
+        return translate(msg, current_lang())
+    except Exception:
+        return msg
+
+
+@app.route('/lang/<code>')
+def set_lang(code):
+    """切換語言後回到原本的頁面。"""
+    if code in LANGS:
+        session['lang'] = code
+    target = request.referrer or url_for('index')
+    return redirect(target)
+
+
+@app.context_processor
+def inject_i18n():
+    """讓所有模板都能用 t() 翻譯與語言資訊。"""
+    lang = current_lang()
+    return dict(
+        t=lambda s: translate(s, lang),
+        current_lang=lang,
+        html_lang=HTML_LANG.get(lang, 'zh-TW'),
+        LANGS=LANGS,
+    )
 
 
 @app.context_processor
@@ -1405,7 +1451,7 @@ def customer_required(f):
     @wraps(f)
     def decorated(*args, **kwargs):
         if not session.get('customer_id'):
-            flash('請先登入會員帳號', 'error')
+            flash(_('請先登入會員帳號'), 'error')
             return redirect(url_for('customer_login'))
         return f(*args, **kwargs)
     return decorated
@@ -1563,7 +1609,7 @@ def submit_inquiry(id):
     message = request.form.get('message', '').strip()
 
     if not name or not email:
-        flash('姓名與 Email 為必填欄位', 'error')
+        flash(_('姓名與 Email 為必填欄位'), 'error')
         conn.close()
         return redirect(url_for('stone_detail', id=id))
 
@@ -1624,7 +1670,7 @@ def submit_inquiry(id):
             </div>'''
         )
 
-    flash('詢問已送出！廠商將盡快與您聯繫。', 'success')
+    flash(_('詢問已送出！廠商將盡快與您聯繫。'), 'success')
     return redirect(url_for('stone_detail', id=id))
 
 
@@ -1642,16 +1688,16 @@ def register():
         confirm  = request.form.get('confirm_password', '')
 
         if not name or not email or not password:
-            flash('姓名、Email 及密碼為必填', 'error')
+            flash(_('姓名、Email 及密碼為必填'), 'error')
         elif password != confirm:
-            flash('兩次密碼不一致', 'error')
+            flash(_('兩次密碼不一致'), 'error')
         elif len(password) < 6:
-            flash('密碼至少需要 6 個字元', 'error')
+            flash(_('密碼至少需要 6 個字元'), 'error')
         else:
             conn = get_db()
             existing = conn.execute('SELECT id FROM customers WHERE email = ?', (email,)).fetchone()
             if existing:
-                flash('此 Email 已被註冊', 'error')
+                flash(_('此 Email 已被註冊'), 'error')
                 conn.close()
             else:
                 conn.execute('''INSERT INTO customers (name, email, phone, password)
@@ -1667,7 +1713,7 @@ def register():
                 session['customer_id']    = customer['id']
                 session['customer_name']  = customer['name']
                 session['customer_email'] = customer['email']
-                flash('註冊成功！歡迎加入 ReStone！', 'success')
+                flash(_('註冊成功！歡迎加入 ReStone！'), 'success')
                 return redirect(url_for('my_account'))
 
     return render_template('register.html')
@@ -1693,7 +1739,7 @@ def customer_login():
             flash(f'歡迎回來，{customer["name"]}！', 'success')
             return redirect(url_for('index'))
         else:
-            flash('Email 或密碼錯誤', 'error')
+            flash(_('Email 或密碼錯誤'), 'error')
     return render_template('customer_login.html')
 
 
@@ -1734,7 +1780,7 @@ def update_my_account():
     company = request.form.get('company', '').strip()
     address = request.form.get('address', '').strip()
     if not name:
-        flash('姓名為必填欄位', 'error')
+        flash(_('姓名為必填欄位'), 'error')
         return redirect(url_for('my_account'))
     conn = get_db()
     conn.execute(
@@ -1744,7 +1790,7 @@ def update_my_account():
     conn.commit()
     conn.close()
     session['customer_name'] = name
-    flash('基本資料已更新', 'success')
+    flash(_('基本資料已更新'), 'success')
     return redirect(url_for('my_account'))
 
 
@@ -1772,7 +1818,7 @@ def delete_my_design(id):
         delete_photo(row['image_file'])
         conn.execute('DELETE FROM synthesis_history WHERE id = ?', (id,))
         conn.commit()
-        flash('已刪除該張設計', 'success')
+        flash(_('已刪除該張設計'), 'success')
     conn.close()
     return redirect(url_for('my_designs'))
 
@@ -1787,7 +1833,7 @@ def design_proposal_pdf(id):
     ).fetchone()
     if not design:
         conn.close()
-        flash('找不到該設計', 'error')
+        flash(_('找不到該設計'), 'error')
         return redirect(url_for('my_designs'))
     stone = None
     if design['stone_id']:
@@ -1826,7 +1872,7 @@ def login():
             session['admin_name'] = admin['username']
             return redirect(url_for('admin_dashboard'))
         else:
-            flash('帳號或密碼錯誤，請重試', 'error')
+            flash(_('帳號或密碼錯誤，請重試'), 'error')
     return render_template('login.html')
 
 
@@ -1882,7 +1928,7 @@ def admin_news_save():
     is_published = 1 if request.form.get('is_published') else 0
     pinned       = 1 if request.form.get('pinned') else 0
     if not title:
-        flash('標題為必填', 'error')
+        flash(_('標題為必填'), 'error')
         return redirect(url_for('admin_news', edit=nid) if nid else url_for('admin_news'))
     conn = get_db()
     if nid:
@@ -1890,12 +1936,12 @@ def admin_news_save():
             'UPDATE announcements SET title=?, content=?, is_published=?, pinned=?, '
             'updated_at=CURRENT_TIMESTAMP WHERE id=?',
             (title, content, is_published, pinned, nid))
-        flash('公告已更新', 'success')
+        flash(_('公告已更新'), 'success')
     else:
         conn.execute(
             'INSERT INTO announcements (title, content, is_published, pinned) VALUES (?,?,?,?)',
             (title, content, is_published, pinned))
-        flash('公告已新增', 'success')
+        flash(_('公告已新增'), 'success')
     conn.commit()
     conn.close()
     return redirect(url_for('admin_news'))
@@ -1908,7 +1954,7 @@ def admin_news_delete(id):
     conn.execute('DELETE FROM announcements WHERE id = ?', (id,))
     conn.commit()
     conn.close()
-    flash('公告已刪除', 'success')
+    flash(_('公告已刪除'), 'success')
     return redirect(url_for('admin_news'))
 
 
@@ -1953,7 +1999,7 @@ def update_inquiry_status(id):
     conn.execute('UPDATE inquiries SET status = ? WHERE id = ?', (status, id))
     conn.commit()
     conn.close()
-    flash('詢問狀態已更新', 'success')
+    flash(_('詢問狀態已更新'), 'success')
     return redirect(url_for('admin_inquiries'))
 
 
@@ -1964,7 +2010,7 @@ def add_stone():
         stone_type = request.form.get('stone_type', '').strip()
         stone_name = request.form.get('stone_name', '').strip()
         if not stone_type:
-            flash('石材種類為必填欄位', 'error')
+            flash(_('石材種類為必填欄位'), 'error')
             return render_template('stone_form.html', stone=None, title='新增石材', colors=COLORS, vendors=VENDORS)
 
         width       = request.form.get('width') or None
@@ -1991,7 +2037,7 @@ def add_stone():
         # 主照片上傳失敗時，明確告知管理員
         main_photo_attempted = bool(request.files.get('photo') and request.files.get('photo').filename)
         if main_photo_attempted and not photo:
-            flash('⚠ 主照片上傳失敗，請檢查檔案格式（PNG/JPG/HEIC/GIF/WebP）或檔案大小（≤32MB）', 'error')
+            flash(_('⚠ 主照片上傳失敗，請檢查檔案格式（PNG/JPG/HEIC/GIF/WebP）或檔案大小（≤32MB）'), 'error')
 
         # 主照片 AI 分析：自動偵測顏色 + 計算雜湊 + 視覺特徵（以圖搜圖用）
         image_hash, dominant_rgb, features = '', '', ''
@@ -2041,7 +2087,7 @@ def edit_stone(id):
 
     if not stone:
         conn.close()
-        flash('找不到該石材', 'error')
+        flash(_('找不到該石材'), 'error')
         return redirect(url_for('admin_dashboard'))
 
     if request.method == 'POST':
@@ -2134,9 +2180,9 @@ def delete_stone(id):
             delete_photo(stone[field])
         conn.execute('DELETE FROM stones WHERE id = ?', (id,))
         conn.commit()
-        flash('石材已成功刪除', 'success')
+        flash(_('石材已成功刪除'), 'success')
     else:
-        flash('找不到該石材', 'error')
+        flash(_('找不到該石材'), 'error')
 
     conn.close()
     return redirect(url_for('admin_dashboard'))
@@ -2176,7 +2222,7 @@ def search_by_image():
     if request.method == 'POST':
         ref_file = request.files.get('reference')
         if not ref_file or not ref_file.filename or not allowed_file(ref_file.filename):
-            flash('請上傳有效的圖片（JPG／PNG／GIF／WEBP）', 'error')
+            flash(_('請上傳有效的圖片（JPG／PNG／GIF／WEBP）'), 'error')
             return redirect(url_for('search_by_image'))
 
         # 讀取參考圖、分析、轉成 base64 顯示（不寫入磁碟）
@@ -2194,7 +2240,7 @@ def search_by_image():
             ref_bytes = buf.getvalue()
         except Exception as e:
             print(f'[search_by_image] 圖片解碼失敗：{e}')
-            flash('無法讀取此圖片，請改用 JPG 或 PNG 格式', 'error')
+            flash(_('無法讀取此圖片，請改用 JPG 或 PNG 格式'), 'error')
             return redirect(url_for('search_by_image'))
 
         # 圈選範圍（0-1 比例）：只比對框內的石材區域，避免背景干擾
@@ -2223,7 +2269,7 @@ def search_by_image():
         ref_feat = features_from_json(ref_feat_json)
 
         if not ref_hash:
-            flash('無法分析此圖片，請改用其他圖', 'error')
+            flash(_('無法分析此圖片，請改用其他圖'), 'error')
             return redirect(url_for('search_by_image'))
 
         # 比對所有有索引的石材
@@ -2353,17 +2399,17 @@ def change_password():
                              (session['admin_name'],)).fetchone()
 
         if not check_password_hash(admin['password'], current):
-            flash('目前密碼不正確', 'error')
+            flash(_('目前密碼不正確'), 'error')
         elif new_pw != confirm:
-            flash('新密碼與確認密碼不符', 'error')
+            flash(_('新密碼與確認密碼不符'), 'error')
         elif len(new_pw) < 6:
-            flash('新密碼至少需要 6 個字元', 'error')
+            flash(_('新密碼至少需要 6 個字元'), 'error')
         else:
             conn.execute('UPDATE admin_users SET password = ? WHERE username = ?',
                          (generate_password_hash(new_pw, method='pbkdf2:sha256'),
                           session['admin_name']))
             conn.commit()
-            flash('密碼已成功更新！', 'success')
+            flash(_('密碼已成功更新！'), 'success')
         conn.close()
 
     return render_template('change_password.html')
@@ -2396,7 +2442,7 @@ def api_simulate_wall():
     from flask import jsonify
     import json as _json
     if not session.get('customer_id'):
-        return jsonify({'error': '請先登入會員才能使用牆面模擬'}), 401
+        return jsonify({'error': _('請先登入會員才能使用牆面模擬')}), 401
 
     photo    = request.files.get('photo')
     stone_id = request.form.get('stone_id', type=int)
@@ -2409,20 +2455,20 @@ def api_simulate_wall():
         corners = [(float(p[0]), float(p[1])) for p in corners]
         assert all(0 <= x <= 1 and 0 <= y <= 1 for x, y in corners)
     except Exception:
-        return jsonify({'error': '牆面四角座標無效，請重新點選'}), 400
+        return jsonify({'error': _('牆面四角座標無效，請重新點選')}), 400
     if not photo or not stone_id:
-        return jsonify({'error': '缺少必要欄位（空間照片、石材）'}), 400
+        return jsonify({'error': _('缺少必要欄位（空間照片、石材）')}), 400
     if not wall_w or not wall_h or not (50 <= wall_w <= 2000) or not (50 <= wall_h <= 1000):
-        return jsonify({'error': '請輸入合理的牆面尺寸（寬 50–2000cm、高 50–1000cm）'}), 400
+        return jsonify({'error': _('請輸入合理的牆面尺寸（寬 50–2000cm、高 50–1000cm）')}), 400
 
     conn = get_db()
     stone = conn.execute('SELECT * FROM stones WHERE id = ?', (stone_id,)).fetchone()
     conn.close()
     if not stone or not stone['photo']:
-        return jsonify({'error': '找不到石材或石材沒有照片'}), 404
+        return jsonify({'error': _('找不到石材或石材沒有照片')}), 404
     stone_photo_path = os.path.join(app.config['UPLOAD_FOLDER'], stone['photo'])
     if not os.path.exists(stone_photo_path):
-        return jsonify({'error': '石材照片檔案不存在'}), 400
+        return jsonify({'error': _('石材照片檔案不存在')}), 400
 
     # 石材尺寸（未填則以 60×60cm 估算）
     sw, sh = stone['width'] or 0, stone['height'] or 0
@@ -2434,7 +2480,7 @@ def api_simulate_wall():
     try:
         design_path = normalize_image_to_jpg_path(photo, max_size=1600)
         if not design_path:
-            return jsonify({'error': '照片格式無法解析（支援 JPG / PNG / HEIC / WebP）'}), 400
+            return jsonify({'error': _('照片格式無法解析（支援 JPG / PNG / HEIC / WebP）')}), 400
         result_img, tiles_x, tiles_y = simulate_wall_perspective(
             design_path, corners, stone_photo_path, sw, sh, wall_w, wall_h, joints)
 
@@ -2481,24 +2527,24 @@ def api_enhance_wall():
     """牆面模擬的 AI 擬真強化：把幾何貼合結果交給 Gemini 修飾光影/遮擋（僅限會員）"""
     from flask import jsonify
     if not session.get('customer_id'):
-        return jsonify({'error': '請先登入會員'}), 401
+        return jsonify({'error': _('請先登入會員')}), 401
     if not GEMINI_API_KEY:
-        return jsonify({'error': 'AI 擬真強化需要 Gemini（請設定 GEMINI_API_KEY）'}), 503
+        return jsonify({'error': _('AI 擬真強化需要 Gemini（請設定 GEMINI_API_KEY）')}), 503
     _q = ai_quota_check()
     if _q:
         return _q
     design_id = request.form.get('design_id', type=int)
     if not design_id:
-        return jsonify({'error': '缺少 design_id'}), 400
+        return jsonify({'error': _('缺少 design_id')}), 400
     conn = get_db()
     row = conn.execute('SELECT * FROM synthesis_history WHERE id = ? AND customer_id = ?',
                        (design_id, session['customer_id'])).fetchone()
     conn.close()
     if not row:
-        return jsonify({'error': '找不到該設計'}), 404
+        return jsonify({'error': _('找不到該設計')}), 404
     comp_path = os.path.join(app.config['UPLOAD_FOLDER'], row['image_file'])
     if not os.path.exists(comp_path):
-        return jsonify({'error': '設計圖檔不存在'}), 400
+        return jsonify({'error': _('設計圖檔不存在')}), 400
 
     original = request.files.get('original')
     orig_path = None
@@ -2583,9 +2629,9 @@ def api_render_sketch():
     """接收草圖 + stone_id + 描述，用 Gemini 生成產品渲染圖（僅限會員）"""
     from flask import jsonify
     if not session.get('customer_id'):
-        return jsonify({'error': '請先登入會員才能使用草圖渲染'}), 401
+        return jsonify({'error': _('請先登入會員才能使用草圖渲染')}), 401
     if not GEMINI_API_KEY:
-        return jsonify({'error': '草圖渲染需要 Gemini（請設定 GEMINI_API_KEY）'}), 503
+        return jsonify({'error': _('草圖渲染需要 Gemini（請設定 GEMINI_API_KEY）')}), 503
     _q = ai_quota_check()
     if _q:
         return _q
@@ -2594,24 +2640,24 @@ def api_render_sketch():
     sketch   = request.files.get('sketch')
     hint     = request.form.get('hint', '').strip()[:120]
     if not stone_id or not sketch:
-        return jsonify({'error': '缺少必要欄位（草圖、石材）'}), 400
+        return jsonify({'error': _('缺少必要欄位（草圖、石材）')}), 400
 
     conn = get_db()
     stone = conn.execute('SELECT * FROM stones WHERE id = ?', (stone_id,)).fetchone()
     conn.close()
     if not stone:
-        return jsonify({'error': '找不到指定石材'}), 404
+        return jsonify({'error': _('找不到指定石材')}), 404
     if not stone['photo']:
-        return jsonify({'error': '此石材沒有照片，無法做材質渲染'}), 400
+        return jsonify({'error': _('此石材沒有照片，無法做材質渲染')}), 400
     stone_photo_path = os.path.join(app.config['UPLOAD_FOLDER'], stone['photo'])
     if not os.path.exists(stone_photo_path):
-        return jsonify({'error': '石材照片檔案不存在'}), 400
+        return jsonify({'error': _('石材照片檔案不存在')}), 400
 
     sketch_path = None
     try:
         sketch_path = normalize_image_to_jpg_path(sketch, max_size=1280)
         if not sketch_path:
-            return jsonify({'error': '草圖格式無法解析（支援 JPG / PNG / HEIC / WebP）'}), 400
+            return jsonify({'error': _('草圖格式無法解析（支援 JPG / PNG / HEIC / WebP）')}), 400
 
         result_img = render_sketch_with_gemini(sketch_path, stone_photo_path, hint)
         if result_img is None:
@@ -2665,11 +2711,11 @@ def admin_analyze_photo():
             if row and row['photo']:
                 target_path = os.path.join(app.config['UPLOAD_FOLDER'], row['photo'])
         if not target_path or not os.path.exists(target_path):
-            return jsonify({'error': '找不到照片'}), 400
+            return jsonify({'error': _('找不到照片')}), 400
 
         prompt = describe_stone_with_vision(target_path)
         if not prompt:
-            return jsonify({'error': 'AI 分析失敗（請確認 Replicate 餘額充足）'}), 500
+            return jsonify({'error': _('AI 分析失敗（請確認 Replicate 餘額充足）')}), 500
         return jsonify({'success': True, 'prompt': prompt})
     finally:
         if tmp_path and os.path.exists(tmp_path):
@@ -2685,12 +2731,12 @@ def admin_reanalyze_one():
     from flask import jsonify
     stone_id = request.form.get('stone_id', type=int)
     if not stone_id:
-        return jsonify({'error': '缺少 stone_id'}), 400
+        return jsonify({'error': _('缺少 stone_id')}), 400
     conn = get_db()
     row = conn.execute('SELECT id, photo FROM stones WHERE id = ?', (stone_id,)).fetchone()
     if not row or not row['photo']:
         conn.close()
-        return jsonify({'error': '此石材沒有照片'}), 400
+        return jsonify({'error': _('此石材沒有照片')}), 400
     path = os.path.join(app.config['UPLOAD_FOLDER'], row['photo'])
     if not os.path.exists(path):
         conn.close()
@@ -2768,19 +2814,19 @@ def admin_showcase():
 def admin_generate_showcase():
     from flask import jsonify
     if not GEMINI_API_KEY:
-        return jsonify({'error': '未設定 GEMINI_API_KEY，無法生成'}), 400
+        return jsonify({'error': _('未設定 GEMINI_API_KEY，無法生成')}), 400
     scene_index = request.form.get('scene_index', type=int)
     stone_id = request.form.get('stone_id', type=int)
     if scene_index is None or not (0 <= scene_index < len(SHOWCASE_SCENES)) or not stone_id:
-        return jsonify({'error': '參數錯誤'}), 400
+        return jsonify({'error': _('參數錯誤')}), 400
     conn = get_db()
     stone = conn.execute('SELECT * FROM stones WHERE id = ?', (stone_id,)).fetchone()
     conn.close()
     if not stone or not stone['photo']:
-        return jsonify({'error': '石材無照片'}), 400
+        return jsonify({'error': _('石材無照片')}), 400
     photo = os.path.join(app.config['UPLOAD_FOLDER'], stone['photo'])
     if not os.path.exists(photo):
-        return jsonify({'error': '找不到石材照片檔案'}), 400
+        return jsonify({'error': _('找不到石材照片檔案')}), 400
 
     scene = SHOWCASE_SCENES[scene_index]
     img = generate_showcase_scene(photo, scene['prompt'])
@@ -2811,7 +2857,7 @@ def delete_showcase(id):
         delete_photo(row['image_file'])
         conn.execute('DELETE FROM showcase_images WHERE id = ?', (id,))
         conn.commit()
-        flash('已刪除一張展覽圖', 'success')
+        flash(_('已刪除一張展覽圖'), 'success')
     conn.close()
     return redirect(url_for('admin_showcase'))
 
@@ -2821,9 +2867,9 @@ def api_apply_stone():
     """接收設計圖 + 遮罩 + stone_id，呼叫 Replicate AI 合成新圖（僅限會員）"""
     from flask import jsonify
     if not session.get('customer_id'):
-        return jsonify({'error': '請先登入會員才能使用 AI 設計工具'}), 401
+        return jsonify({'error': _('請先登入會員才能使用 AI 設計工具')}), 401
     if not (REPLICATE_API_TOKEN or GEMINI_API_KEY):
-        return jsonify({'error': 'AI 功能尚未啟用（請設定 GEMINI_API_KEY 或 REPLICATE_API_TOKEN）'}), 503
+        return jsonify({'error': _('AI 功能尚未啟用（請設定 GEMINI_API_KEY 或 REPLICATE_API_TOKEN）')}), 503
     _q = ai_quota_check()
     if _q:
         return _q
@@ -2834,13 +2880,13 @@ def api_apply_stone():
     custom_prompt = request.form.get('prompt', '').strip()
 
     if not stone_id or not design or not mask:
-        return jsonify({'error': '缺少必要欄位（設計圖、遮罩、石材）'}), 400
+        return jsonify({'error': _('缺少必要欄位（設計圖、遮罩、石材）')}), 400
 
     conn = get_db()
     stone = conn.execute('SELECT * FROM stones WHERE id = ?', (stone_id,)).fetchone()
     conn.close()
     if not stone:
-        return jsonify({'error': '找不到指定石材'}), 404
+        return jsonify({'error': _('找不到指定石材')}), 404
 
     display_name = (stone['stone_name'] if 'stone_name' in stone.keys() and stone['stone_name']
                     else stone['stone_type'])
@@ -2851,7 +2897,7 @@ def api_apply_stone():
         # 設計圖：統一轉成 JPG（支援 HEIC）；遮罩來自 canvas 已是 PNG
         design_path = normalize_image_to_jpg_path(design, max_size=1536)
         if not design_path:
-            return jsonify({'error': '設計圖格式無法解析（支援 JPG / PNG / HEIC / WebP）'}), 400
+            return jsonify({'error': _('設計圖格式無法解析（支援 JPG / PNG / HEIC / WebP）')}), 400
         with tempfile.NamedTemporaryFile(suffix='.png', delete=False) as mf:
             mask.save(mf.name)
             mask_path = mf.name
@@ -2887,7 +2933,7 @@ def api_apply_stone():
 
         # ── ② 後備：Replicate Flux Fill（文字 prompt inpainting）──
         if not REPLICATE_API_TOKEN:
-            return jsonify({'error': 'AI 合成暫時無法使用（Gemini 失敗且未設定 Replicate）'}), 503
+            return jsonify({'error': _('AI 合成暫時無法使用（Gemini 失敗且未設定 Replicate）')}), 503
         # 組合 prompt：使用者自訂 > 快取 ai_prompt > 視覺描述 > 通用後備
         prompt = resolve_ai_prompt(stone, custom_prompt)
         import replicate

@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="zh-TW">
+<html lang="{{ html_lang }}">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>牆面模擬 — ReStone</title>
+  <title>{{ t('牆面模擬 — ReStone') }}</title>
   <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/heic2any/0.0.4/heic2any.min.js" defer></script>
@@ -83,12 +83,13 @@
   <div class="header-inner">
     <a href="/" class="logo">
       <span class="logo-icon">{% with size=32, sfx='wlhdr' %}{% include '_logo.html' %}{% endwith %}</span>
-      <div class="logo-text">ReStone 循環石材服務平台</div>
+      <div class="logo-text">{{ t('ReStone 循環石材服務平台') }}</div>
     </a>
     <div>
-      <a href="/studio" class="hbtn">← 設計工具</a>
-      <a href="/design-tool" class="hbtn">材質模擬</a>
-      <a href="/my-designs" class="hbtn">我的設計</a>
+      {% include '_langswitch.html' %}
+      <a href="/studio" class="hbtn">{{ t('← 設計工具') }}</a>
+      <a href="/design-tool" class="hbtn">{{ t('材質模擬') }}</a>
+      <a href="/my-designs" class="hbtn">{{ t('我的設計') }}</a>
     </div>
   </div>
 </header>
@@ -96,30 +97,30 @@
 <div class="container">
   <div class="page-hero">
     <span class="ai-tag">WALL SIMULATOR</span>
-    <h1>牆面模擬</h1>
-    <p>點選牆面四角 → 選循環石材 → 輸入牆面尺寸 → 透視與比例正確的即時模擬（免費・秒出圖）</p>
+    <h1>{{ t('牆面模擬') }}</h1>
+    <p>{{ t('點選牆面四角 → 選循環石材 → 輸入牆面尺寸 → 透視與比例正確的即時模擬（免費・秒出圖）') }}</p>
   </div>
 
   <div class="layout">
     <div class="panel">
-      <div class="panel-title"><span class="step-num">1</span> 上傳空間照片，依序點選牆面四個角</div>
+      <div class="panel-title"><span class="step-num">1</span> {{ t('上傳空間照片，依序點選牆面四個角') }}</div>
       <div class="upload-zone" id="upload-zone">
       <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4"/><path d="m7.5 8.5 4.5-4.5 4.5 4.5"/><path d="M4 16v2.5A1.5 1.5 0 0 0 5.5 20h13a1.5 1.5 0 0 0 1.5-1.5V16"/></svg></div>
-      <div>點擊或拖曳上傳室內空間照片<br><span style="font-size:.75rem">JPG / PNG / HEIC（iPhone 照片可直接上傳）</span></div>
+      <div>{{ t('點擊或拖曳上傳室內空間照片') }}<br><span style="font-size:.75rem">{{ t('JPG / PNG / HEIC（iPhone 照片可直接上傳）') }}</span></div>
       </div>
       <input type="file" id="photo-file" accept="image/*,.heic,.heif" style="display:none">
       <div class="canvas-wrap" id="canvas-wrap">
         <canvas id="wall-canvas"></canvas>
-        <div class="guide" id="guide">請點選牆面的 <b>① 左上角</b></div>
+        <div class="guide" id="guide">{{ t('請點選牆面的') }} <b>{{ t('① 左上角') }}</b></div>
         <div class="canvas-tools">
-          <button type="button" class="tool-btn" id="reset-corners">↻ 重設角點</button>
-          <button type="button" class="tool-btn" id="reupload">↻ 重新上傳</button>
+          <button type="button" class="tool-btn" id="reset-corners">{{ t('↻ 重設角點') }}</button>
+          <button type="button" class="tool-btn" id="reupload">{{ t('↻ 重新上傳') }}</button>
         </div>
       </div>
     </div>
 
     <div class="panel">
-      <div class="panel-title"><span class="step-num">2</span> 選石材・輸入牆面尺寸</div>
+      <div class="panel-title"><span class="step-num">2</span> {{ t('選石材・輸入牆面尺寸') }}</div>
       <div class="stone-grid" id="stone-grid">
         {% for s in stones %}
         <div class="stone-card" data-id="{{ s.id }}">
@@ -131,28 +132,28 @@
       </div>
       <div class="dims">
         <div class="field">
-          <label>牆面寬度（cm）</label>
+          <label>{{ t('牆面寬度（cm）') }}</label>
           <input type="number" id="wall-w" value="400" min="50" max="2000" step="10">
         </div>
         <div class="field">
-          <label>牆面高度（cm）</label>
+          <label>{{ t('牆面高度（cm）') }}</label>
           <input type="number" id="wall-h" value="260" min="50" max="1000" step="10">
         </div>
       </div>
-      <label class="joint-row"><input type="checkbox" id="joints" checked> 顯示石材拼縫線（更真實，並呈現分割計畫）</label>
-      <button class="btn-go" id="btn-go" disabled>牆面模擬</button>
-      <div class="hint-sm">依牆面與石材的實際尺寸計算拼貼比例，並以透視投影貼合四角——比例與透視皆為幾何精準。若牆前有家具遮擋，可在結果使用「AI 擬真強化」修正。</div>
+      <label class="joint-row"><input type="checkbox" id="joints" checked> {{ t('顯示石材拼縫線（更真實，並呈現分割計畫）') }}</label>
+      <button class="btn-go" id="btn-go" disabled>{{ t('牆面模擬') }}</button>
+      <div class="hint-sm">{{ t('依牆面與石材的實際尺寸計算拼貼比例，並以透視投影貼合四角——比例與透視皆為幾何精準。若牆前有家具遮擋，可在結果使用「AI 擬真強化」修正。') }}</div>
       <div class="error-box" id="error-box"></div>
     </div>
   </div>
 
   <div class="panel result-panel" id="result-panel">
-    <div class="panel-title"><span class="step-num">✓</span> 模擬結果</div>
+    <div class="panel-title"><span class="step-num">✓</span> {{ t('模擬結果') }}</div>
     <div id="result-content"></div>
   </div>
 </div>
 
-<footer>ReStone 循環石材服務平台 — 支持循環經濟，讓石材物盡其用</footer>
+<footer>{{ t('ReStone 循環石材服務平台 — 支持循環經濟，讓石材物盡其用') }}</footer>
 
 <script>
 const uploadZone = document.getElementById('upload-zone');

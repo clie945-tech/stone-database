@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="zh-TW">
+<html lang="{{ html_lang }}">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>材質模擬 — AI 設計工具 — ReStone</title>
+  <title>{{ t('材質模擬 — AI 設計工具 — ReStone') }}</title>
   <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -210,13 +210,14 @@
   <div class="header-inner">
     <a href="/" class="logo">
       <span class="logo-icon">{% with size=32, sfx='dthdr' %}{% include '_logo.html' %}{% endwith %}</span>
-      <div class="logo-text">ReStone 循環石材服務平台</div>
+      <div class="logo-text">{{ t('ReStone 循環石材服務平台') }}</div>
     </a>
     <div style="display:flex;gap:0.5rem">
-      <a href="/" class="hbtn">← 返回首頁</a>
-      <a href="/sketch" class="hbtn">草圖渲染</a>
-      <a href="/my-designs" class="hbtn">我的設計</a>
-      <a href="/search/by-image" class="hbtn">以圖搜圖</a>
+      {% include '_langswitch.html' %}
+      <a href="/" class="hbtn">{{ t('← 返回首頁') }}</a>
+      <a href="/sketch" class="hbtn">{{ t('草圖渲染') }}</a>
+      <a href="/my-designs" class="hbtn">{{ t('我的設計') }}</a>
+      <a href="/search/by-image" class="hbtn">{{ t('以圖搜圖') }}</a>
     </div>
   </div>
 </header>
@@ -226,15 +227,15 @@
   <div class="page-hero">
     <div class="page-hero-inner">
       <span class="ai-tag">AI DESIGN TOOL</span>
-      <h1>材質模擬</h1>
-      <p>上傳設計圖 → 圈選要替換的區域（牆面 / 桌面 / 地板）→ 從石材庫挑材料 → AI 一鍵合成</p>
+      <h1>{{ t('材質模擬') }}</h1>
+      <p>{{ t('上傳設計圖 → 圈選要替換的區域（牆面 / 桌面 / 地板）→ 從石材庫挑材料 → AI 一鍵合成') }}</p>
     </div>
   </div>
 
   {% if not replicate_enabled %}
   <div class="alert-warn">
-    ⚠ <strong>AI 功能尚未啟用</strong>。請先在 Railway 設定環境變數
-    <code>REPLICATE_API_TOKEN</code>，平台會自動重啟並開通此功能。
+    ⚠ <strong>{{ t('AI 功能尚未啟用') }}</strong>{{ t('。請先在 Railway 設定環境變數') }}
+    <code>REPLICATE_API_TOKEN</code>{{ t('，平台會自動重啟並開通此功能。') }}
   </div>
   {% endif %}
 
@@ -244,15 +245,15 @@
     <div>
       <div class="panel">
         <div class="panel-title">
-          <span class="step-num">1</span> 上傳設計圖並圈選要替換的區域
-          <div class="panel-hint" style="margin-left:auto;">用筆刷塗選牆面、家具桌面或產品表面</div>
+          <span class="step-num">1</span> {{ t('上傳設計圖並圈選要替換的區域') }}
+          <div class="panel-hint" style="margin-left:auto;">{{ t('用筆刷塗選牆面、家具桌面或產品表面') }}</div>
         </div>
 
         <label class="upload-zone" id="upload-zone" for="design-file">
           <input type="file" id="design-file" accept="image/*,.heic,.heif">
           <div class="upload-icon"></div>
-          <div class="upload-text">點此選擇 / 拖曳上傳設計圖</div>
-          <div class="upload-sub">支援 PNG / JPG / HEIC（iPhone），建議 1024×1024 以上</div>
+          <div class="upload-text">{{ t('點此選擇 / 拖曳上傳設計圖') }}</div>
+          <div class="upload-sub">{{ t('支援 PNG / JPG / HEIC（iPhone），建議 1024×1024 以上') }}</div>
         </label>
 
         <div class="canvas-wrap" id="canvas-wrap">
@@ -261,16 +262,16 @@
         </div>
 
         <div class="canvas-tools" id="canvas-tools" style="display:none;">
-          <label>筆刷大小</label>
+          <label>{{ t('筆刷大小') }}</label>
           <input type="range" id="brush-size" min="10" max="120" value="40">
           <span id="brush-val" style="font-size:0.78rem;color:var(--text-muted);min-width:30px">40</span>
-          <button type="button" class="tool-btn" id="clear-mask">清除筆跡</button>
-          <button type="button" class="tool-btn" id="reupload">↻ 重新上傳</button>
+          <button type="button" class="tool-btn" id="clear-mask">{{ t('清除筆跡') }}</button>
+          <button type="button" class="tool-btn" id="reupload">{{ t('↻ 重新上傳') }}</button>
         </div>
       </div>
 
       <div class="result-panel panel" id="result-panel">
-        <div class="panel-title"><span class="step-num">✓</span> AI 合成結果</div>
+        <div class="panel-title"><span class="step-num">✓</span> {{ t('AI 合成結果') }}</div>
         <div id="result-content"></div>
       </div>
     </div>
@@ -279,7 +280,7 @@
     <div>
       <div class="panel">
         <div class="panel-title">
-          <span class="step-num">2</span> 選擇要套用的石材
+          <span class="step-num">2</span> {{ t('選擇要套用的石材') }}
         </div>
         <div class="stone-grid">
           {% for s in stones %}
@@ -299,14 +300,14 @@
 
         <div id="prompt-preview" style="display:none;margin-top:0.8rem">
           <div class="prompt-label" style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
-            <span>AI PROMPT <span style="font-weight:400;color:var(--text-muted);text-transform:none;letter-spacing:0">（可即時編輯）</span></span>
-            <button type="button" id="reset-prompt" style="background:none;border:none;color:var(--blue);font-size:0.7rem;font-weight:600;cursor:pointer;padding:0">↻ 還原</button>
+            <span>AI PROMPT <span style="font-weight:400;color:var(--text-muted);text-transform:none;letter-spacing:0">{{ t('（可即時編輯）') }}</span></span>
+            <button type="button" id="reset-prompt" style="background:none;border:none;color:var(--blue);font-size:0.7rem;font-weight:600;cursor:pointer;padding:0">{{ t('↻ 還原') }}</button>
           </div>
           <textarea id="prompt-text" rows="3"
             style="width:100%;padding:0.7rem 0.9rem;background:#F1F5F9;border:1px solid var(--border);border-radius:8px;font-size:0.78rem;color:var(--text);line-height:1.5;font-family:'SF Mono',Consolas,monospace;resize:vertical;outline:none"></textarea>
         </div>
 
-        <button class="btn-apply" id="btn-apply" disabled>材質模擬</button>
+        <button class="btn-apply" id="btn-apply" disabled>{{ t('材質模擬') }}</button>
         <div class="error-box" id="error-box"></div>
       </div>
     </div>

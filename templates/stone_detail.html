@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="zh-TW">
+<html lang="{{ html_lang }}">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -148,29 +148,30 @@
   <div class="header-inner">
     <a href="/" class="logo">
       <span class="logo-icon">{% with size=32, sfx='hdr' %}{% include '_logo.html' %}{% endwith %}</span>
-      <div class="logo-text">ReStone 循環石材服務平台</div>
+      <div class="logo-text">{{ t('ReStone 循環石材服務平台') }}</div>
     </a>
     <div class="header-right">
       {% if session.customer_id %}
+        {% include '_langswitch.html' %}
         <a href="/my-account" class="hbtn">{{ session.customer_name }}</a>
-        <a href="/customer/logout" class="hbtn">登出</a>
+        <a href="/customer/logout" class="hbtn">{{ t('登出') }}</a>
       {% else %}
-        <a href="/customer/login" class="hbtn">登入</a>
-        <a href="/register" class="hbtn hbtn-primary">免費註冊</a>
+        <a href="/customer/login" class="hbtn">{{ t('登入') }}</a>
+        <a href="/register" class="hbtn hbtn-primary">{{ t('免費註冊') }}</a>
       {% endif %}
-      <a href="/" class="hbtn">← 返回列表</a>
-      <a href="/admin/login" class="hbtn" style="color:var(--text-muted)">系統管理</a>
+      <a href="/" class="hbtn">{{ t('← 返回列表') }}</a>
+      <a href="/admin/login" class="hbtn" style="color:var(--text-muted)">{{ t('系統管理') }}</a>
     </div>
   </div>
 </header>
 
 <div class="container">
   <div class="breadcrumb">
-    <a href="/">首頁</a>
+    <a href="/">{{ t('首頁') }}</a>
     <span class="breadcrumb-sep">/</span>
     <a href="/?type={{ stone.stone_type }}">{{ stone.stone_type }}</a>
     <span class="breadcrumb-sep">/</span>
-    <span>詳細資料</span>
+    <span>{{ t('詳細資料') }}</span>
   </div>
 
   <div class="detail-grid">
@@ -183,9 +184,9 @@
 
       <div class="main-img-wrap">
         {% if photos %}
-          <img class="main-img" id="mainImg" src="/static/uploads/{{ photos[0] }}" alt="{{ stone.stone_name or stone.stone_type }}" onclick="openLightbox(this.src)" title="點擊放大" />
+          <img class="main-img" id="mainImg" src="/static/uploads/{{ photos[0] }}" alt="{{ stone.stone_name or stone.stone_type }}" onclick="openLightbox(this.src)" title="{{ t('點擊放大') }}" />
         {% else %}
-          <div class="img-placeholder"><div class="ph">◈</div><span>暫無照片</span></div>
+          <div class="img-placeholder"><div class="ph">◈</div><span>{{ t('暫無照片') }}</span></div>
         {% endif %}
       </div>
 
@@ -215,25 +216,25 @@
 
       {% if stone.width or stone.height or stone.thickness %}
         <div class="spec-card">
-          <div class="spec-card-title">尺寸規格</div>
-          {% if stone.width %}<div class="spec-row"><span class="spec-label">寬度</span><span class="spec-value">{{ stone.width }} cm</span></div>{% endif %}
-          {% if stone.height %}<div class="spec-row"><span class="spec-label">高度 / 長度</span><span class="spec-value">{{ stone.height }} cm</span></div>{% endif %}
-          {% if stone.thickness %}<div class="spec-row"><span class="spec-label">厚度</span><span class="spec-value">{{ stone.thickness }} cm</span></div>{% endif %}
+          <div class="spec-card-title">{{ t('尺寸規格') }}</div>
+          {% if stone.width %}<div class="spec-row"><span class="spec-label">{{ t('寬度') }}</span><span class="spec-value">{{ stone.width }} cm</span></div>{% endif %}
+          {% if stone.height %}<div class="spec-row"><span class="spec-label">{{ t('高度 / 長度') }}</span><span class="spec-value">{{ stone.height }} cm</span></div>{% endif %}
+          {% if stone.thickness %}<div class="spec-row"><span class="spec-label">{{ t('厚度') }}</span><span class="spec-value">{{ stone.thickness }} cm</span></div>{% endif %}
         </div>
       {% endif %}
 
       {% if stone.vendor %}
         <div class="spec-card">
-          <div class="spec-card-title">廠商資訊</div>
-          <div class="spec-row"><span class="spec-label">廠商名稱</span><span class="spec-value">{{ stone.vendor }}</span></div>
+          <div class="spec-card-title">{{ t('廠商資訊') }}</div>
+          <div class="spec-row"><span class="spec-label">{{ t('廠商名稱') }}</span><span class="spec-value">{{ stone.vendor }}</span></div>
         </div>
       {% endif %}
 
       {% if stone['color'] and stone['color'] in color_map %}
         <div class="spec-card">
-          <div class="spec-card-title">顏色標籤</div>
+          <div class="spec-card-title">{{ t('顏色標籤') }}</div>
           <div class="spec-row">
-            <span class="spec-label">顏色</span>
+            <span class="spec-label">{{ t('顏色') }}</span>
             <span class="spec-value">
               <span style="background:{{ color_map[stone['color']][2] }};color:{{ color_map[stone['color']][3] }};padding:3px 14px;border-radius:99px;font-size:0.82rem;font-weight:700;display:inline-block">{{ color_map[stone['color']][1] }}</span>
             </span>
@@ -242,22 +243,22 @@
       {% endif %}
 
       <div class="price-card">
-        <div class="price-label">單價</div>
+        <div class="price-label">{{ t('單價') }}</div>
         {% if stone.price %}
           <div><span class="price-main">NT${{ "{:,.0f}".format(stone.price) }}</span><span class="price-unit">/ {{ stone.unit or '片' }}</span></div>
         {% else %}
-          <div class="price-main" style="font-size:1.5rem;opacity:0.8">價格洽詢</div>
+          <div class="price-main" style="font-size:1.5rem;opacity:0.8">{{ t('價格洽詢') }}</div>
         {% endif %}
         <div class="price-divider"></div>
         <div class="price-stock">
-          <span class="price-stock-label">目前庫存</span>
+          <span class="price-stock-label">{{ t('目前庫存') }}</span>
           <span class="price-stock-value">{{ stone.quantity or '—' }} {{ stone.unit or '片' }}</span>
         </div>
       </div>
 
       {% if stone.description %}
         <div class="desc-card">
-          <div class="desc-title">備註說明</div>
+          <div class="desc-title">{{ t('備註說明') }}</div>
           <div class="desc-text">{{ stone.description }}</div>
         </div>
       {% endif %}
@@ -266,35 +267,35 @@
 
   <!-- AI 設計工具入口（僅限會員） -->
   <div class="inquiry-section">
-    <div class="section-title">套用到我的設計</div>
+    <div class="section-title">{{ t('套用到我的設計') }}</div>
     {% if session.customer_id %}
       <div class="inquiry-card" style="display:flex;align-items:center;gap:1.2rem;flex-wrap:wrap;background:linear-gradient(135deg,#EFF6FF,#E0E7FF);border-color:#BFDBFE">
         <div style="flex:1;min-width:240px">
           <div style="font-size:0.95rem;font-weight:700;margin-bottom:0.3rem">將「{{ stone.stone_name or stone.stone_type }}」套用到你的設計圖</div>
-          <div style="font-size:0.82rem;color:var(--text-muted);line-height:1.6">上傳室內 / 家具 / 產品設計圖，用筆刷圈選牆面、桌面或表面區域，AI 會用此石材紋理自動合成新圖。</div>
+          <div style="font-size:0.82rem;color:var(--text-muted);line-height:1.6">{{ t('上傳室內 / 家具 / 產品設計圖，用筆刷圈選牆面、桌面或表面區域，AI 會用此石材紋理自動合成新圖。') }}</div>
         </div>
         <a href="/design-tool?stone_id={{ stone.id }}"
            style="padding:0.85rem 1.5rem;background:linear-gradient(135deg,#2563EB,#7C3AED);color:white;border-radius:12px;font-weight:700;font-size:0.9rem;text-decoration:none;box-shadow:0 6px 20px rgba(124,58,237,0.25);white-space:nowrap">
-開啟 AI 設計工具 →
+{{ t('開啟 AI 設計工具 →') }}
         </a>
       </div>
     {% else %}
       <div class="inquiry-card" style="display:flex;align-items:center;gap:1.2rem;flex-wrap:wrap;background:linear-gradient(135deg,#F8FAFC,#EFF6FF);border-style:dashed">
         <div style="flex:1;min-width:240px">
           <div style="font-size:0.95rem;font-weight:700;margin-bottom:0.3rem;display:flex;align-items:center;gap:6px">
-            <span style="background:#7C3AED;color:white;font-size:0.65rem;font-weight:700;padding:2px 8px;border-radius:50px;letter-spacing:0.05em">會員專屬</span>
-AI 設計工具
+            <span style="background:#7C3AED;color:white;font-size:0.65rem;font-weight:700;padding:2px 8px;border-radius:50px;letter-spacing:0.05em">{{ t('會員專屬') }}</span>
+{{ t('AI 設計工具') }}
           </div>
-          <div style="font-size:0.82rem;color:var(--text-muted);line-height:1.6">將此石材紋理套用到你的設計圖（牆面、桌面、產品表面）。<strong style="color:var(--text)">請先登入會員</strong>才能使用。</div>
+          <div style="font-size:0.82rem;color:var(--text-muted);line-height:1.6">{{ t('將此石材紋理套用到你的設計圖（牆面、桌面、產品表面）。') }}<strong style="color:var(--text)">{{ t('請先登入會員') }}</strong>{{ t('才能使用。') }}</div>
         </div>
         <div style="display:flex;gap:0.5rem;white-space:nowrap">
           <a href="/customer/login"
              style="padding:0.75rem 1.2rem;background:linear-gradient(135deg,#2563EB,#7C3AED);color:white;border-radius:10px;font-weight:700;font-size:0.85rem;text-decoration:none">
-            登入會員 →
+            {{ t('登入會員 →') }}
           </a>
           <a href="/register"
              style="padding:0.75rem 1.2rem;background:white;color:var(--text);border:1px solid var(--border);border-radius:10px;font-weight:600;font-size:0.85rem;text-decoration:none">
-            註冊
+            {{ t('註冊') }}
           </a>
         </div>
       </div>
@@ -304,25 +305,25 @@ AI 設計工具
   <!-- 用量計算機 -->
   {% if stone.width and stone.height %}
   <div class="inquiry-section">
-    <div class="section-title">用量計算機</div>
+    <div class="section-title">{{ t('用量計算機') }}</div>
     <div class="inquiry-card">
-      <p style="font-size:0.85rem;color:var(--text-muted);margin-bottom:1.5rem">輸入您的空間尺寸，自動計算所需石材數量與預估費用</p>
+      <p style="font-size:0.85rem;color:var(--text-muted);margin-bottom:1.5rem">{{ t('輸入您的空間尺寸，自動計算所需石材數量與預估費用') }}</p>
       <div class="form-grid-2">
         <div class="form-group">
-          <label class="form-label">空間長度（公尺）</label>
-          <input class="form-input" type="number" id="roomL" step="0.1" min="0" placeholder="例：5.0" oninput="calcQty()" />
+          <label class="form-label">{{ t('空間長度（公尺）') }}</label>
+          <input class="form-input" type="number" id="roomL" step="0.1" min="0" placeholder="{{ t('例：5.0') }}" oninput="calcQty()" />
         </div>
         <div class="form-group">
-          <label class="form-label">空間寬度（公尺）</label>
-          <input class="form-input" type="number" id="roomW" step="0.1" min="0" placeholder="例：4.0" oninput="calcQty()" />
+          <label class="form-label">{{ t('空間寬度（公尺）') }}</label>
+          <input class="form-input" type="number" id="roomW" step="0.1" min="0" placeholder="{{ t('例：4.0') }}" oninput="calcQty()" />
         </div>
       </div>
       <div class="form-group">
-        <label class="form-label">損耗率（%）</label>
+        <label class="form-label">{{ t('損耗率（%）') }}</label>
         <div style="display:flex;gap:0.5rem;flex-wrap:wrap">
-          <button type="button" class="waste-btn active" onclick="setWaste(this,10)">10%（一般）</button>
-          <button type="button" class="waste-btn" onclick="setWaste(this,15)">15%（複雜空間）</button>
-          <button type="button" class="waste-btn" onclick="setWaste(this,20)">20%（異形切割）</button>
+          <button type="button" class="waste-btn active" onclick="setWaste(this,10)">{{ t('10%（一般）') }}</button>
+          <button type="button" class="waste-btn" onclick="setWaste(this,15)">{{ t('15%（複雜空間）') }}</button>
+          <button type="button" class="waste-btn" onclick="setWaste(this,20)">{{ t('20%（異形切割）') }}</button>
         </div>
       </div>
 
@@ -330,7 +331,7 @@ AI 設計工具
         <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;text-align:center">
           <div>
             <div style="font-size:1.8rem;font-weight:800;color:var(--blue)" id="resArea">—</div>
-            <div style="font-size:0.7rem;color:var(--text-muted);margin-top:4px">需鋪面積（m²）</div>
+            <div style="font-size:0.7rem;color:var(--text-muted);margin-top:4px">{{ t('需鋪面積（m²）') }}</div>
           </div>
           <div>
             <div style="font-size:1.8rem;font-weight:800;color:var(--blue)" id="resQty">—</div>
@@ -338,7 +339,7 @@ AI 設計工具
           </div>
           <div>
             <div style="font-size:1.8rem;font-weight:800;color:var(--blue)" id="resPrice">—</div>
-            <div style="font-size:0.7rem;color:var(--text-muted);margin-top:4px">預估費用（NT$）</div>
+            <div style="font-size:0.7rem;color:var(--text-muted);margin-top:4px">{{ t('預估費用（NT$）') }}</div>
           </div>
         </div>
         <div id="resNote" style="font-size:0.75rem;color:var(--text-muted);margin-top:1rem;text-align:center"></div>
@@ -352,11 +353,11 @@ AI 設計工具
   {% if _carbon > 0 %}
   {% set _eq = carbon_eq(_carbon) %}
   <div class="inquiry-section">
-    <div class="section-title">永續貢獻</div>
+    <div class="section-title">{{ t('永續貢獻') }}</div>
     <div class="inquiry-card" style="background:linear-gradient(135deg,#ECFDF5 0%,#D1FAE5 100%);border:1px solid #10B981;position:relative;overflow:hidden">
       <div style="position:absolute;right:-30px;top:-30px;font-size:14rem;opacity:0.06;color:#065F46"></div>
       <div style="position:relative">
-        <p style="font-size:0.78rem;letter-spacing:0.15em;color:#065F46;font-weight:700;margin-bottom:0.5rem">SUSTAINABILITY IMPACT · 選用此循環石材，您將：</p>
+        <p style="font-size:0.78rem;letter-spacing:0.15em;color:#065F46;font-weight:700;margin-bottom:0.5rem">{{ t('SUSTAINABILITY IMPACT · 選用此循環石材，您將：') }}</p>
 
         <div style="display:flex;align-items:baseline;gap:0.6rem;margin-bottom:0.4rem">
           <div style="font-size:2.6rem;font-weight:900;color:#065F46;line-height:1;letter-spacing:-0.02em">
@@ -364,29 +365,29 @@ AI 設計工具
           </div>
           <div style="font-size:1rem;color:#065F46;font-weight:600">CO₂e</div>
         </div>
-        <p style="font-size:0.85rem;color:#047857;margin-bottom:1.5rem">的二氧化碳排放（相當於以下情境）</p>
+        <p style="font-size:0.85rem;color:#047857;margin-bottom:1.5rem">{{ t('的二氧化碳排放（相當於以下情境）') }}</p>
 
         <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem">
           <div style="background:white;border-radius:10px;padding:0.9rem 1rem;border:1px solid #BBF7D0">
             <div style="font-size:1.8rem;line-height:1"></div>
             <div style="font-size:1.4rem;font-weight:900;color:#065F46;margin-top:0.3rem;line-height:1">{{ "{:.1f}".format(_eq.trees) }}</div>
-            <div style="font-size:0.75rem;color:#047857;margin-top:0.2rem">棵成樹一年吸收量</div>
+            <div style="font-size:0.75rem;color:#047857;margin-top:0.2rem">{{ t('棵成樹一年吸收量') }}</div>
           </div>
           <div style="background:white;border-radius:10px;padding:0.9rem 1rem;border:1px solid #BBF7D0">
             <div style="font-size:1.8rem;line-height:1"></div>
             <div style="font-size:1.4rem;font-weight:900;color:#065F46;margin-top:0.3rem;line-height:1">{{ "{:,.0f}".format(_eq.car_km) }}</div>
-            <div style="font-size:0.75rem;color:#047857;margin-top:0.2rem">公里汽車排放量</div>
+            <div style="font-size:0.75rem;color:#047857;margin-top:0.2rem">{{ t('公里汽車排放量') }}</div>
           </div>
           <div style="background:white;border-radius:10px;padding:0.9rem 1rem;border:1px solid #BBF7D0">
             <div style="font-size:1.8rem;line-height:1"></div>
             <div style="font-size:1.4rem;font-weight:900;color:#065F46;margin-top:0.3rem;line-height:1">{{ "{:,.0f}".format(_eq.kwh) }}</div>
-            <div style="font-size:0.75rem;color:#047857;margin-top:0.2rem">度電的排放量</div>
+            <div style="font-size:0.75rem;color:#047857;margin-top:0.2rem">{{ t('度電的排放量') }}</div>
           </div>
         </div>
 
         <p style="font-size:0.7rem;color:#065F46;opacity:0.7;margin-top:1.2rem;line-height:1.5">
-計算基準：<strong>ICE Database v3.0</strong>（University of Bath, UK）· 範疇：cradle-to-gate（開採至出廠）·
-          換算係數：1 棵成樹/年 ≈ 21 kg CO₂、汽車 ≈ 120 g/km、台電 ≈ 0.495 kg/kWh
+{{ t('計算基準：') }}<strong>ICE Database v3.0</strong>{{ t('（University of Bath, UK）· 範疇：cradle-to-gate（開採至出廠）·
+          換算係數：1 棵成樹/年 ≈ 21 kg CO₂、汽車 ≈ 120 g/km、台電 ≈ 0.495 kg/kWh') }}
         </p>
       </div>
     </div>
@@ -395,7 +396,7 @@ AI 設計工具
 
   <!-- 詢問表單（僅限會員） -->
   <div class="inquiry-section">
-    <div class="section-title">聯繫廠商 / 詢問訂購</div>
+    <div class="section-title">{{ t('聯繫廠商 / 詢問訂購') }}</div>
     <div class="inquiry-card">
       {% with messages = get_flashed_messages(with_categories=true) %}
         {% for category, message in messages %}
@@ -407,14 +408,14 @@ AI 設計工具
         <form method="post" action="/stone/{{ stone.id }}/inquiry">
           <div class="form-grid-2">
             <div class="form-group">
-              <label class="form-label">姓名 <span class="required">*</span></label>
+              <label class="form-label">{{ t('姓名') }} <span class="required">*</span></label>
               <input class="form-input" type="text" name="name"
                 value="{{ session.customer_name }}"
-                placeholder="您的姓名" required />
+                placeholder="{{ t('您的姓名') }}" required />
             </div>
             <div class="form-group">
-              <label class="form-label">電話</label>
-              <input class="form-input" type="tel" name="phone" placeholder="選填" />
+              <label class="form-label">{{ t('電話') }}</label>
+              <input class="form-input" type="tel" name="phone" placeholder="{{ t('選填') }}" />
             </div>
           </div>
           <div class="form-grid-2">
@@ -425,31 +426,31 @@ AI 設計工具
                 placeholder="your@email.com" required />
             </div>
             <div class="form-group">
-              <label class="form-label">詢問數量</label>
-              <input class="form-input" type="number" name="quantity" min="1" placeholder="例：10" />
+              <label class="form-label">{{ t('詢問數量') }}</label>
+              <input class="form-input" type="number" name="quantity" min="1" placeholder="{{ t('例：10') }}" />
             </div>
           </div>
           <div class="form-group">
-            <label class="form-label">訊息內容</label>
-            <textarea class="form-textarea" name="message" placeholder="請描述您的需求、使用場景或其他問題..."></textarea>
+            <label class="form-label">{{ t('訊息內容') }}</label>
+            <textarea class="form-textarea" name="message" placeholder="{{ t('請描述您的需求、使用場景或其他問題...') }}"></textarea>
           </div>
-          <button type="submit" class="btn-submit">送出詢問</button>
+          <button type="submit" class="btn-submit">{{ t('送出詢問') }}</button>
         </form>
       {% else %}
         <div style="text-align:center;padding:2rem 1rem">
           <div style="font-size:2rem;opacity:0.2;margin-bottom:0.8rem"></div>
-          <div style="font-size:0.95rem;font-weight:700;margin-bottom:0.5rem">詢問訂購為會員專屬功能</div>
+          <div style="font-size:0.95rem;font-weight:700;margin-bottom:0.5rem">{{ t('詢問訂購為會員專屬功能') }}</div>
           <div style="font-size:0.85rem;color:var(--text-muted);margin-bottom:1.5rem;line-height:1.6">
-            登入會員即可向廠商詢問此石材，並可在「我的帳號」中追蹤詢問狀態
+            {{ t('登入會員即可向廠商詢問此石材，並可在「我的帳號」中追蹤詢問狀態') }}
           </div>
           <div style="display:flex;gap:0.6rem;justify-content:center;flex-wrap:wrap">
             <a href="/customer/login"
                style="padding:0.8rem 1.6rem;background:var(--blue);color:white;border-radius:10px;font-weight:700;font-size:0.88rem;text-decoration:none">
-              登入會員 →
+              {{ t('登入會員 →') }}
             </a>
             <a href="/register"
                style="padding:0.8rem 1.6rem;background:white;color:var(--text);border:1px solid var(--border);border-radius:10px;font-weight:600;font-size:0.88rem;text-decoration:none">
-              註冊新帳號
+              {{ t('註冊新帳號') }}
             </a>
           </div>
         </div>
@@ -460,7 +461,7 @@ AI 設計工具
   <!-- 智慧推薦 -->
   {% if recommendations %}
   <div class="inquiry-section">
-    <div class="section-title">你可能也喜歡</div>
+    <div class="section-title">{{ t('你可能也喜歡') }}</div>
     <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:1rem">
       {% for r in recommendations %}
         <a href="/stone/{{ r.id }}" class="rec" style="background:var(--white);border-radius:14px;border:1px solid var(--border);overflow:hidden;text-decoration:none;color:inherit;transition:all 0.2s;display:block" onmouseover="this.style.transform='translateY(-3px)'" onmouseout="this.style.transform=''">
@@ -486,13 +487,13 @@ AI 設計工具
   {% endif %}
 </div>
 
-<footer>ReStone 循環石材服務平台 — 支持循環經濟，讓石材物盡其用</footer>
+<footer>{{ t('ReStone 循環石材服務平台 — 支持循環經濟，讓石材物盡其用') }}</footer>
 
 <!-- Lightbox -->
 <div class="lightbox" id="lightbox" onclick="closeLightbox()">
   <div class="lightbox-close" onclick="closeLightbox()"></div>
   <img id="lightboxImg" src="" alt="" onclick="event.stopPropagation()" />
-  <div class="lightbox-hint">點擊任意處關閉 · 按 ESC 離開</div>
+  <div class="lightbox-hint">{{ t('點擊任意處關閉 · 按 ESC 離開') }}</div>
 </div>
 
 <script>

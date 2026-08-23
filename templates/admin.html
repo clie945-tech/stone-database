@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="zh-TW">
+<html lang="{{ html_lang }}">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>管理後台 — ReStone 循環石材服務平台</title>
+  <title>{{ t('管理後台 — ReStone 循環石材服務平台') }}</title>
   <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -124,42 +124,43 @@
   <div class="sidebar-logo">
     <span class="sidebar-logo-icon">{% with size=34, sfx='sb' %}{% include '_logo.html' %}{% endwith %}</span>
     <div>
-      <div class="sidebar-logo-text">ReStone 循環石材服務平台</div>
-      <div class="sidebar-logo-sub">管理後台</div>
+      <div class="sidebar-logo-text">{{ t('ReStone 循環石材服務平台') }}</div>
+      <div class="sidebar-logo-sub">{{ t('管理後台') }}</div>
     </div>
   </div>
   <div class="sidebar-nav">
-    <div class="sidebar-section">管理</div>
-    <a href="/admin" class="nav-item active"><span class="icon">▦</span> 石材管理</a>
-    <a href="/admin/add" class="nav-item"><span class="icon">＋</span> 新增石材</a>
+    <div class="sidebar-section">{{ t('管理') }}</div>
+    <a href="/admin" class="nav-item active"><span class="icon">▦</span> {{ t('石材管理') }}</a>
+    <a href="/admin/add" class="nav-item"><span class="icon">＋</span> {{ t('新增石材') }}</a>
     <a href="/admin/inquiries" class="nav-item">
       <span class="icon">✉</span> 詢問管理
       {% if new_inquiries > 0 %}<span style="margin-left:auto;background:var(--blue);color:white;font-size:0.65rem;padding:1px 7px;border-radius:10px;font-weight:700">{{ new_inquiries }}</span>{% endif %}
     </a>
-    <a href="/admin/customers" class="nav-item">會員管理</a>
-    <a href="/admin/news" class="nav-item"><span class="icon">▣</span> 最新消息</a>
-    <div class="sidebar-section">系統</div>
-    <a href="/admin/change-password" class="nav-item">修改密碼</a>
-    <a href="/" class="nav-item" target="_blank"><span class="icon">↗</span> 前台預覽</a>
+    <a href="/admin/customers" class="nav-item">{{ t('會員管理') }}</a>
+    <a href="/admin/news" class="nav-item"><span class="icon">▣</span> {{ t('最新消息') }}</a>
+    <div class="sidebar-section">{{ t('系統') }}</div>
+    <a href="/admin/change-password" class="nav-item">{{ t('修改密碼') }}</a>
+    <a href="/" class="nav-item" target="_blank"><span class="icon">↗</span> {{ t('前台預覽') }}</a>
   </div>
   <div class="sidebar-footer">
-    <div class="admin-name">管理員</div>
-    <a href="/admin/logout">登出 →</a>
+    <div class="admin-name">{{ t('管理員') }}</div>
+    <a href="/admin/logout">{{ t('登出 →') }}</a>
   </div>
 </nav>
 
 <div class="main-wrap">
   <div class="topbar">
-    <div class="topbar-title">石材庫存管理</div>
+    <div class="topbar-title">{{ t('石材庫存管理') }}</div>
     <div class="topbar-actions">
       <form method="post" action="/admin/reindex-images" style="display:inline" onsubmit="return confirm('將為所有現有石材重新計算 AI 圖片索引（顏色與相似度比對用），可能需要幾秒鐘。是否繼續？')">
-        <button type="submit" class="btn btn-secondary" title="為現有照片建立 AI 索引">重新索引照片</button>
+        <button type="submit" class="btn btn-secondary" title="{{ t('為現有照片建立 AI 索引') }}">{{ t('重新索引照片') }}</button>
       </form>
-      <button type="button" id="btn-reanalyze" class="btn btn-secondary" title="用視覺 AI 逐張重寫所有石材的 Prompt">重新分析 Prompt</button>
-      <a href="/admin/showcase" class="btn btn-secondary" title="用 Gemini 生成展覽用情境圖">展覽圖庫</a>
-      <a href="/admin/export/stones" class="btn btn-secondary">↓ 匯出 Excel</a>
-      <a href="/admin/add" class="btn btn-primary">＋ 新增石材</a>
+      <button type="button" id="btn-reanalyze" class="btn btn-secondary" title="{{ t('用視覺 AI 逐張重寫所有石材的 Prompt') }}">{{ t('重新分析 Prompt') }}</button>
+      <a href="/admin/showcase" class="btn btn-secondary" title="{{ t('用 Gemini 生成展覽用情境圖') }}">{{ t('展覽圖庫') }}</a>
+      <a href="/admin/export/stones" class="btn btn-secondary">{{ t('↓ 匯出 Excel') }}</a>
+      <a href="/admin/add" class="btn btn-primary">{{ t('＋ 新增石材') }}</a>
     </div>
+      {% include '_langswitch.html' %}
   </div>
 
   <div class="content">
@@ -173,16 +174,16 @@
 
     <div class="stats-row">
       <div class="stat-card">
-        <div class="stat-label">石材項目總數</div>
+        <div class="stat-label">{{ t('石材項目總數') }}</div>
         <div class="stat-value">{{ total }}</div>
       </div>
       <div class="stat-card">
-        <div class="stat-label">石材種類</div>
+        <div class="stat-label">{{ t('石材種類') }}</div>
         <div class="stat-value">{{ stones | map(attribute='stone_type') | list | unique | list | length }}</div>
       </div>
       {% if total_carbon_kg and total_carbon_kg > 0 %}
       <div class="stat-card" style="background:linear-gradient(135deg,#ECFDF5,#D1FAE5);border:1px solid #10B981">
-        <div class="stat-label" style="color:#065F46">累積減碳 CO₂e</div>
+        <div class="stat-label" style="color:#065F46">{{ t('累積減碳 CO₂e') }}</div>
         <div class="stat-value" style="color:#065F46">{{ fmt_carbon(total_carbon_kg) }}</div>
         <div style="font-size:0.7rem;color:#047857;margin-top:4px">≈ {{ "{:.1f}".format(total_carbon_kg / 21) }} 棵樹一年吸收量</div>
       </div>
@@ -191,19 +192,19 @@
 
     <div class="table-card">
       <div class="table-header">
-        <h3>所有石材庫存</h3>
+        <h3>{{ t('所有石材庫存') }}</h3>
         <span>共 {{ total }} 筆</span>
       </div>
       <table>
         <thead>
           <tr>
-            <th>圖片</th>
-            <th>石材種類</th>
-            <th>尺寸 (cm)</th>
-            <th>數量</th>
-            <th>單價</th>
-            <th>廠商</th>
-            <th>操作</th>
+            <th>{{ t('圖片') }}</th>
+            <th>{{ t('石材種類') }}</th>
+            <th>{{ t('尺寸 (cm)') }}</th>
+            <th>{{ t('數量') }}</th>
+            <th>{{ t('單價') }}</th>
+            <th>{{ t('廠商') }}</th>
+            <th>{{ t('操作') }}</th>
           </tr>
         </thead>
         <tbody>
@@ -234,19 +235,19 @@
                 </td>
                 <td>
                   {% if s.price %}<span class="price-val">NT${{ "{:,.0f}".format(s.price) }}</span>
-                  {% else %}<span style="color:var(--text-light);font-size:0.8rem">洽詢</span>{% endif %}
+                  {% else %}<span style="color:var(--text-light);font-size:0.8rem">{{ t('洽詢') }}</span>{% endif %}
                 </td>
                 <td>{{ s.vendor or '—' }}</td>
                 <td>
                   <div class="actions">
-                    <a href="/admin/edit/{{ s.id }}" class="btn btn-secondary btn-sm">編輯</a>
-                    <button onclick="confirmDelete({{ s.id }}, '{{ s.stone_name or s.stone_type }}')" class="btn btn-danger btn-sm">刪除</button>
+                    <a href="/admin/edit/{{ s.id }}" class="btn btn-secondary btn-sm">{{ t('編輯') }}</a>
+                    <button onclick="confirmDelete({{ s.id }}, '{{ s.stone_name or s.stone_type }}')" class="btn btn-danger btn-sm">{{ t('刪除') }}</button>
                   </div>
                 </td>
               </tr>
             {% endfor %}
           {% else %}
-            <tr class="empty-row"><td colspan="7">目前沒有石材資料，請點擊「新增石材」開始建立庫存</td></tr>
+            <tr class="empty-row"><td colspan="7">{{ t('目前沒有石材資料，請點擊「新增石材」開始建立庫存') }}</td></tr>
           {% endif %}
         </tbody>
       </table>
@@ -256,12 +257,12 @@
 
 <div class="modal-overlay" id="deleteModal">
   <div class="modal">
-    <h3>確認刪除</h3>
-    <p id="deleteMsg">確定要刪除這筆石材資料嗎？此操作無法復原。</p>
+    <h3>{{ t('確認刪除') }}</h3>
+    <p id="deleteMsg">{{ t('確定要刪除這筆石材資料嗎？此操作無法復原。') }}</p>
     <div class="modal-actions">
-      <button class="btn btn-secondary" onclick="closeModal()">取消</button>
+      <button class="btn btn-secondary" onclick="closeModal()">{{ t('取消') }}</button>
       <form id="deleteForm" method="post" style="display:inline;">
-        <button type="submit" class="btn btn-danger">確認刪除</button>
+        <button type="submit" class="btn btn-danger">{{ t('確認刪除') }}</button>
       </form>
     </div>
   </div>

@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="zh-TW">
+<html lang="{{ html_lang }}">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>展覽圖庫 — ReStone 後台</title>
+  <title>{{ t('展覽圖庫 — ReStone 後台') }}</title>
   <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
@@ -49,17 +49,18 @@
 <body>
 <header>
   <div class="header-inner">
-    <a href="/admin" class="logo">◈ ReStone 後台</a>
-    <a href="/admin" class="btn-link">← 返回庫存</a>
+    <a href="/admin" class="logo">{{ t('◈ ReStone 後台') }}</a>
+    {% include '_langswitch.html' %}
+    <a href="/admin" class="btn-link">{{ t('← 返回庫存') }}</a>
   </div>
 </header>
 
 <div class="container">
-  <div class="page-title">展覽圖庫</div>
-  <div class="page-sub">用 Gemini 把每塊石材直接生成在精緻的空間情境中（免遮罩、一步到位），供 iPad 展覽模式秒選秒看。</div>
+  <div class="page-title">{{ t('展覽圖庫') }}</div>
+  <div class="page-sub">{{ t('用 Gemini 把每塊石材直接生成在精緻的空間情境中（免遮罩、一步到位），供 iPad 展覽模式秒選秒看。') }}</div>
 
   {% if not gemini_enabled %}
-    <div class="warn">⚠ 尚未設定 GEMINI_API_KEY，無法生成。請先在 Railway 設定金鑰。</div>
+    <div class="warn">{{ t('⚠ 尚未設定 GEMINI_API_KEY，無法生成。請先在 Railway 設定金鑰。') }}</div>
   {% endif %}
 
   {% with messages = get_flashed_messages(with_categories=true) %}
@@ -67,9 +68,9 @@
   {% endwith %}
 
   <div class="card">
-    <h2>生成計畫（5 個情境）</h2>
+    <h2>{{ t('生成計畫（5 個情境）') }}</h2>
     <table>
-      <thead><tr><th>情境</th><th>套用石材</th><th>狀態</th><th></th></tr></thead>
+      <thead><tr><th>{{ t('情境') }}</th><th>{{ t('套用石材') }}</th><th>{{ t('狀態') }}</th><th></th></tr></thead>
       <tbody>
         {% for p in plan %}
         <tr data-scene="{{ p.scene_index }}">
@@ -82,37 +83,37 @@
             </select>
           </td>
           <td class="row-status">—</td>
-          <td><button type="button" class="btn btn-sm gen-one" {% if not gemini_enabled %}disabled{% endif %}>生成這張</button></td>
+          <td><button type="button" class="btn btn-sm gen-one" {% if not gemini_enabled %}disabled{% endif %}>{{ t('生成這張') }}</button></td>
         </tr>
         {% endfor %}
       </tbody>
     </table>
     <div class="actions">
-      <button type="button" id="gen-all" class="btn btn-primary" {% if not gemini_enabled %}disabled{% endif %}>全部生成（5 張）</button>
+      <button type="button" id="gen-all" class="btn btn-primary" {% if not gemini_enabled %}disabled{% endif %}>{{ t('全部生成（5 張）') }}</button>
       <span id="status"></span>
     </div>
-    <div class="page-sub" style="margin-top:.8rem">每張間隔約 15 秒以符合速率；生成成功會即時出現在下方圖庫。每張約 NT$1.2。</div>
+    <div class="page-sub" style="margin-top:.8rem">{{ t('每張間隔約 15 秒以符合速率；生成成功會即時出現在下方圖庫。每張約 NT$1.2。') }}</div>
   </div>
 
   <div class="card">
-    <h2>已生成圖庫 <span style="color:var(--text-muted);font-weight:400;font-size:.85rem">共 <span id="count">{{ images|length }}</span> 張</span></h2>
+    <h2>{{ t('已生成圖庫') }} <span style="color:var(--text-muted);font-weight:400;font-size:.85rem">{{ t('共') }} <span id="count">{{ images|length }}</span> {{ t('張') }}</span></h2>
     <div class="grid" id="gallery">
       {% for im in images %}
       <div class="shot">
         <a class="img" href="{{ url_for('static', filename='uploads/' + im.image_file) }}" target="_blank">
-          <img src="{{ url_for('static', filename='uploads/' + im.image_file) }}" alt="展覽圖" loading="lazy">
+          <img src="{{ url_for('static', filename='uploads/' + im.image_file) }}" alt="{{ t('展覽圖') }}" loading="lazy">
         </a>
         <div class="meta">
           <div class="scene">{{ im.scene_label }}</div>
           <div class="stone">{{ im.stone_name }} · {{ im.created_at[:16] }}</div>
           <form method="POST" action="/admin/showcase/{{ im.id }}/delete" onsubmit="return confirm('刪除這張展覽圖？')">
-            <button class="del" type="submit">刪除</button>
+            <button class="del" type="submit">{{ t('刪除') }}</button>
           </form>
         </div>
       </div>
       {% endfor %}
     </div>
-    {% if not images %}<div class="empty" id="empty-hint">尚未生成任何展覽圖，點上方「全部生成」開始。</div>{% endif %}
+    {% if not images %}<div class="empty" id="empty-hint">{{ t('尚未生成任何展覽圖，點上方「全部生成」開始。') }}</div>{% endif %}
   </div>
 </div>
 

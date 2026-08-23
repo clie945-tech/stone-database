@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="zh-TW">
+<html lang="{{ html_lang }}">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>會員註冊 — ReStone</title>
+  <title>{{ t('會員註冊 — ReStone') }}</title>
   <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -57,13 +57,14 @@
   <script src="/static/motion.js?v=1" defer></script>
 </head>
 <body>
+<div style="position:fixed;top:1rem;right:1rem;z-index:999">{% include '_langswitch.html' %}</div>
 <div class="wrap">
   <div class="logo">
-    <a href="/"><span class="logo-icon">{% with size=32, sfx='hdr' %}{% include '_logo.html' %}{% endwith %}</span><div class="logo-text">ReStone 循環石材服務平台</div></a>
+    <a href="/"><span class="logo-icon">{% with size=32, sfx='hdr' %}{% include '_logo.html' %}{% endwith %}</span><div class="logo-text">{{ t('ReStone 循環石材服務平台') }}</div></a>
   </div>
   <div class="card">
-    <div class="card-title">會員註冊</div>
-    <div class="card-sub">建立帳號以追蹤您的詢問紀錄</div>
+    <div class="card-title">{{ t('會員註冊') }}</div>
+    <div class="card-sub">{{ t('建立帳號以追蹤您的詢問紀錄') }}</div>
 
     {% with messages = get_flashed_messages(with_categories=true) %}
       {% for category, message in messages %}
@@ -74,12 +75,12 @@
     <form method="post">
       <div class="form-row">
         <div class="form-group">
-          <label>姓名 <span class="required">*</span></label>
-          <input type="text" name="name" placeholder="您的姓名" required />
+          <label>{{ t('姓名') }} <span class="required">*</span></label>
+          <input type="text" name="name" placeholder="{{ t('您的姓名') }}" required />
         </div>
         <div class="form-group">
-          <label>電話</label>
-          <input type="tel" name="phone" placeholder="選填" />
+          <label>{{ t('電話') }}</label>
+          <input type="tel" name="phone" placeholder="{{ t('選填') }}" />
         </div>
       </div>
       <div class="form-group">
@@ -87,18 +88,18 @@
         <input type="email" name="email" placeholder="your@email.com" required />
       </div>
       <div class="form-group">
-        <label>密碼 <span class="required">*</span></label>
-        <input type="password" name="password" placeholder="至少 6 個字元" required minlength="6" />
+        <label>{{ t('密碼') }} <span class="required">*</span></label>
+        <input type="password" name="password" placeholder="{{ t('至少 6 個字元') }}" required minlength="6" />
       </div>
       <div class="form-group">
-        <label>確認密碼 <span class="required">*</span></label>
-        <input type="password" name="confirm_password" placeholder="再次輸入密碼" required />
+        <label>{{ t('確認密碼') }} <span class="required">*</span></label>
+        <input type="password" name="confirm_password" placeholder="{{ t('再次輸入密碼') }}" required />
       </div>
-      <button type="submit" class="btn">建立帳號</button>
+      <button type="submit" class="btn">{{ t('建立帳號') }}</button>
     </form>
 
-    <div class="divider"><span>已有帳號？</span></div>
-    <a href="/customer/login" class="link">登入會員 →</a>
+    <div class="divider"><span>{{ t('已有帳號？') }}</span></div>
+    <a href="/customer/login" class="link">{{ t('登入會員 →') }}</a>
   </div>
 </div>
 </body>

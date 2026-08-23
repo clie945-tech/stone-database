@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="zh-TW">
+<html lang="{{ html_lang }}">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>管理員登入 — ReStone 循環石材服務平台</title>
+  <title>{{ t('管理員登入 — ReStone 循環石材服務平台') }}</title>
   <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -108,29 +108,30 @@
   </style>
 </head>
 <body>
+<div style="position:fixed;top:1rem;right:1rem;z-index:999">{% include '_langswitch.html' %}</div>
 
 <!-- 左側 -->
 <div class="login-left">
   <div class="left-logo">
     <span class="left-logo-icon">{% with size=38, sfx='ladm' %}{% include '_logo.html' %}{% endwith %}</span>
     <div>
-      <div class="left-logo-text">ReStone 循環石材服務平台</div>
+      <div class="left-logo-text">{{ t('ReStone 循環石材服務平台') }}</div>
       <div class="left-logo-sub">ADMIN PORTAL</div>
     </div>
   </div>
   <div class="left-main">
-    <div class="left-title">管理員<br>後台</div>
-    <div class="left-desc">透過後台管理石材庫存、新增與編輯石材資料，讓設計師隨時掌握最新庫存現況。</div>
+    <div class="left-title">{{ t('管理員') }}<br>{{ t('後台') }}</div>
+    <div class="left-desc">{{ t('透過後台管理石材庫存、新增與編輯石材資料，讓設計師隨時掌握最新庫存現況。') }}</div>
   </div>
-  <div class="left-footer">© ReStone 循環石材服務平台</div>
+  <div class="left-footer">{{ t('© ReStone 循環石材服務平台') }}</div>
 </div>
 
 <!-- 右側 -->
 <div class="login-right">
   <div class="login-box">
     <div class="login-card">
-      <div class="login-card-title">登入後台</div>
-      <div class="login-card-sub">請輸入您的管理員帳號與密碼</div>
+      <div class="login-card-title">{{ t('登入後台') }}</div>
+      <div class="login-card-sub">{{ t('請輸入您的管理員帳號與密碼') }}</div>
 
       {% with messages = get_flashed_messages(with_categories=true) %}
         {% for category, message in messages %}
@@ -140,18 +141,18 @@
 
       <form method="post" action="/admin/login">
         <div class="form-group">
-          <label for="username">帳號</label>
-          <input type="text" id="username" name="username" placeholder="輸入管理員帳號" required autofocus />
+          <label for="username">{{ t('帳號') }}</label>
+          <input type="text" id="username" name="username" placeholder="{{ t('輸入管理員帳號') }}" required autofocus />
         </div>
         <div class="form-group">
-          <label for="password">密碼</label>
-          <input type="password" id="password" name="password" placeholder="輸入密碼" required />
+          <label for="password">{{ t('密碼') }}</label>
+          <input type="password" id="password" name="password" placeholder="{{ t('輸入密碼') }}" required />
         </div>
-        <button type="submit" class="btn-login">登入</button>
+        <button type="submit" class="btn-login">{{ t('登入') }}</button>
       </form>
 
-      <div class="divider"><span>或</span></div>
-      <a href="/" class="back-link">← 返回前台瀏覽</a>
+      <div class="divider"><span>{{ t('或') }}</span></div>
+      <a href="/" class="back-link">{{ t('← 返回前台瀏覽') }}</a>
     </div>
   </div>
 </div>
