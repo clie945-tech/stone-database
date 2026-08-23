@@ -1,0 +1,220 @@
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ReStone 智慧製造閉環 — 從材料到製造，再回到材料</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  :root{--bg:#0C121F;--text:#F2F6FF;--muted:#A8B6CC;
+        --cyan:#22D3EE;--purple:#8B5CF6;--blue:#3B82F6;--green:#34D399}
+  html,body{height:100%}
+  body{background:var(--bg);display:flex;align-items:center;justify-content:center;
+       min-height:100vh;padding:2vh 2vw;
+       font-family:'Space Grotesk','Noto Sans TC',sans-serif}
+  body::before{content:'';position:fixed;inset:-20%;z-index:0;pointer-events:none;
+    background:radial-gradient(38% 32% at 20% 26%,rgba(34,211,238,.14),transparent 62%),
+              radial-gradient(34% 30% at 80% 68%,rgba(139,92,246,.18),transparent 62%)}
+  .slide{position:relative;z-index:1;width:min(1440px,98vw);
+         border:1px solid rgba(255,255,255,.13);border-radius:22px;overflow:hidden;
+         background:rgba(255,255,255,.02);
+         box-shadow:inset 0 1px 0 rgba(255,255,255,.12),0 24px 70px rgba(0,0,0,.5)}
+  svg{display:block;width:100%;height:auto}
+
+  /* 進場：卡片依序浮現 */
+  .card{opacity:0;transform-box:fill-box;transform-origin:center;
+        animation:pop .7s cubic-bezier(.22,.8,.3,1) forwards}
+  .card:nth-of-type(1){animation-delay:.15s} .card:nth-of-type(2){animation-delay:.28s}
+  .card:nth-of-type(3){animation-delay:.41s} .card:nth-of-type(4){animation-delay:.54s}
+  .card:nth-of-type(5){animation-delay:.67s} .card:nth-of-type(6){animation-delay:.80s}
+  @keyframes pop{from{opacity:0;transform:translateY(14px) scale(.96)}to{opacity:1;transform:none}}
+  .arrows{opacity:0;animation:fade .8s ease .95s forwards}
+  .hub{opacity:0;transform-box:fill-box;transform-origin:center;
+       animation:pop .9s cubic-bezier(.22,.8,.3,1) 1.1s forwards}
+  @keyframes fade{to{opacity:1}}
+
+  /* 環上的流動感 */
+  .ring{stroke-dasharray:3 13;animation:spin 2.4s linear infinite}
+  @keyframes spin{to{stroke-dashoffset:-32}}
+  .loopflow{stroke-dasharray:11 9;animation:flow 1.1s linear infinite}
+  @keyframes flow{to{stroke-dashoffset:-20}}
+  .glow{animation:breathe 3.4s ease-in-out infinite}
+  @keyframes breathe{0%,100%{opacity:.5}50%{opacity:.9}}
+
+  @media (prefers-reduced-motion:reduce){
+    .card,.arrows,.hub{opacity:1;animation:none;transform:none}
+    .ring,.loopflow,.glow{animation:none}
+  }
+  @media print{
+    body{padding:0;background:#0C121F!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    body::before{display:none}
+    .slide{width:100%;border:none;border-radius:0;box-shadow:none}
+    .card,.arrows,.hub{opacity:1;animation:none}
+    .ring,.loopflow,.glow{animation:none}
+  }
+</style>
+
+<div class="slide">
+<svg viewBox="0 0 1440 810" xmlns="http://www.w3.org/2000/svg" role="img"
+     aria-label="ReStone 智慧製造閉環流程圖：材料庫、設計模擬、可製造性檢核、報價決策、CNC 製造、餘料回上架，最後回到材料庫形成循環">
+  <defs>
+    <radialGradient id="hubGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%"  stop-color="#34D399" stop-opacity=".26"/>
+      <stop offset="55%" stop-color="#22D3EE" stop-opacity=".10"/>
+      <stop offset="100%" stop-color="#22D3EE" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#34D399"/><stop offset="100%" stop-color="#22D3EE"/>
+    </linearGradient>
+    <marker id="ah" viewBox="0 0 10 10" refX="8.5" refY="5"
+            markerWidth="5.4" markerHeight="5.4" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 Z" fill="#7DD3FC"/>
+    </marker>
+    <marker id="ahg" viewBox="0 0 10 10" refX="8.5" refY="5"
+            markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 Z" fill="#34D399"/>
+    </marker>
+  </defs>
+
+  <!-- ══ 左欄：標題與圖例 ══ -->
+  <text x="50" y="150" fill="#22D3EE" font-size="12" font-weight="700"
+        letter-spacing="4.2">SMART MANUFACTURING LOOP</text>
+  <text x="50" y="204" fill="#F2F6FF" font-size="37" font-weight="900" letter-spacing="-.5">從材料到製造，</text>
+  <text x="50" y="250" font-size="37" font-weight="900" letter-spacing="-.5" fill="url(#accent)">再回到材料</text>
+
+  <text x="50" y="300" fill="#A8B6CC" font-size="13.5">ReStone 以 AI 平台串起石材業者與產品設計師。</text>
+  <text x="50" y="324" fill="#A8B6CC" font-size="13.5">導入五軸智慧加工後，設計不只停留在模擬，</text>
+  <text x="50" y="348" fill="#A8B6CC" font-size="13.5">而能一路走到製造——加工產生的餘料再拍照</text>
+  <text x="50" y="372" fill="#A8B6CC" font-size="13.5">回到材料庫，成為下一件作品的起點。</text>
+
+  <text x="50" y="428" fill="#7B89A0" font-size="11" font-weight="700" letter-spacing="2.6">圖例 LEGEND</text>
+  <circle cx="56" cy="456" r="5" fill="#22D3EE"/>
+  <text x="72" y="461" fill="#F2F6FF" font-size="13" font-weight="700">現有</text>
+  <text x="118" y="461" fill="#7B89A0" font-size="12">平台已上線的功能</text>
+  <circle cx="56" cy="490" r="5" fill="#8B5CF6"/>
+  <text x="72" y="495" fill="#F2F6FF" font-size="13" font-weight="700">新增</text>
+  <text x="118" y="495" fill="#7B89A0" font-size="12">導入智慧製造後新建置</text>
+  <circle cx="56" cy="524" r="5" fill="#3B82F6"/>
+  <text x="72" y="529" fill="#F2F6FF" font-size="13" font-weight="700">擴充</text>
+  <text x="118" y="529" fill="#7B89A0" font-size="12">既有詢問系統的延伸</text>
+  <circle cx="56" cy="558" r="5" fill="#34D399"/>
+  <text x="72" y="563" fill="#F2F6FF" font-size="13" font-weight="700">閉環</text>
+  <text x="118" y="563" fill="#7B89A0" font-size="12">讓循環真正成立的一步</text>
+
+  <rect x="50" y="600" width="420" height="86" rx="14"
+        fill="rgba(52,211,153,.08)" stroke="rgba(52,211,153,.32)"/>
+  <text x="72" y="633" fill="#34D399" font-size="14" font-weight="700">閉環，是這條鏈真正的關鍵</text>
+  <text x="72" y="659" fill="#A8B6CC" font-size="12.5">加工餘料拍照回上架，成為下一件作品的材料，</text>
+  <text x="72" y="676" fill="#A8B6CC" font-size="12.5">材料不再是一次性消耗。</text>
+
+  <text x="50" y="756" fill="#5C6980" font-size="11" letter-spacing="1.2">ReStone 循環石材服務平台 · 支持循環經濟，讓石材物盡其用</text>
+
+  <!-- ══ 右側：環狀流程 ══ -->
+  <!-- 背景環（流動虛線） -->
+  <ellipse class="ring" cx="960" cy="405" rx="360" ry="300"
+           fill="none" stroke="rgba(148,163,184,.30)" stroke-width="1.4" stroke-linecap="round"/>
+
+  <!-- 中心 -->
+  <g class="hub">
+    <circle class="glow" cx="960" cy="405" r="168" fill="url(#hubGlow)"/>
+    <circle cx="960" cy="405" r="124" fill="rgba(12,18,31,.72)" stroke="rgba(52,211,153,.35)"/>
+    <text x="960" y="376" text-anchor="middle" fill="#34D399" font-size="10.5"
+          font-weight="700" letter-spacing="3">CLOSED LOOP</text>
+    <text x="960" y="412" text-anchor="middle" fill="#F2F6FF" font-size="29" font-weight="900">循環閉環</text>
+    <text x="960" y="442" text-anchor="middle" fill="#A8B6CC" font-size="14"
+          font-weight="700">剩料 → 產品 → 新剩料</text>
+    <text x="960" y="466" text-anchor="middle" fill="#7B89A0" font-size="11.5">材料永遠回到起點</text>
+  </g>
+
+  <!-- 流程箭頭 -->
+  <g class="arrows" fill="none" stroke-width="2.4" stroke-linecap="round">
+    <path d="M1094.9 126.8 A 360 300 0 0 1 1181.7 168.6" stroke="rgba(125,211,252,.75)" marker-end="url(#ah)"/>
+    <path d="M1316.5 363.2 A 360 300 0 0 1 1316.5 446.8" stroke="rgba(125,211,252,.75)" marker-end="url(#ah)"/>
+    <path d="M1181.7 641.4 A 360 300 0 0 1 1094.9 683.2" stroke="rgba(125,211,252,.75)" marker-end="url(#ah)"/>
+    <path d="M825.1 683.2 A 360 300 0 0 1 738.3 641.4"   stroke="rgba(125,211,252,.75)" marker-end="url(#ah)"/>
+    <path d="M603.5 446.8 A 360 300 0 0 1 603.5 363.2"   stroke="rgba(125,211,252,.75)" marker-end="url(#ah)"/>
+    <!-- 閉環：餘料回到材料庫 -->
+    <path class="loopflow" d="M738.3 168.6 A 360 300 0 0 1 825.1 126.8"
+          stroke="#34D399" stroke-width="3.4" marker-end="url(#ahg)"/>
+    <text x="742" y="103" text-anchor="middle" fill="#34D399" font-size="12.5"
+          font-weight="700" stroke="none">↺ 餘料回到材料庫</text>
+  </g>
+
+  <!-- ① 材料庫 -->
+  <g class="card">
+    <rect x="850" y="45" width="220" height="120" rx="17"
+          fill="rgba(255,255,255,.045)" stroke="rgba(255,255,255,.14)"/>
+    <circle cx="874" cy="71" r="12" fill="rgba(34,211,238,.16)"/>
+    <text x="874" y="76" text-anchor="middle" fill="#22D3EE" font-size="12" font-weight="700">1</text>
+    <text x="894" y="76" fill="#F2F6FF" font-size="18" font-weight="700">材料庫</text>
+    <rect x="1010" y="59" width="46" height="19" rx="9.5" fill="rgba(34,211,238,.16)"/>
+    <text x="1033" y="72.5" text-anchor="middle" fill="#22D3EE" font-size="10.5" font-weight="700">現有</text>
+    <text x="868" y="107" fill="#A8B6CC" font-size="12.5">石材業者上架剩料，拍照即建檔</text>
+    <text x="868" y="127" fill="#A8B6CC" font-size="12.5">尺寸、庫存、色系、減碳量</text>
+  </g>
+
+  <!-- ② 設計模擬 -->
+  <g class="card">
+    <rect x="1162" y="195" width="220" height="120" rx="17"
+          fill="rgba(255,255,255,.045)" stroke="rgba(255,255,255,.14)"/>
+    <circle cx="1186" cy="221" r="12" fill="rgba(34,211,238,.16)"/>
+    <text x="1186" y="226" text-anchor="middle" fill="#22D3EE" font-size="12" font-weight="700">2</text>
+    <text x="1206" y="226" fill="#F2F6FF" font-size="18" font-weight="700">設計模擬</text>
+    <rect x="1322" y="209" width="46" height="19" rx="9.5" fill="rgba(34,211,238,.16)"/>
+    <text x="1345" y="222.5" text-anchor="middle" fill="#22D3EE" font-size="10.5" font-weight="700">現有</text>
+    <text x="1180" y="257" fill="#A8B6CC" font-size="12.5">材質模擬・牆面模擬・草圖渲染</text>
+    <text x="1180" y="277" fill="#A8B6CC" font-size="12.5">選料即時看到成品樣貌</text>
+  </g>
+
+  <!-- ③ 可製造性檢核 -->
+  <g class="card">
+    <rect x="1162" y="495" width="220" height="120" rx="17"
+          fill="rgba(255,255,255,.045)" stroke="rgba(139,92,246,.34)"/>
+    <circle cx="1186" cy="521" r="12" fill="rgba(139,92,246,.20)"/>
+    <text x="1186" y="526" text-anchor="middle" fill="#A78BFA" font-size="12" font-weight="700">3</text>
+    <text x="1206" y="526" fill="#F2F6FF" font-size="17" font-weight="700">可製造性檢核</text>
+    <rect x="1322" y="509" width="46" height="19" rx="9.5" fill="rgba(139,92,246,.20)"/>
+    <text x="1345" y="522.5" text-anchor="middle" fill="#A78BFA" font-size="10.5" font-weight="700">新增</text>
+    <text x="1180" y="557" fill="#A8B6CC" font-size="12.5">比對尺寸厚度與庫存是否足夠</text>
+    <text x="1180" y="577" fill="#A8B6CC" font-size="12.5">上傳 CAD 自動快篩可行性</text>
+  </g>
+
+  <!-- ④ 報價決策 -->
+  <g class="card">
+    <rect x="850" y="645" width="220" height="120" rx="17"
+          fill="rgba(255,255,255,.045)" stroke="rgba(59,130,246,.34)"/>
+    <circle cx="874" cy="671" r="12" fill="rgba(59,130,246,.20)"/>
+    <text x="874" y="676" text-anchor="middle" fill="#60A5FA" font-size="12" font-weight="700">4</text>
+    <text x="894" y="676" fill="#F2F6FF" font-size="18" font-weight="700">報價決策</text>
+    <rect x="1010" y="659" width="46" height="19" rx="9.5" fill="rgba(59,130,246,.20)"/>
+    <text x="1033" y="672.5" text-anchor="middle" fill="#60A5FA" font-size="10.5" font-weight="700">擴充</text>
+    <text x="868" y="707" fill="#A8B6CC" font-size="12.5">材料費＋加工費自動估價</text>
+    <text x="868" y="727" fill="#A8B6CC" font-size="12.5">交期預估，線上確認下單</text>
+  </g>
+
+  <!-- ⑤ CNC 製造 -->
+  <g class="card">
+    <rect x="538" y="495" width="220" height="120" rx="17"
+          fill="rgba(255,255,255,.045)" stroke="rgba(139,92,246,.34)"/>
+    <circle cx="562" cy="521" r="12" fill="rgba(139,92,246,.20)"/>
+    <text x="562" y="526" text-anchor="middle" fill="#A78BFA" font-size="12" font-weight="700">5</text>
+    <text x="582" y="526" fill="#F2F6FF" font-size="18" font-weight="700">CNC 製造</text>
+    <rect x="698" y="509" width="46" height="19" rx="9.5" fill="rgba(139,92,246,.20)"/>
+    <text x="721" y="522.5" text-anchor="middle" fill="#A78BFA" font-size="10.5" font-weight="700">新增</text>
+    <text x="556" y="557" fill="#A8B6CC" font-size="12.5">五軸智慧加工，狀態即時追蹤</text>
+    <text x="556" y="577" fill="#A8B6CC" font-size="12.5">排程 → 加工 → 品檢 → 出貨</text>
+  </g>
+
+  <!-- ⑥ 餘料回上架（閉環） -->
+  <g class="card">
+    <rect x="538" y="195" width="220" height="120" rx="17"
+          fill="rgba(52,211,153,.09)" stroke="rgba(52,211,153,.48)" stroke-width="1.5"/>
+    <circle cx="562" cy="221" r="12" fill="rgba(52,211,153,.22)"/>
+    <text x="562" y="226" text-anchor="middle" fill="#34D399" font-size="12" font-weight="700">6</text>
+    <text x="582" y="226" fill="#F2F6FF" font-size="18" font-weight="700">餘料回上架</text>
+    <rect x="698" y="209" width="46" height="19" rx="9.5" fill="rgba(52,211,153,.22)"/>
+    <text x="721" y="222.5" text-anchor="middle" fill="#34D399" font-size="10.5" font-weight="700">閉環</text>
+    <text x="556" y="257" fill="#A8B6CC" font-size="12.5">加工餘料拍照回建檔</text>
+    <text x="556" y="277" fill="#A8B6CC" font-size="12.5">成為新的循環材料</text>
+    <text x="556" y="297" fill="#6EE7B7" font-size="12.5">碳效益持續累計</text>
+  </g>
+</svg>
+</div>
