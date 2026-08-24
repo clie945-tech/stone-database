@@ -232,12 +232,37 @@ def set_lang(code):
     return redirect(target)
 
 
+def loc(row, field, lang=None):
+    """取資料庫內容的在地化版本：<field>_en / <field>_ja，留空則回退中文原文。
+
+    row 可以是 sqlite3.Row 或 dict。例：loc(stone, 'stone_name')
+    """
+    if row is None:
+        return ''
+    lang = lang or current_lang()
+    base = ''
+    try:
+        base = row[field] or ''
+    except (KeyError, IndexError, TypeError):
+        base = ''
+    if lang == DEFAULT_LANG:
+        return base
+    try:
+        val = row[f'{field}_{lang}']
+        if val:
+            return val
+    except (KeyError, IndexError, TypeError):
+        pass
+    return base
+
+
 @app.context_processor
 def inject_i18n():
     """讓所有模板都能用 t() 翻譯與語言資訊。"""
     lang = current_lang()
     return dict(
         t=lambda s: translate(s, lang),
+        loc=lambda row, field: loc(row, field, lang),
         current_lang=lang,
         html_lang=HTML_LANG.get(lang, 'zh-TW'),
         LANGS=LANGS,
@@ -565,6 +590,56 @@ def _describe_with_gemini(image_path):
         _LAST_VISION_ERROR = f'Gemini {type(e).__name__}: {str(e)[:200]}'
         print(f'[Gemini Vision 錯誤] {_LAST_VISION_ERROR}')
         return ''
+
+
+def translate_fields_with_gemini(items):
+    """把中文欄位批次翻成英文與日文。
+
+    items: {欄位名: 中文內容} —— 例如 {'stone_name': '和平白', 'description': '...'}
+    回傳:  {'en': {欄位名: 英文}, 'ja': {欄位名: 日文}}；失敗回傳 None。
+
+    石材品名採「國際通名／音譯 + 材質描述」而非直譯（例：和平白 → Hoping White）。
+    """
+    import json as _json
+    import re as _re
+    payload = {k: v for k, v in items.items() if v and str(v).strip()}
+    if not payload:
+        return {'en': {}, 'ja': {}}
+    if not GEMINI_API_KEY:
+        return None
+    prompt = (
+        'You are translating content for a Taiwanese circular-stone materials platform '
+        '(reclaimed and offcut natural stone for designers).\n'
+        'Translate each field from Traditional Chinese into English and Japanese.\n\n'
+        'Rules:\n'
+        '- Stone product names (stone_name) are proper nouns: use the established international '
+        'trade name when one exists (卡拉拉白 -> Carrara White); otherwise romanise the place or '
+        'brand name and keep the colour word (和平白 -> Hoping White). For Japanese, use katakana '
+        'for romanised names.\n'
+        '- Company names (vendor): use the official English name if evident, otherwise a natural '
+        'romanisation. Japanese may keep kanji where natural.\n'
+        '- Descriptions and announcements: translate naturally and concisely in the professional '
+        'tone of a materials supplier. Preserve line breaks.\n'
+        '- Do not invent information that is not in the source.\n\n'
+        'Return ONLY a JSON object shaped exactly like:\n'
+        '{"en": {<same keys>}, "ja": {<same keys>}}\n\n'
+        'Source (Traditional Chinese):\n' + _json.dumps(payload, ensure_ascii=False, indent=2)
+    )
+    try:
+        from google import genai
+        client = genai.Client(api_key=GEMINI_API_KEY)
+        resp = client.models.generate_content(model=GEMINI_VISION_MODEL, contents=[prompt])
+        raw = (getattr(resp, 'text', '') or '').strip()
+        raw = _re.sub(r'^```(?:json)?\s*|\s*```$', '', raw).strip()   # 去掉 ``` 圍欄
+        data = _json.loads(raw)
+        out = {}
+        for lang in ('en', 'ja'):
+            d = data.get(lang) or {}
+            out[lang] = {k: str(d.get(k, '') or '').strip() for k in payload}
+        return out
+    except Exception as e:
+        print(f'[Gemini 翻譯錯誤] {type(e).__name__}: {str(e)[:200]}')
+        return None
 
 
 def _describe_with_llava(image_path):
@@ -1084,6 +1159,23 @@ def init_db():
     for col in ['company', 'address']:
         try:
             conn.execute(f"ALTER TABLE customers ADD COLUMN {col} TEXT DEFAULT ''")
+            conn.commit()
+        except Exception:
+            pass
+
+    # 多語系內容欄位：石材品名／描述／廠商 的英日文版本（留空則顯示中文原文）
+    for col in ['stone_name_en', 'stone_name_ja', 'description_en', 'description_ja',
+                'vendor_en', 'vendor_ja']:
+        try:
+            conn.execute(f"ALTER TABLE stones ADD COLUMN {col} TEXT DEFAULT ''")
+            conn.commit()
+        except Exception:
+            pass
+
+    # 最新消息的英日文版本
+    for col in ['title_en', 'title_ja', 'content_en', 'content_ja']:
+        try:
+            conn.execute(f"ALTER TABLE announcements ADD COLUMN {col} TEXT DEFAULT ''")
             conn.commit()
         except Exception:
             pass
@@ -1902,6 +1994,80 @@ def admin_dashboard():
                            total_carbon_kg=total_carbon_kg)
 
 
+# ─── 內容多語翻譯（AI 產草稿，後台可再編輯）─────────────────────
+@app.route('/admin/stone/<int:id>/translate', methods=['POST'])
+@admin_required
+def admin_translate_stone(id):
+    """用 Gemini 把石材的品名／描述／廠商翻成英日文，存進資料庫供前台顯示。"""
+    from flask import jsonify
+    if not GEMINI_API_KEY:
+        return jsonify({'error': '尚未設定 GEMINI_API_KEY，無法自動翻譯'}), 503
+    conn = get_db()
+    s = conn.execute('SELECT * FROM stones WHERE id = ?', (id,)).fetchone()
+    if not s:
+        conn.close()
+        return jsonify({'error': '找不到該石材'}), 404
+    fields = {}
+    for f in ('stone_name', 'description', 'vendor'):
+        try:
+            if s[f]:
+                fields[f] = s[f]
+        except (KeyError, IndexError):
+            pass
+    if not fields:
+        conn.close()
+        return jsonify({'error': '此石材沒有可翻譯的文字內容'}), 400
+
+    res = translate_fields_with_gemini(fields)
+    if res is None:
+        conn.close()
+        return jsonify({'error': '翻譯失敗，請稍後再試'}), 500
+
+    sets, vals = [], []
+    for lang in ('en', 'ja'):
+        for f, v in res[lang].items():
+            if v:
+                sets.append(f'{f}_{lang}=?')
+                vals.append(v)
+    if sets:
+        vals.append(id)
+        conn.execute(f'UPDATE stones SET {", ".join(sets)} WHERE id=?', vals)
+        conn.commit()
+    conn.close()
+    return jsonify({'success': True, 'en': res['en'], 'ja': res['ja']})
+
+
+@app.route('/admin/news/<int:id>/translate', methods=['POST'])
+@admin_required
+def admin_translate_news(id):
+    """用 Gemini 把公告標題與內容翻成英日文。"""
+    from flask import jsonify
+    if not GEMINI_API_KEY:
+        return jsonify({'error': '尚未設定 GEMINI_API_KEY，無法自動翻譯'}), 503
+    conn = get_db()
+    a = conn.execute('SELECT * FROM announcements WHERE id = ?', (id,)).fetchone()
+    if not a:
+        conn.close()
+        return jsonify({'error': '找不到該公告'}), 404
+    fields = {k: a[k] for k in ('title', 'content') if a[k]}
+    res = translate_fields_with_gemini(fields)
+    if res is None:
+        conn.close()
+        return jsonify({'error': '翻譯失敗，請稍後再試'}), 500
+    sets, vals = [], []
+    for lang in ('en', 'ja'):
+        for f, v in res[lang].items():
+            if v:
+                sets.append(f'{f}_{lang}=?')
+                vals.append(v)
+    if sets:
+        vals.append(id)
+        conn.execute(f'UPDATE announcements SET {", ".join(sets)} WHERE id=?', vals)
+        conn.commit()
+    conn.close()
+    return jsonify({'success': True, 'en': res['en'], 'ja': res['ja']})
+
+
 # ─── 最新消息管理 ───────────────────────────────────────────────
 @app.route('/admin/news')
 @admin_required
@@ -1934,13 +2100,19 @@ def admin_news_save():
     if nid:
         conn.execute(
             'UPDATE announcements SET title=?, content=?, is_published=?, pinned=?, '
+            'title_en=?, title_ja=?, content_en=?, content_ja=?, '
             'updated_at=CURRENT_TIMESTAMP WHERE id=?',
-            (title, content, is_published, pinned, nid))
+            (title, content, is_published, pinned,
+             *[request.form.get(c, '').strip() for c in
+               ('title_en','title_ja','content_en','content_ja')], nid))
         flash(_('公告已更新'), 'success')
     else:
         conn.execute(
-            'INSERT INTO announcements (title, content, is_published, pinned) VALUES (?,?,?,?)',
-            (title, content, is_published, pinned))
+            'INSERT INTO announcements (title, content, is_published, pinned, '
+            'title_en, title_ja, content_en, content_ja) VALUES (?,?,?,?,?,?,?,?)',
+            (title, content, is_published, pinned,
+             *[request.form.get(c, '').strip() for c in
+               ('title_en','title_ja','content_en','content_ja')]))
         flash(_('公告已新增'), 'success')
     conn.commit()
     conn.close()
@@ -2059,11 +2231,16 @@ def add_stone():
         conn.execute('''
             INSERT INTO stones (stone_type, stone_name, photo, photo2, photo3,
                                 width, height, thickness, quantity, unit, price, vendor, description, color,
-                                image_hash, dominant_rgb, features, ai_prompt)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                                image_hash, dominant_rgb, features, ai_prompt,
+                                stone_name_en, stone_name_ja, description_en, description_ja,
+                                vendor_en, vendor_ja)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ''', (stone_type, stone_name, photo, photo2, photo3,
               width, height, thickness, quantity, unit, price, vendor, description, color,
-              image_hash, dominant_rgb, features, ai_prompt))
+              image_hash, dominant_rgb, features, ai_prompt,
+              *[request.form.get(c, '').strip() for c in
+                ('stone_name_en','stone_name_ja','description_en','description_ja',
+                 'vendor_en','vendor_ja')]))
         conn.commit()
         conn.close()
 
@@ -2153,11 +2330,17 @@ def edit_stone(id):
                 width=?, height=?, thickness=?,
                 quantity=?, unit=?, price=?, vendor=?, description=?, color=?,
                 image_hash=?, dominant_rgb=?, features=?, ai_prompt=?,
+                stone_name_en=?, stone_name_ja=?, description_en=?, description_ja=?,
+                vendor_en=?, vendor_ja=?,
                 updated_at=CURRENT_TIMESTAMP
             WHERE id=?
         ''', (stone_type, stone_name, photos[0], photos[1], photos[2],
               width, height, thickness, quantity, unit, price, vendor, description, color,
-              image_hash, dominant_rgb, features, ai_prompt, id))
+              image_hash, dominant_rgb, features, ai_prompt,
+              *[request.form.get(c, '').strip() for c in
+                ('stone_name_en','stone_name_ja','description_en','description_ja',
+                 'vendor_en','vendor_ja')],
+              id))
         conn.commit()
         conn.close()
 

@@ -173,8 +173,8 @@
               <label for="stone_type">{{ t('石材種類 / 分類') }} <span class="required">*</span></label>
               <select id="stone_type" name="stone_type" required>
                 <option value="" disabled {% if not stone %}selected{% endif %}>{{ t('請選擇石材種類') }}</option>
-                {% for t in ['大理石', '蛇紋石', '化石', '花崗岩'] %}
-                  <option value="{{ t }}" {% if stone and stone.stone_type == t %}selected{% endif %}>{{ t }}</option>
+                {% for ty in ['大理石', '蛇紋石', '化石', '花崗岩'] %}
+                  <option value="{{ ty }}" {% if stone and stone.stone_type == ty %}selected{% endif %}>{{ ty }}</option>
                 {% endfor %}
               </select>
             </div>
@@ -237,6 +237,47 @@
           <div class="form-group">
             <label for="description">{{ t('備註') }}</label>
             <textarea id="description" name="description" placeholder="{{ t('石材的特色、狀況說明、注意事項...') }}">{{ stone.description if stone and stone.description else '' }}</textarea>
+          </div>
+
+          <div class="section-title">{{ t('多語內容（英文／日文）') }}
+            {% if stone and stone.id %}
+              <button type="button" id="btn-tr" class="btn btn-secondary btn-sm" style="margin-left:.6rem;font-weight:600">{{ t('用 AI 翻譯') }}</button>
+              <span id="tr-status" style="margin-left:.5rem;font-size:.78rem;color:var(--text-muted)"></span>
+            {% endif %}
+          </div>
+          <p class="hint" style="margin:-.4rem 0 .9rem">{{ t('留空則該語言顯示中文原文。AI 翻譯為草稿，可自行修改後再儲存。') }}</p>
+
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="stone_name_en">{{ t('品名（英文）') }}</label>
+              <input type="text" id="stone_name_en" name="stone_name_en" placeholder="e.g. Hoping White"
+                     value="{{ stone.stone_name_en if stone and stone.stone_name_en else '' }}" />
+            </div>
+            <div class="form-group">
+              <label for="stone_name_ja">{{ t('品名（日文）') }}</label>
+              <input type="text" id="stone_name_ja" name="stone_name_ja" placeholder="例：ホーピンホワイト"
+                     value="{{ stone.stone_name_ja if stone and stone.stone_name_ja else '' }}" />
+            </div>
+          </div>
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="vendor_en">{{ t('廠商（英文）') }}</label>
+              <input type="text" id="vendor_en" name="vendor_en"
+                     value="{{ stone.vendor_en if stone and stone.vendor_en else '' }}" />
+            </div>
+            <div class="form-group">
+              <label for="vendor_ja">{{ t('廠商（日文）') }}</label>
+              <input type="text" id="vendor_ja" name="vendor_ja"
+                     value="{{ stone.vendor_ja if stone and stone.vendor_ja else '' }}" />
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="description_en">{{ t('備註（英文）') }}</label>
+            <textarea id="description_en" name="description_en" rows="2">{{ stone.description_en if stone and stone.description_en else '' }}</textarea>
+          </div>
+          <div class="form-group">
+            <label for="description_ja">{{ t('備註（日文）') }}</label>
+            <textarea id="description_ja" name="description_ja" rows="2">{{ stone.description_ja if stone and stone.description_ja else '' }}</textarea>
           </div>
 
           <div class="section-title">{{ t('顏色標籤') }}</div>
@@ -380,5 +421,28 @@
     });
   }
 </script>
+
+{% if stone and stone.id %}
+<script>
+document.getElementById('btn-tr').addEventListener('click', async function () {
+  const btn = this, st = document.getElementById('tr-status');
+  btn.disabled = true; st.textContent = '{{ t("翻譯中…") }}';
+  try {
+    const r = await fetch('/admin/stone/{{ stone.id }}/translate', { method: 'POST' });
+    const d = await r.json();
+    if (!r.ok || !d.success) throw new Error(d.error || 'HTTP ' + r.status);
+    const put = (id, v) => { if (v) document.getElementById(id).value = v; };
+    put('stone_name_en', d.en.stone_name);  put('stone_name_ja', d.ja.stone_name);
+    put('vendor_en',     d.en.vendor);      put('vendor_ja',     d.ja.vendor);
+    put('description_en',d.en.description); put('description_ja',d.ja.description);
+    st.textContent = '{{ t("已填入，請確認後儲存") }}';
+    st.style.color = '#166534';
+  } catch (e) {
+    st.textContent = '{{ t("翻譯失敗") }}：' + e.message;
+    st.style.color = '#B91C1C';
+  } finally { btn.disabled = false; }
+});
+</script>
+{% endif %}
 </body>
 </html>

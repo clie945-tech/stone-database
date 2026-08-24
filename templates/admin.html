@@ -219,9 +219,9 @@
                   {% endif %}
                 </td>
                 <td>
-                  <div class="name-strong">{{ s.stone_name or s.stone_type }}</div>
+                  <div class="name-strong">{{ s.stone_name or t(s.stone_type) }}</div>
                   <div class="name-sub" style="color:var(--text-muted);font-size:0.75rem;margin-top:2px">
-                    {{ s.stone_type }}{% if s.description %} · {{ s.description[:30] }}{% if s.description|length > 30 %}...{% endif %}{% endif %}
+                    {{ t(s.stone_type) }}{% if s.description %} · {{ s.description[:30] }}{% if s.description|length > 30 %}...{% endif %}{% endif %}
                   </div>
                 </td>
                 <td>

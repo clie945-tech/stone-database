@@ -150,6 +150,24 @@
             <textarea name="content" placeholder="{{ t('公告內容，可換行分段…') }}">{{ editing.content if editing else '' }}</textarea>
           </div>
           <div class="field">
+            <label style="display:flex;align-items:center;gap:.6rem">
+              {{ t('多語內容（英文／日文）') }}
+              {% if editing %}
+                <button type="button" id="btn-tr" class="btn btn-secondary btn-sm">{{ t('用 AI 翻譯') }}</button>
+                <span id="tr-status" style="font-size:.78rem;color:var(--text-muted);font-weight:400"></span>
+              {% endif %}
+            </label>
+            <p class="form-hint" style="margin-bottom:.6rem">{{ t('留空則該語言顯示中文原文。AI 翻譯為草稿，可自行修改後再儲存。') }}</p>
+            <input type="text" id="title_en" name="title_en" placeholder="Title (English)"
+                   value="{{ editing.title_en if editing and editing.title_en else '' }}" style="margin-bottom:.5rem">
+            <textarea id="content_en" name="content_en" rows="2" placeholder="Content (English)"
+                      style="margin-bottom:.7rem">{{ editing.content_en if editing and editing.content_en else '' }}</textarea>
+            <input type="text" id="title_ja" name="title_ja" placeholder="タイトル（日本語）"
+                   value="{{ editing.title_ja if editing and editing.title_ja else '' }}" style="margin-bottom:.5rem">
+            <textarea id="content_ja" name="content_ja" rows="2" placeholder="本文（日本語）">{{ editing.content_ja if editing and editing.content_ja else '' }}</textarea>
+          </div>
+
+          <div class="field">
             <div class="checks">
               <label class="check"><input type="checkbox" name="is_published" {% if editing is none or editing.is_published %}checked{% endif %}> {{ t('顯示於首頁') }}</label>
               <label class="check"><input type="checkbox" name="pinned" {% if editing and editing.pinned %}checked{% endif %}> {{ t('置頂') }}</label>
@@ -207,5 +225,25 @@
   </div>
 </div>
 
+
+{% if editing %}
+<script>
+document.getElementById('btn-tr').addEventListener('click', async function () {
+  const btn = this, st = document.getElementById('tr-status');
+  btn.disabled = true; st.textContent = '{{ t("翻譯中…") }}';
+  try {
+    const r = await fetch('/admin/news/{{ editing.id }}/translate', { method: 'POST' });
+    const d = await r.json();
+    if (!r.ok || !d.success) throw new Error(d.error || 'HTTP ' + r.status);
+    const put = (id, v) => { if (v) document.getElementById(id).value = v; };
+    put('title_en', d.en.title);   put('content_en', d.en.content);
+    put('title_ja', d.ja.title);   put('content_ja', d.ja.content);
+    st.textContent = '{{ t("已填入，請確認後儲存") }}'; st.style.color = '#166534';
+  } catch (e) {
+    st.textContent = '{{ t("翻譯失敗") }}：' + e.message; st.style.color = '#B91C1C';
+  } finally { btn.disabled = false; }
+});
+</script>
+{% endif %}
 </body>
 </html>

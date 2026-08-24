@@ -546,6 +546,44 @@ _T = {
          'click “Re-index photos” in the admin area to process all existing data at once.',
          '件の石材が未インデックスです（検索結果に表示されません）。管理画面の「写真を再インデックス」で'
          '既存データを一括処理できます。'),
+    # ══ 多語內容管理 ══
+    '多語內容（英文／日文）': ('Translations (English / Japanese)', '多言語コンテンツ（英語／日本語）'),
+    '用 AI 翻譯': ('Translate with AI', 'AI で翻訳'),
+    '留空則該語言顯示中文原文。AI 翻譯為草稿，可自行修改後再儲存。':
+        ('Leave blank to show the Chinese original in that language. AI output is a draft — edit it before saving.',
+         '空欄の場合、その言語では中国語原文を表示します。AI の翻訳は下書きです。編集してから保存してください。'),
+    '品名（英文）': ('Stone name (English)', '石材名（英語）'),
+    '品名（日文）': ('Stone name (Japanese)', '石材名（日本語）'),
+    '廠商（英文）': ('Supplier (English)', 'サプライヤー（英語）'),
+    '廠商（日文）': ('Supplier (Japanese)', 'サプライヤー（日本語）'),
+    '備註（英文）': ('Notes (English)', '備考（英語）'),
+    '備註（日文）': ('Notes (Japanese)', '備考（日本語）'),
+    '翻譯中…': ('Translating…', '翻訳中…'),
+    '已填入，請確認後儲存': ('Filled in — review and save', '入力しました。確認して保存してください'),
+    '翻譯失敗': ('Translation failed', '翻訳に失敗しました'),
+    '尚未設定 GEMINI_API_KEY，無法自動翻譯':
+        ('GEMINI_API_KEY is not set, so automatic translation is unavailable',
+         'GEMINI_API_KEY が未設定のため自動翻訳できません'),
+    '此石材沒有可翻譯的文字內容': ('This stone has no text to translate', 'この石材には翻訳できるテキストがありません'),
+    '翻譯失敗，請稍後再試': ('Translation failed, please try again later', '翻訳に失敗しました。しばらくしてからお試しください'),
+    '找不到該公告': ('Announcement not found', 'お知らせが見つかりません'),
+
+    # ══ 石材種類（固定清單）══
+    '大理石': ('Marble', '大理石'),
+    '花崗岩': ('Granite', '花崗岩'),
+    '蛇紋石': ('Serpentine', '蛇紋石'),
+    '化石': ('Fossil Stone', '化石'),
+
+    # ══ 顏色標籤（固定清單）══
+    '白色系': ('White', 'ホワイト系'),
+    '灰色系': ('Grey', 'グレー系'),
+    '黑色系': ('Black', 'ブラック系'),
+    '米色系': ('Beige', 'ベージュ系'),
+    '棕色系': ('Brown', 'ブラウン系'),
+    '綠色系': ('Green', 'グリーン系'),
+    '紅色系': ('Red', 'レッド系'),
+    '其他': ('Other', 'その他'),
+
     # ══ 系統提示訊息（flash / API 錯誤）══
     '請先登入會員帳號': ('Please sign in first', 'まずログインしてください'),
     '請先登入會員才能使用 AI 設計工具': ('Please sign in to use the AI design tools',

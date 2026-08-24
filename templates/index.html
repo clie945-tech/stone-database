@@ -416,8 +416,8 @@
     <article class="news-item{% if a.pinned %} pinned{% endif %}">
       {% if a.pinned %}<span class="news-pin">{{ t('置頂') }}</span>{% endif %}
       <div class="news-date">{{ a.created_at[:10] }}</div>
-      <h3 class="news-item-title">{{ a.title }}</h3>
-      {% if a.content %}<div class="news-content">{{ a.content }}</div>{% endif %}
+      <h3 class="news-item-title">{{ loc(a,'title') }}</h3>
+      {% if loc(a,'content') %}<div class="news-content">{{ loc(a,'content') }}</div>{% endif %}
     </article>
     {% endfor %}
   </div>
@@ -435,8 +435,8 @@
     </div>
     <select class="filter-sel" name="type">
       <option value="">{{ t('全部種類') }}</option>
-      {% for t in types %}
-        <option value="{{ t.stone_type }}" {% if t.stone_type == selected_type %}selected{% endif %}>{{ t.stone_type }}</option>
+      {% for ty in types %}
+        <option value="{{ ty.stone_type }}" {% if ty.stone_type == selected_type %}selected{% endif %}>{{ t(ty.stone_type) }}</option>
       {% endfor %}
     </select>
     <button type="submit" class="btn-search">{{ t('搜尋') }}</button>
@@ -489,17 +489,17 @@
                 <span>{{ t('暫無照片') }}</span>
               </div>
             {% endif %}
-            <div class="card-type-badge">{{ s.stone_type }}</div>
+            <div class="card-type-badge">{{ t(s.stone_type) }}</div>
             {% if s['color'] and s['color'] in color_map %}
-              <div style="position:absolute;top:12px;right:12px;background:{{ color_map[s['color']][2] }};color:{{ color_map[s['color']][3] }};font-size:0.65rem;font-weight:700;padding:3px 9px;border-radius:99px;border:1px solid rgba(0,0,0,0.1);">{{ color_map[s['color']][1] }}</div>
+              <div style="position:absolute;top:12px;right:12px;background:{{ color_map[s['color']][2] }};color:{{ color_map[s['color']][3] }};font-size:0.65rem;font-weight:700;padding:3px 9px;border-radius:99px;border:1px solid rgba(0,0,0,0.1);">{{ t(color_map[s['color']][1]) }}</div>
             {% endif %}
           </div>
           <div class="card-body">
-            <div class="card-title">{{ s.stone_name or s.stone_type }}</div>
+            <div class="card-title">{{ loc(s,'stone_name') or t(s.stone_type) }}</div>
             {% if s.vendor %}
               <div class="card-vendor">
                 <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-                {{ s.vendor }}
+                {{ loc(s,'vendor') }}
               </div>
             {% endif %}
             <div class="card-specs">

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>{{ stone.stone_name or stone.stone_type }} — ReStone</title>
+  <title>{{ loc(stone,'stone_name') or t(stone.stone_type) }} — ReStone</title>
   <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -169,7 +169,7 @@
   <div class="breadcrumb">
     <a href="/">{{ t('首頁') }}</a>
     <span class="breadcrumb-sep">/</span>
-    <a href="/?type={{ stone.stone_type }}">{{ stone.stone_type }}</a>
+    <a href="/?type={{ stone.stone_type }}">{{ t(stone.stone_type) }}</a>
     <span class="breadcrumb-sep">/</span>
     <span>{{ t('詳細資料') }}</span>
   </div>
@@ -204,12 +204,12 @@
     <!-- 右：資訊 -->
     <div class="info-col">
       <div>
-        <div class="stone-badge">{{ stone.stone_type }}</div>
-        <div class="stone-title">{{ stone.stone_name or stone.stone_type }}</div>
+        <div class="stone-badge">{{ t(stone.stone_type) }}</div>
+        <div class="stone-title">{{ loc(stone,'stone_name') or t(stone.stone_type) }}</div>
         {% if stone.vendor %}
           <div class="stone-vendor">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-            {{ stone.vendor }}
+            {{ loc(stone,'vendor') }}
           </div>
         {% endif %}
       </div>
@@ -226,7 +226,7 @@
       {% if stone.vendor %}
         <div class="spec-card">
           <div class="spec-card-title">{{ t('廠商資訊') }}</div>
-          <div class="spec-row"><span class="spec-label">{{ t('廠商名稱') }}</span><span class="spec-value">{{ stone.vendor }}</span></div>
+          <div class="spec-row"><span class="spec-label">{{ t('廠商名稱') }}</span><span class="spec-value">{{ loc(stone,'vendor') }}</span></div>
         </div>
       {% endif %}
 
@@ -236,7 +236,7 @@
           <div class="spec-row">
             <span class="spec-label">{{ t('顏色') }}</span>
             <span class="spec-value">
-              <span style="background:{{ color_map[stone['color']][2] }};color:{{ color_map[stone['color']][3] }};padding:3px 14px;border-radius:99px;font-size:0.82rem;font-weight:700;display:inline-block">{{ color_map[stone['color']][1] }}</span>
+              <span style="background:{{ color_map[stone['color']][2] }};color:{{ color_map[stone['color']][3] }};padding:3px 14px;border-radius:99px;font-size:0.82rem;font-weight:700;display:inline-block">{{ t(color_map[stone['color']][1]) }}</span>
             </span>
           </div>
         </div>
@@ -259,7 +259,7 @@
       {% if stone.description %}
         <div class="desc-card">
           <div class="desc-title">{{ t('備註說明') }}</div>
-          <div class="desc-text">{{ stone.description }}</div>
+          <div class="desc-text">{{ loc(stone,'description') }}</div>
         </div>
       {% endif %}
     </div>
@@ -471,8 +471,8 @@
             <div style="width:100%;height:150px;background:linear-gradient(135deg,#F1F5F9,#E2E8F0);display:flex;align-items:center;justify-content:center;color:#C8D5E8;font-size:2.5rem">◈</div>
           {% endif %}
           <div style="padding:1rem">
-            <div style="font-size:0.68rem;font-weight:700;color:var(--blue);letter-spacing:0.06em;text-transform:uppercase;background:var(--blue-light);padding:2px 8px;border-radius:5px;display:inline-block;margin-bottom:0.5rem">{{ r.stone_type }}</div>
-            <div style="font-size:0.92rem;font-weight:700;margin-bottom:0.3rem">{{ r.stone_name or r.stone_type }}</div>
+            <div style="font-size:0.68rem;font-weight:700;color:var(--blue);letter-spacing:0.06em;text-transform:uppercase;background:var(--blue-light);padding:2px 8px;border-radius:5px;display:inline-block;margin-bottom:0.5rem">{{ t(r.stone_type) }}</div>
+            <div style="font-size:0.92rem;font-weight:700;margin-bottom:0.3rem">{{ loc(r,'stone_name') or t(r.stone_type) }}</div>
             <div style="display:flex;justify-content:space-between;align-items:center;margin-top:0.6rem;padding-top:0.6rem;border-top:1px solid var(--border)">
               <span style="font-size:0.9rem;font-weight:700;color:var(--blue)">
                 {% if r.price %}NT${{ "{:,.0f}".format(r.price) }}{% else %}洽詢{% endif %}

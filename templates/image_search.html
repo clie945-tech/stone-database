@@ -280,10 +280,10 @@
               <div class="res-title">{{ s.stone_name or s.stone_type }}</div>
               <div class="res-meta">
                 {% if s['color'] and s['color'] in color_map %}
-                  <span style="background:{{ color_map[s['color']][2] }};color:{{ color_map[s['color']][3] }};padding:1px 7px;border-radius:50px;font-weight:700;font-size:0.7rem">{{ color_map[s['color']][1] }}</span>
+                  <span style="background:{{ color_map[s['color']][2] }};color:{{ color_map[s['color']][3] }};padding:1px 7px;border-radius:50px;font-weight:700;font-size:0.7rem">{{ t(color_map[s['color']][1]) }}</span>
                 {% endif %}
                 {% if s.price %}<span class="price">NT${{ "{:,.0f}".format(s.price) }}</span>{% endif %}
-                {% if s.vendor %}<span>· {{ s.vendor }}</span>{% endif %}
+                {% if s.vendor %}<span>· {{ loc(s,'vendor') }}</span>{% endif %}
               </div>
             </div>
           </a>
