@@ -1,13 +1,14 @@
 from flask import Flask, render_template, request, redirect, url_for, session, flash, send_file
 from flask_mail import Mail, Message
 import sqlite3
+import re
 import os
 import io
 import secrets
 from werkzeug.utils import secure_filename
 from werkzeug.security import generate_password_hash, check_password_hash
 from functools import wraps
-from translations import LANGS, DEFAULT_LANG, HTML_LANG, translate
+from translations import LANGS, DEFAULT_LANG, HTML_LANG, translate, fill, js_table
 
 app = Flask(__name__)
 app.secret_key = 'stone-circular-db-secret-2024'
@@ -215,12 +216,27 @@ def current_lang():
     return DEFAULT_LANG
 
 
-def _(msg):
-    """把系統訊息翻成使用者目前語言；不在請求情境時回傳原文。"""
+def _(msg, **kw):
+    """把系統訊息翻成使用者目前語言，並填入 {佔位符}；不在請求情境時回傳原文。"""
     try:
-        return translate(msg, current_lang())
+        msg = translate(msg, current_lang())
     except Exception:
-        return msg
+        pass
+    return fill(msg, **kw)
+
+
+# 前端 JS 的 T('...') 用到哪些字串：啟動時掃描模板取得（只把這些條目送到頁面上）
+def _scan_js_keys():
+    import glob as _glob
+    keys = set()
+    for f in _glob.glob(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'templates', '*.html')):
+        src = re.sub(r'\{#.*?#\}', '', open(f, encoding='utf-8').read(), flags=re.S)   # 略過 Jinja 註解
+        keys.update(re.findall(r"\bT\('((?:[^'\\]|\\.)*)'", src))
+        keys.update(re.findall(r'\bT\("((?:[^"\\]|\\.)*)"', src))
+    return sorted(keys)
+
+
+JS_KEYS = _scan_js_keys()
 
 
 @app.route('/lang/<code>')
@@ -261,7 +277,8 @@ def inject_i18n():
     """讓所有模板都能用 t() 翻譯與語言資訊。"""
     lang = current_lang()
     return dict(
-        t=lambda s: translate(s, lang),
+        t=lambda s, **kw: fill(translate(s, lang), **kw),
+        i18n_js=js_table(JS_KEYS, lang),
         loc=lambda row, field: loc(row, field, lang),
         current_lang=lang,
         html_lang=HTML_LANG.get(lang, 'zh-TW'),
@@ -1604,7 +1621,7 @@ def ai_quota_check():
     used = ai_usage_today(cid)
     if used >= AI_DAILY_LIMIT:
         return jsonify({
-            'error': f'今日 AI 生圖已達上限（每人每日 {AI_DAILY_LIMIT} 張），請明天再試。',
+            'error': _('今日 AI 生圖已達上限（每人每日 {n} 張），請明天再試。', n=AI_DAILY_LIMIT),
             'quota_exceeded': True, 'used': used, 'limit': AI_DAILY_LIMIT,
         }), 429
     return None
@@ -1835,7 +1852,7 @@ def customer_login():
             session['customer_id']    = customer['id']
             session['customer_name']  = customer['name']
             session['customer_email'] = customer['email']
-            flash(f'歡迎回來，{customer["name"]}！', 'success')
+            flash(_('歡迎回來，{name}！', name=customer["name"]), 'success')
             return redirect(url_for('index'))
         else:
             flash(_('Email 或密碼錯誤'), 'error')
@@ -1942,7 +1959,7 @@ def design_proposal_pdf(id):
         pdf = build_proposal_pdf(design, stone, session.get('customer_name', ''))
     except Exception as e:
         import traceback; traceback.print_exc()
-        flash(f'PDF 生成失敗：{str(e)[:120]}', 'error')
+        flash(_('PDF 生成失敗：{e}', e=str(e)[:120]), 'error')
         return redirect(url_for('my_designs'))
     safe_name = (design['stone_name'] or 'design').replace('/', '_').replace(' ', '_')
     return send_file(pdf, as_attachment=True,
@@ -2044,7 +2061,7 @@ def admin_translate_stone(id):
     """用 Gemini 把石材的品名／描述／廠商翻成英日文，存進資料庫供前台顯示。"""
     from flask import jsonify
     if not GEMINI_API_KEY:
-        return jsonify({'error': '尚未設定 GEMINI_API_KEY，無法自動翻譯'}), 503
+        return jsonify({'error': _('尚未設定 GEMINI_API_KEY，無法自動翻譯')}), 503
     conn = get_db()
     s = conn.execute('SELECT * FROM stones WHERE id = ?', (id,)).fetchone()
     if not s:
@@ -2059,12 +2076,12 @@ def admin_translate_stone(id):
             pass
     if not fields:
         conn.close()
-        return jsonify({'error': '此石材沒有可翻譯的文字內容'}), 400
+        return jsonify({'error': _('此石材沒有可翻譯的文字內容')}), 400
 
     res = translate_fields_with_gemini(fields)
     if res is None:
         conn.close()
-        return jsonify({'error': '翻譯失敗，請稍後再試'}), 500
+        return jsonify({'error': _('翻譯失敗，請稍後再試')}), 500
 
     sets, vals = [], []
     for lang in ('en', 'ja'):
@@ -2086,17 +2103,17 @@ def admin_translate_news(id):
     """用 Gemini 把公告標題與內容翻成英日文。"""
     from flask import jsonify
     if not GEMINI_API_KEY:
-        return jsonify({'error': '尚未設定 GEMINI_API_KEY，無法自動翻譯'}), 503
+        return jsonify({'error': _('尚未設定 GEMINI_API_KEY，無法自動翻譯')}), 503
     conn = get_db()
     a = conn.execute('SELECT * FROM announcements WHERE id = ?', (id,)).fetchone()
     if not a:
         conn.close()
-        return jsonify({'error': '找不到該公告'}), 404
+        return jsonify({'error': _('找不到該公告')}), 404
     fields = {k: a[k] for k in ('title', 'content') if a[k]}
     res = translate_fields_with_gemini(fields)
     if res is None:
         conn.close()
-        return jsonify({'error': '翻譯失敗，請稍後再試'}), 500
+        return jsonify({'error': _('翻譯失敗，請稍後再試')}), 500
     sets, vals = [], []
     for lang in ('en', 'ja'):
         for f, v in res[lang].items():
@@ -2226,7 +2243,7 @@ def add_stone():
         stone_name = request.form.get('stone_name', '').strip()
         if not stone_type:
             flash(_('石材種類為必填欄位'), 'error')
-            return render_template('stone_form.html', stone=None, title='新增石材', colors=COLORS, vendors=VENDORS)
+            return render_template('stone_form.html', stone=None, title=_('新增石材'), colors=COLORS, vendors=VENDORS)
 
         width       = request.form.get('width') or None
         height      = request.form.get('height') or None
@@ -2289,14 +2306,14 @@ def add_stone():
 
         # 顯示名稱：優先用品名，否則用分類
         display_name = stone_name or stone_type
-        msg = f'「{display_name}」已成功新增！'
+        msg = _('「{name}」已成功新增！', name=display_name)
         if photo and not request.form.get('color') and color:
             color_label = COLOR_MAP.get(color, ('', color, '', ''))[1]
-            msg += f' 已自動偵測顏色為「{color_label}」'
+            msg += _(' 已自動偵測顏色為「{color}」', color=_(color_label))
         flash(msg, 'success')
         return redirect(url_for('admin_dashboard'))
 
-    return render_template('stone_form.html', stone=None, title='新增石材', colors=COLORS, vendors=VENDORS)
+    return render_template('stone_form.html', stone=None, title=_('新增石材'), colors=COLORS, vendors=VENDORS)
 
 
 @app.route('/admin/edit/<int:id>', methods=['GET', 'POST'])
@@ -2345,7 +2362,7 @@ def edit_stone(id):
                 photos.append(stone[old_key])
 
         if failed_uploads:
-            flash(f'⚠ 以下照片上傳失敗（已保留原檔案）：{", ".join(failed_uploads)}', 'error')
+            flash(_('⚠ 以下照片上傳失敗（已保留原檔案）：{files}', files=", ".join(failed_uploads)), 'error')
 
         # 主照片若有變更或缺少分析資料，則重新分析
         image_hash = stone['image_hash'] if 'image_hash' in stone.keys() else ''
@@ -2388,11 +2405,11 @@ def edit_stone(id):
         conn.close()
 
         display_name = stone_name or stone_type
-        flash(f'「{display_name}」資料已更新！', 'success')
+        flash(_('「{name}」資料已更新！', name=display_name), 'success')
         return redirect(url_for('admin_dashboard'))
 
     conn.close()
-    return render_template('stone_form.html', stone=stone, title='編輯石材', colors=COLORS, vendors=VENDORS)
+    return render_template('stone_form.html', stone=stone, title=_('編輯石材'), colors=COLORS, vendors=VENDORS)
 
 
 @app.route('/admin/delete/<int:id>', methods=['POST'])
@@ -2437,7 +2454,8 @@ def admin_customer_vip(id):
     row = conn.execute('SELECT name, is_vip FROM customers WHERE id = ?', (id,)).fetchone()
     conn.close()
     if row:
-        flash(f'已將「{row["name"]}」設為{"VIP 會員（不限生圖數量）" if row["is_vip"] else "一般會員"}', 'success')
+        flash(_('已將「{name}」設為 VIP 會員（不限生圖數量）', name=row["name"]) if row["is_vip"]
+              else _('已將「{name}」設為一般會員', name=row["name"]), 'success')
     return redirect(url_for('admin_customers'))
 
 
@@ -2561,7 +2579,7 @@ def reindex_images():
         updated += 1
     conn.commit()
     conn.close()
-    flash(f'✅ 已重新索引 {updated} 筆石材（含新版視覺特徵），自動補上 {color_filled} 筆顏色標籤', 'success')
+    flash(_('✅ 已重新索引 {n} 筆石材（含新版視覺特徵），自動補上 {c} 筆顏色標籤', n=updated, c=color_filled), 'success')
     return redirect(url_for('admin_dashboard'))
 
 
@@ -2654,7 +2672,7 @@ def wall_tool():
     """牆面模擬頁：點選牆面四角 + 選石材 + 輸入尺寸 → 透視/比例正確的即時模擬"""
     conn = get_db()
     stones = conn.execute(
-        "SELECT id, stone_type, stone_name, color, photo, width, height, quantity, unit "
+        "SELECT id, stone_type, stone_name, stone_name_en, stone_name_ja, color, photo, width, height, quantity, unit "
         "FROM stones WHERE photo IS NOT NULL AND photo != '' ORDER BY id DESC"
     ).fetchall()
     conn.close()
@@ -2715,7 +2733,7 @@ def api_simulate_wall():
         os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
         filename = f'design_{secrets.token_hex(8)}.jpg'
         result_img.save(os.path.join(app.config['UPLOAD_FOLDER'], filename), 'JPEG', quality=92)
-        label = f'牆面模擬（{wall_w/100:.1f}×{wall_h/100:.1f}m・{tiles_x}×{tiles_y} 片）'
+        label = _('牆面模擬（{w}×{h}m・{x}×{y} 片）', w=f'{wall_w/100:.1f}', h=f'{wall_h/100:.1f}', x=tiles_x, y=tiles_y)
         design_id = _record_design(session['customer_id'], stone_id, display_name, filename, label)
         local_url = url_for('static', filename=f'uploads/{filename}')
 
@@ -2729,7 +2747,7 @@ def api_simulate_wall():
             'success': True, 'result_url': local_url, 'local_url': local_url,
             'saved': True, 'design_id': design_id, 'stone_name': display_name,
             'stats': {
-                'tile_size': f'{sw:g}×{sh:g}cm' + ('（未填尺寸，估算值）' if estimated else ''),
+                'tile_size': f'{sw:g}×{sh:g}cm' + (_('（未填尺寸，估算值）') if estimated else ''),
                 'tiles_x': tiles_x, 'tiles_y': tiles_y, 'tiles_total': tiles_total,
                 'stock_qty': stock_qty,
                 'stock_ok': bool(stock_qty and stock_qty >= tiles_total),
@@ -2741,7 +2759,7 @@ def api_simulate_wall():
         return jsonify({'error': str(ve)}), 400
     except Exception as e:
         import traceback; traceback.print_exc()
-        return jsonify({'error': f'牆面模擬失敗：{str(e)[:200]}'}), 500
+        return jsonify({'error': _('牆面模擬失敗：{e}', e=str(e)[:200])}), 500
     finally:
         if design_path and os.path.exists(design_path):
             try: os.unlink(design_path)
@@ -2800,20 +2818,20 @@ def api_enhance_wall():
         contents = [prompt, part_of(comp_path)] + ([part_of(orig_path)] if has_orig else [])
         result_img = gemini_edit_image(contents)
         if result_img is None:
-            return jsonify({'error': f'AI 強化失敗：{_LAST_SYNTH_ERROR or "未回傳影像"}'}), 500
+            return jsonify({'error': _('AI 強化失敗：{e}', e=_LAST_SYNTH_ERROR or _('未回傳影像'))}), 500
 
         os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
         filename = f'design_{secrets.token_hex(8)}.jpg'
         result_img.save(os.path.join(app.config['UPLOAD_FOLDER'], filename), 'JPEG', quality=92)
         new_id = _record_design(session['customer_id'], row['stone_id'], row['stone_name'],
-                                filename, (row['prompt'] or '牆面模擬') + '・AI 擬真強化')
+                                filename, (row['prompt'] or _('牆面模擬')) + _('・AI 擬真強化'))
         ai_usage_incr(session['customer_id'])
         local_url = url_for('static', filename=f'uploads/{filename}')
         return jsonify({'success': True, 'result_url': local_url, 'local_url': local_url,
                         'design_id': new_id})
     except Exception as e:
         import traceback; traceback.print_exc()
-        return jsonify({'error': f'AI 強化失敗：{str(e)[:200]}'}), 500
+        return jsonify({'error': _('AI 強化失敗：{e}', e=str(e)[:200])}), 500
     finally:
         if orig_path and os.path.exists(orig_path):
             try: os.unlink(orig_path)
@@ -2826,7 +2844,7 @@ def design_tool():
     """設計工具頁：上傳設計圖 + 圈選區域 + 選石材 → AI 合成"""
     conn = get_db()
     stones = conn.execute(
-        'SELECT id, stone_type, stone_name, color, photo, ai_prompt FROM stones ORDER BY id DESC'
+        'SELECT id, stone_type, stone_name, stone_name_en, stone_name_ja, color, photo, ai_prompt FROM stones ORDER BY id DESC'
     ).fetchall()
     conn.close()
     selected_id = request.args.get('stone_id', type=int)
@@ -2843,7 +2861,7 @@ def sketch_tool():
     """草圖渲染頁：上傳草圖 + 選石材 + 描述 → Gemini 生成產品渲染圖"""
     conn = get_db()
     stones = conn.execute(
-        'SELECT id, stone_type, stone_name, color, photo FROM stones ORDER BY id DESC'
+        'SELECT id, stone_type, stone_name, stone_name_en, stone_name_ja, color, photo FROM stones ORDER BY id DESC'
     ).fetchall()
     conn.close()
     return render_template('sketch.html', stones=stones,
@@ -2887,14 +2905,14 @@ def api_render_sketch():
 
         result_img = render_sketch_with_gemini(sketch_path, stone_photo_path, hint)
         if result_img is None:
-            return jsonify({'error': f'草圖渲染失敗：{_LAST_SYNTH_ERROR or "未回傳影像"}'}), 500
+            return jsonify({'error': _('草圖渲染失敗：{e}', e=_LAST_SYNTH_ERROR or _('未回傳影像'))}), 500
 
         display_name = (stone['stone_name'] if 'stone_name' in stone.keys() and stone['stone_name']
                         else stone['stone_type'])
         os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
         filename = f'design_{secrets.token_hex(8)}.jpg'
         result_img.save(os.path.join(app.config['UPLOAD_FOLDER'], filename), 'JPEG', quality=92)
-        label = f'草圖渲染（{hint}）' if hint else '草圖渲染'
+        label = _('草圖渲染（{hint}）', hint=hint) if hint else _('草圖渲染')
         design_id = _record_design(session['customer_id'], stone_id, display_name, filename, label)
         ai_usage_incr(session['customer_id'])
         local_url = url_for('static', filename=f'uploads/{filename}')
@@ -2906,7 +2924,7 @@ def api_render_sketch():
         })
     except Exception as e:
         import traceback; traceback.print_exc()
-        return jsonify({'error': f'草圖渲染失敗：{str(e)[:200]}'}), 500
+        return jsonify({'error': _('草圖渲染失敗：{e}', e=str(e)[:200])}), 500
     finally:
         if sketch_path and os.path.exists(sketch_path):
             try: os.unlink(sketch_path)
@@ -2966,7 +2984,7 @@ def admin_reanalyze_one():
     path = os.path.join(app.config['UPLOAD_FOLDER'], row['photo'])
     if not os.path.exists(path):
         conn.close()
-        return jsonify({'error': f'找不到照片檔案（{row["photo"]}）'}), 400
+        return jsonify({'error': _('找不到照片檔案（{f}）', f=row["photo"])}), 400
 
     prompt = describe_stone_with_vision(path)
     if not prompt:
@@ -3008,9 +3026,9 @@ def admin_reanalyze_prompts():
                 first_error = f'石材 #{s["id"]}：{_LAST_VISION_ERROR}'
     conn.commit()
     conn.close()
-    msg = f'AI Prompt 重新分析完成：{updated} 成功 / {failed} 失敗'
+    msg = _('AI Prompt 重新分析完成：{ok} 成功 / {fail} 失敗', ok=updated, fail=failed)
     if failed and first_error:
-        msg += f'　｜ 失敗原因：{first_error}'
+        msg += _('　｜ 失敗原因：{e}', e=first_error)
     flash(msg, 'success' if failed == 0 else 'error')
     return redirect(url_for('admin_dashboard'))
 
@@ -3071,7 +3089,7 @@ def admin_generate_showcase():
     conn.commit()
     conn.close()
     return jsonify({'success': True, 'image_url': url_for('static', filename=f'uploads/{fn}'),
-                    'scene_label': scene['label'], 'stone_name': name})
+                    'scene_label': _(scene['label']), 'stone_name': name})
 
 
 @app.route('/admin/showcase/<int:id>/delete', methods=['POST'])
@@ -3143,19 +3161,19 @@ def api_apply_stone():
                 filename = f'design_{secrets.token_hex(8)}.jpg'
                 result_img.save(os.path.join(app.config['UPLOAD_FOLDER'], filename), 'JPEG', quality=92)
                 design_id = _record_design(session['customer_id'], stone_id, display_name,
-                                           filename, 'Gemini 參考圖合成（使用實際石材照片）')
+                                           filename, _('Gemini 參考圖合成（使用實際石材照片）'))
                 ai_usage_incr(session['customer_id'])
                 local_url = url_for('static', filename=f'uploads/{filename}')
                 return jsonify({
                     'success': True, 'result_url': local_url, 'local_url': local_url,
                     'saved': True, 'design_id': design_id,
-                    'prompt': 'Gemini 直接參考此石材照片合成', 'stone_name': display_name,
+                    'prompt': _('Gemini 直接參考此石材照片合成'), 'stone_name': display_name,
                     'engine': 'gemini',
                 })
             gemini_err = _LAST_SYNTH_ERROR or '未回傳影像'
             # Gemini 失敗：有 Replicate 就往下用 Flux 後備，否則回報錯誤
             if not REPLICATE_API_TOKEN:
-                return jsonify({'error': f'Gemini 合成失敗：{gemini_err}'}), 500
+                return jsonify({'error': _('Gemini 合成失敗：{e}', e=gemini_err)}), 500
 
         # ── ② 後備：Replicate Flux Fill（文字 prompt inpainting）──
         if not REPLICATE_API_TOKEN:
@@ -3230,7 +3248,7 @@ def api_apply_stone():
         import traceback
         print(f'[AI 合成錯誤] {e}')
         traceback.print_exc()
-        return jsonify({'error': f'AI 合成失敗：{str(e)[:300]}'}), 500
+        return jsonify({'error': _('AI 合成失敗：{e}', e=str(e)[:300])}), 500
     finally:
         for p in (design_path, mask_path):
             try:

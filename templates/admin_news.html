@@ -139,7 +139,7 @@
 
     <!-- 新增 / 編輯表單 -->
     <div class="card">
-      <div class="card-head">{% if editing %}編輯公告{% else %}新增公告{% endif %}</div>
+      <div class="card-head">{% if editing %}{{ t('編輯公告') }}{% else %}{{ t('新增公告') }}{% endif %}</div>
       <div class="card-body">
         <form method="POST" action="/admin/news/save">
           {% if editing %}<input type="hidden" name="id" value="{{ editing.id }}">{% endif %}
@@ -176,7 +176,7 @@
             </div>
           </div>
           <div class="form-actions">
-            <button type="submit" class="btn btn-primary">{% if editing %}更新公告{% else %}新增公告{% endif %}</button>
+            <button type="submit" class="btn btn-primary">{% if editing %}{{ t('更新公告') }}{% else %}{{ t('新增公告') }}{% endif %}</button>
             {% if editing %}<a href="/admin/news" class="btn btn-secondary">{{ t('取消編輯') }}</a>{% endif %}
             <span class="form-hint">{{ t('首頁只顯示「已勾選顯示」的最新 3 則，置頂者優先。') }}</span>
           </div>
@@ -186,7 +186,7 @@
 
     <!-- 公告清單 -->
     <div class="card">
-      <div class="card-head">{{ t('所有公告') }} <span style="color:var(--text-muted);font-weight:400;font-size:0.82rem">共 {{ items|length }} 則</span></div>
+      <div class="card-head">{{ t('所有公告') }} <span style="color:var(--text-muted);font-weight:400;font-size:0.82rem">{{ t('共 {n} 則', n=items|length) }}</span></div>
       {% if items %}
       <table>
         <thead><tr><th>{{ t('狀態') }}</th><th>{{ t('公告') }}</th><th>{{ t('更新時間') }}</th><th style="text-align:right">{{ t('操作') }}</th></tr></thead>
@@ -206,12 +206,12 @@
               <div class="row-actions" style="justify-content:flex-end">
                 <a href="/admin/news?edit={{ a.id }}" class="btn btn-secondary btn-sm">{{ t('編輯') }}</a>
                 <form method="POST" action="/admin/news/{{ a.id }}/toggle">
-                  <button type="submit" class="btn btn-secondary btn-sm">{% if a.is_published %}隱藏{% else %}顯示{% endif %}</button>
+                  <button type="submit" class="btn btn-secondary btn-sm">{% if a.is_published %}{{ t('隱藏') }}{% else %}{{ t('顯示') }}{% endif %}</button>
                 </form>
                 <form method="POST" action="/admin/news/{{ a.id }}/pin">
-                  <button type="submit" class="btn btn-secondary btn-sm">{% if a.pinned %}取消置頂{% else %}置頂{% endif %}</button>
+                  <button type="submit" class="btn btn-secondary btn-sm">{% if a.pinned %}{{ t('取消置頂') }}{% else %}{{ t('置頂') }}{% endif %}</button>
                 </form>
-                <form method="POST" action="/admin/news/{{ a.id }}/delete" onsubmit="return confirm('確定刪除這則公告？此動作無法復原。')">
+                <form method="POST" action="/admin/news/{{ a.id }}/delete" onsubmit="return confirm({{ t('確定刪除這則公告？此動作無法復原。')|tojson|forceescape }})">
                   <button type="submit" class="btn btn-danger btn-sm">{{ t('刪除') }}</button>
                 </form>
               </div>

@@ -97,7 +97,7 @@
     <div class="table-card">
       <div class="table-header">
         <h3>{{ t('所有會員') }}</h3>
-        <span>共 {{ customers|length }} 位</span>
+        <span>{{ t('共 {n} 位', n=customers|length) }}</span>
       </div>
       <table>
         <thead>
@@ -135,8 +135,7 @@
       </table>
     </div>
     <div class="hint">
-      「一般」會員每日最多生成 {{ ai_daily_limit }} 張 AI 圖（材質模擬、草圖渲染、牆面 AI 增強）；
-      「VIP」會員不受數量限制。點「設為 VIP」即可升級，隨時可改回一般。
+      {{ t('「一般」會員每日最多生成 {n} 張 AI 圖（材質模擬、草圖渲染、牆面 AI 增強）；「VIP」會員不受數量限制。點「設為 VIP」即可升級，隨時可改回一般。', n=ai_daily_limit) }}
     </div>
   </div>
 </div>

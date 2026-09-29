@@ -163,7 +163,7 @@
   </form>
 
   <div class="section-head">
-    <div class="section-title">{{ t('詢問紀錄') }} <span class="count">共 {{ inquiries|length }} 筆</span></div>
+    <div class="section-title">{{ t('詢問紀錄') }} <span class="count">{{ t('共 {n} 筆', n=inquiries|length) }}</span></div>
   </div>
 
   {% if inquiries %}
@@ -173,16 +173,16 @@
           <div class="inquiry-img-placeholder">◈</div>
           <div class="inquiry-body">
             <div class="inquiry-top">
-              <div class="inquiry-stone">{{ inq.stone_name or inq.stone_type or '石材' }}</div>
+              <div class="inquiry-stone">{{ inq.stone_name or t(inq.stone_type or '石材') }}</div>
               <span class="status-badge status-{{ inq.status }}">
-                {% if inq.status == 'pending' %}待回覆
-                {% elif inq.status == 'replied' %}已回覆
-                {% else %}已結案{% endif %}
+                {% if inq.status == 'pending' %}{{ t('待回覆') }}
+                {% elif inq.status == 'replied' %}{{ t('已回覆') }}
+                {% else %}{{ t('已結案') }}{% endif %}
               </span>
             </div>
             <div class="inquiry-meta">
-              詢問數量：{{ inq.quantity or '未填寫' }} ·
-              送出時間：{{ inq.created_at[:10] }}
+              {{ t('詢問數量：{n}', n=inq.quantity or t('未填寫')) }} ·
+              {{ t('送出時間：{d}', d=inq.created_at[:10]) }}
             </div>
             {% if inq.message %}
               <div class="inquiry-message">{{ inq.message }}</div>
@@ -200,7 +200,7 @@
   {% endif %}
 
   <div class="section-head">
-    <div class="section-title">{{ t('最近設計') }} <span class="count">最新 {{ recent_designs|length }} 張</span></div>
+    <div class="section-title">{{ t('最近設計') }} <span class="count">{{ t('最新 {n} 張', n=recent_designs|length) }}</span></div>
     {% if recent_designs %}<a href="/my-designs" class="section-link">{{ t('查看全部 →') }}</a>{% endif %}
   </div>
 
@@ -212,7 +212,7 @@
             <img src="{{ url_for('static', filename='uploads/' + d.image_file) }}" alt="{{ t('AI 合成設計') }}" loading="lazy">
           </a>
           <div class="design-body">
-            <div class="design-name">{{ d.stone_name or '石材合成' }}</div>
+            <div class="design-name">{{ d.stone_name or t('石材合成') }}</div>
             <div class="design-date">{{ d.created_at[:16] }}</div>
             <a href="/my-designs/{{ d.id }}/proposal.pdf" class="design-pdf">{{ t('提案 PDF') }}</a>
           </div>

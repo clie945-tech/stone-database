@@ -65,6 +65,7 @@
   <script src="/static/motion.js?v=1" defer></script>
   <link rel="stylesheet" href="/static/mobile-nav.css?v=2">
   <script src="/static/mobile-nav.js?v=1" defer></script>
+  {% include '_i18n_js.html' %}
 </head>
 <body>
 <header>
@@ -119,7 +120,7 @@
         {% for s in stones %}
         <div class="stone-card" data-id="{{ s.id }}">
           <div class="stone-thumb">{% if s.photo %}<img src="/static/uploads/{{ s.photo }}" alt="">{% else %}◈{% endif %}</div>
-          <div class="stone-name">{{ s.stone_name or s.stone_type }}</div>
+          <div class="stone-name">{{ loc(s,'stone_name') or t(s.stone_type) }}</div>
         </div>
         {% endfor %}
       </div>
@@ -190,7 +191,7 @@ btnGo.addEventListener('click', async () => {
   errorBox.classList.remove('active'); errorBox.textContent='';
   btnGo.disabled = true;
   resultPanel.classList.add('active');
-  resultBox.innerHTML = '<div class="loading"><div class="spinner"></div>AI 渲染中… 通常需要 15–30 秒</div>';
+  resultBox.innerHTML = '<div class="loading"><div class="spinner"></div>' + T('AI 渲染中… 通常需要 15–30 秒') + '</div>';
   resultPanel.scrollIntoView({behavior:'smooth', block:'center'});
   try {
     const fd = new FormData();
@@ -200,21 +201,21 @@ btnGo.addEventListener('click', async () => {
     const r = await fetch('/api/render-sketch', { method:'POST', body: fd });
     const raw = await r.text().catch(()=> '');
     let data; try { data = JSON.parse(raw); } catch(e){
-      throw new Error('伺服器回應異常（HTTP '+r.status+'）：'+raw.replace(/<[^>]*>/g,' ').slice(0,140));
+      throw new Error(T('伺服器回應異常（HTTP {status}）：', {status: r.status})+raw.replace(/<[^>]*>/g,' ').slice(0,140));
     }
     if (!r.ok || !data.success) throw new Error(data.error || ('HTTP '+r.status));
     const url = data.local_url || data.result_url;
-    const img = document.createElement('img'); img.alt='產品渲染圖'; img.src = url;
+    const img = document.createElement('img'); img.alt=T('產品渲染圖'); img.src = url;
     resultBox.innerHTML = ''; resultBox.appendChild(img);
     const actions = document.createElement('div'); actions.className='result-actions';
-    const a1=document.createElement('a'); a1.href=url; a1.target='_blank'; a1.textContent='開啟原圖';
-    const a2=document.createElement('a'); a2.href=url; a2.setAttribute('download','restone-render.jpg'); a2.textContent='↓ 下載圖片';
+    const a1=document.createElement('a'); a1.href=url; a1.target='_blank'; a1.textContent=T('開啟原圖');
+    const a2=document.createElement('a'); a2.href=url; a2.setAttribute('download','restone-render.jpg'); a2.textContent=T('↓ 下載圖片');
     actions.appendChild(a1); actions.appendChild(a2);
-    if (data.design_id){ const a3=document.createElement('a'); a3.href='/my-designs/'+data.design_id+'/proposal.pdf'; a3.textContent='設計提案 PDF'; actions.appendChild(a3); }
-    const a4=document.createElement('a'); a4.href='/my-designs'; a4.textContent='我的設計'; actions.appendChild(a4);
+    if (data.design_id){ const a3=document.createElement('a'); a3.href='/my-designs/'+data.design_id+'/proposal.pdf'; a3.textContent=T('設計提案 PDF'); actions.appendChild(a3); }
+    const a4=document.createElement('a'); a4.href='/my-designs'; a4.textContent=T('我的設計'); actions.appendChild(a4);
     resultBox.appendChild(actions);
     const note=document.createElement('div'); note.style.cssText='margin-top:.6rem;font-size:.76rem;color:#16a34a;font-weight:600';
-    note.textContent='✓ 已自動存入「我的設計」 · 引擎：Gemini 草圖渲染'; resultBox.appendChild(note);
+    note.textContent=T('✓ 已自動存入「我的設計」 · 引擎：Gemini 草圖渲染'); resultBox.appendChild(note);
   } catch(e){
     resultPanel.classList.remove('active');
     errorBox.textContent = '⚠ ' + (e.message || e);

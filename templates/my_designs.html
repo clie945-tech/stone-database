@@ -82,8 +82,8 @@
 <div class="container">
   <div class="page-header">
     <div class="page-title">{{ t('我的設計') }}</div>
-    <div class="page-sub">{{ session.customer_name }} 透過 AI 設計工具合成的作品，方便回顧設計發展、做出決定。</div>
-    <div class="quota-note">系統自動保留最近 {{ history_limit }} 張（目前 {{ designs|length }} 張）；超過時最舊的會自動清除</div>
+    <div class="page-sub">{{ t('{name} 透過 AI 設計工具合成的作品，方便回顧設計發展、做出決定。', name=session.customer_name) }}</div>
+    <div class="quota-note">{{ t('系統自動保留最近 {limit} 張（目前 {n} 張）；超過時最舊的會自動清除', limit=history_limit, n=designs|length) }}</div>
   </div>
 
   {% with messages = get_flashed_messages(with_categories=true) %}
@@ -102,14 +102,14 @@
             </a>
           </div>
           <div class="card-body">
-            <div class="card-stone">{{ d.stone_name or '石材合成' }}</div>
+            <div class="card-stone">{{ d.stone_name or t('石材合成') }}</div>
             <div class="card-date">{{ d.created_at[:16] }}</div>
             {% if d.prompt %}<div class="card-prompt">{{ d.prompt }}</div>{% endif %}
             <div class="card-actions">
               <a href="/my-designs/{{ d.id }}/proposal.pdf" class="pdf">{{ t('提案 PDF') }}</a>
               <a href="{{ url_for('static', filename='uploads/' + d.image_file) }}" download="restone-design.jpg">{{ t('↓ 下載') }}</a>
               {% if d.stone_id %}<a href="/stone/{{ d.stone_id }}">{{ t('看石材') }}</a>{% endif %}
-              <form method="POST" action="/my-designs/{{ d.id }}/delete" style="display:inline" onsubmit="return confirm('確定刪除這張設計嗎？刪除後無法復原。');">
+              <form method="POST" action="/my-designs/{{ d.id }}/delete" style="display:inline" onsubmit="return confirm({{ t('確定刪除這張設計嗎？刪除後無法復原。')|tojson|forceescape }});">
                 <button type="submit" class="del">{{ t('刪除') }}</button>
               </form>
             </div>

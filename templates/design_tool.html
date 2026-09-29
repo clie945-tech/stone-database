@@ -205,6 +205,7 @@
   <script src="/static/motion.js?v=1" defer></script>
   <link rel="stylesheet" href="/static/mobile-nav.css?v=2">
   <script src="/static/mobile-nav.js?v=1" defer></script>
+  {% include '_i18n_js.html' %}
 </head>
 <body>
 
@@ -287,14 +288,14 @@
         <div class="stone-grid">
           {% for s in stones %}
           <div class="stone-card {% if selected_id == s.id %}selected{% endif %}"
-               data-id="{{ s.id }}" data-name="{{ s.stone_name or s.stone_type }}"
+               data-id="{{ s.id }}" data-name="{{ loc(s,'stone_name') or t(s.stone_type) }}"
                data-prompt="{{ s.ai_prompt or '' }}">
             {% if s.photo %}
-              <img src="/static/uploads/{{ s.photo }}" alt="{{ s.stone_name or s.stone_type }}">
+              <img src="/static/uploads/{{ s.photo }}" alt="{{ loc(s,'stone_name') or t(s.stone_type) }}">
             {% else %}
               <div class="placeholder">◈</div>
             {% endif %}
-            <div class="stone-card-name">{{ s.stone_name or s.stone_type }}</div>
+            <div class="stone-card-name">{{ loc(s,'stone_name') or t(s.stone_type) }}</div>
             <div class="stone-card-check">✓</div>
           </div>
           {% endfor %}
@@ -350,7 +351,7 @@ async function maybeConvertHeic(file) {
               || file.type === 'image/heic' || file.type === 'image/heif';
   if (!isHeic) return file;
   if (typeof heic2any === 'undefined') {
-    alert('HEIC 轉檔模組載入中，請稍候再試');
+    alert(T('HEIC 轉檔模組載入中，請稍候再試'));
     return null;
   }
   try {
@@ -358,7 +359,7 @@ async function maybeConvertHeic(file) {
     const out = Array.isArray(blob) ? blob[0] : blob;
     return new File([out], name.replace(/\.(heic|heif)$/i, '.jpg'), { type: 'image/jpeg' });
   } catch (err) {
-    alert('iPhone 照片格式轉換失敗：' + err.message);
+    alert(T('iPhone 照片格式轉換失敗：') + err.message);
     return null;
   }
 }
@@ -370,8 +371,8 @@ designFile.addEventListener('change', async e => {
   const origText = uploadZone.querySelector('.upload-text');
   const origSub  = uploadZone.querySelector('.upload-sub');
   const oText = origText.textContent, oSub = origSub.textContent;
-  origText.textContent = '處理中…';
-  origSub.textContent = 'iPhone HEIC 格式正在轉檔';
+  origText.textContent = T('處理中…');
+  origSub.textContent = T('iPhone HEIC 格式正在轉檔');
 
   const f = await maybeConvertHeic(raw);
   // 還原文字
@@ -518,16 +519,16 @@ async function runApply() {
   errorBox.classList.remove('active'); errorBox.textContent = '';
   btnApply.disabled = true;
   resultPanel.classList.add('active');
-  resultBox.innerHTML = '<div class="loading"><div class="spinner"></div>AI 正在合成中… 通常需要 15–40 秒</div>';
+  resultBox.innerHTML = '<div class="loading"><div class="spinner"></div>' + T('AI 正在合成中… 通常需要 15–40 秒') + '</div>';
   resultPanel.scrollIntoView({ behavior: 'smooth', block: 'center' });
 
-  let stage = '準備中';
+  let stage = T('準備中');
   try {
-    stage = '匯出遮罩';
+    stage = T('匯出遮罩');
     const maskBlob = await exportMask();
-    if (!maskBlob) throw new Error('遮罩匯出失敗（請確認有塗選區域）');
+    if (!maskBlob) throw new Error(T('遮罩匯出失敗（請確認有塗選區域）'));
 
-    stage = '組合表單';
+    stage = T('組合表單');
     const fd = new FormData();
     fd.append('stone_id', String(selectedStoneId || ''));
     fd.append('design', designBlob, 'design.png');
@@ -537,15 +538,15 @@ async function runApply() {
       fd.append('prompt', editedPrompt);
     }
 
-    stage = '傳送請求';
+    stage = T('傳送請求');
     let r;
     try {
       r = await fetch('/api/apply-stone', { method: 'POST', body: fd });
     } catch (netErr) {
-      throw new Error('網路請求失敗：' + (netErr.message || netErr));
+      throw new Error(T('網路請求失敗：') + (netErr.message || netErr));
     }
 
-    stage = '解析回應';
+    stage = T('解析回應');
     // 回應內容只能讀取一次：先讀成文字，再嘗試解析為 JSON
     const rawText = await r.text().catch(() => '');
     let data;
@@ -554,26 +555,26 @@ async function runApply() {
     } catch (jsonErr) {
       let hint = rawText.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 160);
       if (r.status === 500 || r.status === 502) {
-        hint = hint || '伺服器處理逾時或發生錯誤，請稍候再試一次';
+        hint = hint || T('伺服器處理逾時或發生錯誤，請稍候再試一次');
       }
-      throw new Error('伺服器回應異常（HTTP ' + r.status + '）：' + hint);
+      throw new Error(T('伺服器回應異常（HTTP {status}）：', {status: r.status}) + hint);
     }
 
     if (!r.ok || !data.success) {
-      throw new Error(data.error || ('伺服器錯誤 HTTP ' + r.status));
+      throw new Error(data.error || T('伺服器錯誤 HTTP {status}', {status: r.status}));
     }
 
-    stage = '驗證圖片網址';
+    stage = T('驗證圖片網址');
     const url = data.result_url;
     if (!url || typeof url !== 'string' || !/^(https?:\/\/|\/)/.test(url)) {
       console.error('Invalid result_url:', data);
-      throw new Error('回傳的圖片網址無效：' + JSON.stringify(url).slice(0, 80));
+      throw new Error(T('回傳的圖片網址無效：') + JSON.stringify(url).slice(0, 80));
     }
 
-    stage = '顯示結果';
+    stage = T('顯示結果');
     // 用 DOM API 設定 src，避免 HTML 內插造成的特殊字元問題
     const img = document.createElement('img');
-    img.alt = 'AI 合成結果';
+    img.alt = T('AI 合成結果');
     img.src = url;
 
     const safeUrl = data.local_url || url;
@@ -581,45 +582,45 @@ async function runApply() {
     resultBox.appendChild(img);
     const actions = document.createElement('div');
     actions.className = 'result-actions';
-    const openA = document.createElement('a'); openA.href = safeUrl; openA.target = '_blank'; openA.textContent = '開啟原圖';
-    const dlA   = document.createElement('a'); dlA.href = safeUrl; dlA.setAttribute('download', 'restone-design.jpg'); dlA.textContent = '↓ 下載圖片';
+    const openA = document.createElement('a'); openA.href = safeUrl; openA.target = '_blank'; openA.textContent = T('開啟原圖');
+    const dlA   = document.createElement('a'); dlA.href = safeUrl; dlA.setAttribute('download', 'restone-design.jpg'); dlA.textContent = T('↓ 下載圖片');
     actions.appendChild(openA); actions.appendChild(dlA);
     if (data.saved && data.design_id) {
-      const pdfA = document.createElement('a'); pdfA.href = '/my-designs/' + data.design_id + '/proposal.pdf'; pdfA.textContent = '設計提案 PDF';
+      const pdfA = document.createElement('a'); pdfA.href = '/my-designs/' + data.design_id + '/proposal.pdf'; pdfA.textContent = T('設計提案 PDF');
       actions.appendChild(pdfA);
     }
     if (data.saved) {
-      const myA = document.createElement('a'); myA.href = '/my-designs'; myA.textContent = '我的設計';
+      const myA = document.createElement('a'); myA.href = '/my-designs'; myA.textContent = T('我的設計');
       actions.appendChild(myA);
     }
     resultBox.appendChild(actions);
     if (data.saved) {
       const savedNote = document.createElement('div');
       savedNote.style.cssText = 'margin-top:0.6rem;font-size:0.76rem;color:#16a34a;font-weight:600';
-      savedNote.textContent = '✓ 已自動存入「我的設計」';
+      savedNote.textContent = T('✓ 已自動存入「我的設計」');
       resultBox.appendChild(savedNote);
     }
     if (data.engine === 'gemini') {
       const eng = document.createElement('div');
       eng.style.cssText = 'margin-top:0.4rem;font-size:0.74rem;color:#7c3aed;font-weight:700';
-      eng.textContent = '引擎：Gemini 參考圖合成（使用實際石材照片）';
+      eng.textContent = T('引擎：Gemini 參考圖合成（使用實際石材照片）');
       resultBox.appendChild(eng);
     } else if (data.engine === 'flux') {
       const eng = document.createElement('div');
       eng.style.cssText = 'margin-top:0.4rem;font-size:0.72rem;color:#b45309;line-height:1.5';
-      eng.textContent = '引擎：Flux（文字生成）' +
-        (data.gemini_error ? '　｜ Gemini 未啟用原因：' + data.gemini_error : '');
+      eng.textContent = T('引擎：Flux（文字生成）') +
+        (data.gemini_error ? T('　｜ Gemini 未啟用原因：') + data.gemini_error : '');
       resultBox.appendChild(eng);
     }
     const pBox = document.createElement('div');
     pBox.className = 'prompt-box';
     pBox.style.marginTop = '1rem';
-    pBox.innerHTML = '<div class="prompt-label">使用石材 · </div><div></div>';
-    pBox.querySelector('.prompt-label').textContent = '使用石材 · ' + (data.stone_name || '');
+    pBox.innerHTML = '<div class="prompt-label"></div><div></div>';
+    pBox.querySelector('.prompt-label').textContent = T('使用石材 · ') + (data.stone_name || '');
     pBox.querySelectorAll('div')[1].textContent = data.prompt || '';
     resultBox.appendChild(pBox);
   } catch (e) {
-    console.error('[apply] 失敗於階段:', stage, e);
+    console.error('[apply] failed at stage:', stage, e);
     resultPanel.classList.remove('active');
     errorBox.textContent = '⚠ [' + stage + '] ' + (e.message || e);
     errorBox.classList.add('active');

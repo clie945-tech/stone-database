@@ -166,6 +166,7 @@
   <script src="/static/motion.js?v=1" defer></script>
   <link rel="stylesheet" href="/static/mobile-nav.css?v=2">
   <script src="/static/mobile-nav.js?v=1" defer></script>
+  {% include '_i18n_js.html' %}
 </head>
 <body>
 
@@ -236,7 +237,7 @@
       <img src="{{ reference_url }}" alt="{{ t('參考圖') }}" />
       <div class="reference-info">
         <div class="reference-label">YOUR REFERENCE</div>
-        <div class="reference-title">{% if cropped %}圈選範圍分析結果{% else %}參考圖片分析結果{% endif %}</div>
+        <div class="reference-title">{% if cropped %}{{ t('圈選範圍分析結果') }}{% else %}{{ t('參考圖片分析結果') }}{% endif %}</div>
         {% if cropped %}<div style="font-size:0.78rem;color:var(--blue);margin-bottom:0.4rem">{{ t('✓ 已排除背景，只比對你圈選的區域') }}</div>{% endif %}
         {% if detected_color %}
           <span>{{ t('偵測到主要色系：') }}</span>
@@ -263,7 +264,7 @@
 
     <div class="results-header">
       <div class="results-title">{{ t('AI 推薦結果') }}</div>
-      <div class="results-count">找到 {{ results|length }} 筆相似石材（依相似度排序）</div>
+      <div class="results-count">{{ t('找到 {n} 筆相似石材（依相似度排序）', n=results|length) }}</div>
     </div>
 
     {% if results %}
@@ -272,7 +273,7 @@
           <a href="/stone/{{ s.id }}" class="res-card">
             <div class="res-img-wrap">
               {% if s.photo %}
-                <img class="res-img" src="/static/uploads/{{ s.photo }}" alt="{{ s.stone_name or s.stone_type }}" />
+                <img class="res-img" src="/static/uploads/{{ s.photo }}" alt="{{ loc(s,'stone_name') or t(s.stone_type) }}" />
               {% else %}
                 <div class="res-img-placeholder">◈</div>
               {% endif %}
@@ -281,7 +282,7 @@
               </div>
             </div>
             <div class="res-body">
-              <div class="res-title">{{ s.stone_name or s.stone_type }}</div>
+              <div class="res-title">{{ loc(s,'stone_name') or t(s.stone_type) }}</div>
               <div class="res-meta">
                 {% if s['color'] and s['color'] in color_map %}
                   <span style="background:{{ color_map[s['color']][2] }};color:{{ color_map[s['color']][3] }};padding:1px 7px;border-radius:50px;font-weight:700;font-size:0.7rem">{{ t(color_map[s['color']][1]) }}</span>
@@ -313,7 +314,7 @@
                 || file.type === 'image/heic' || file.type === 'image/heif';
     if (!isHeic) return file;
     if (typeof heic2any === 'undefined') {
-      alert('HEIC 轉檔模組載入中，請稍候再試');
+      alert(T('HEIC 轉檔模組載入中，請稍候再試'));
       return null;
     }
     try {
@@ -321,7 +322,7 @@
       const out = Array.isArray(blob) ? blob[0] : blob;
       return new File([out], name.replace(/\.(heic|heif)$/i, '.jpg'), { type: 'image/jpeg' });
     } catch (err) {
-      alert('iPhone 照片格式轉換失敗：' + err.message);
+      alert(T('iPhone 照片格式轉換失敗：') + err.message);
       return null;
     }
   }
@@ -340,9 +341,9 @@
 
     // HEIC 轉檔
     btn.disabled = true;
-    btn.textContent = '處理中...';
+    btn.textContent = T('處理中...');
     const file = await maybeConvertHeic(rawFile);
-    btn.textContent = '開始 AI 搜尋';
+    btn.textContent = T('開始 AI 搜尋');
     if (!file) { input.value = ''; return; }
     // 將轉檔後的 File 寫回 input，確保 form submit 帶上轉檔後的版本
     if (file !== rawFile) {
@@ -380,7 +381,7 @@
       boxEl.classList.remove('active');
       fields.forEach(f => f.value = '');
       clearBtn.style.display = 'none';
-      tip.innerHTML = '在圖片上<b>拖曳框出石材區域</b>，只比對框內（避免背景干擾）';
+      tip.innerHTML = T('在圖片上') + '<b>' + T('拖曳框出石材區域') + '</b>' + T('，只比對框內（避免背景干擾）');
     };
     window.resetCrop = reset;
     clearBtn.addEventListener('click', reset);
@@ -432,7 +433,7 @@
       fields[3].value = ((g.t + g.h) / g.ch).toFixed(4);
       clearBtn.style.display = '';
       const pct = Math.round((g.w * g.h) / (g.cw * g.ch) * 100);
-      tip.innerHTML = `已圈選<b>約 ${pct}%</b> 的畫面範圍，只比對框內區域`;
+      tip.innerHTML = T('已圈選') + '<b>' + T('約 {pct}%', {pct: pct}) + '</b>' + T('的畫面範圍，只比對框內區域');
     };
     layer.addEventListener('pointerup', finish);
     layer.addEventListener('pointercancel', () => { dragging = false; });
@@ -441,7 +442,7 @@
   // 表單送出時改文字
   document.getElementById('searchForm').addEventListener('submit', function() {
     const btn = document.getElementById('searchBtn');
-    btn.textContent = 'AI 分析中...';
+    btn.textContent = T('AI 分析中...');
     btn.disabled = true;
   });
 

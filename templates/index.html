@@ -376,7 +376,7 @@
     <div class="header-right">
       {% include '_langswitch.html' %}
       {% if session.customer_id %}
-        <a href="/my-account" class="header-admin">{{ t('{name} 的帳號').replace('{name}', session.customer_name) }}</a>
+        <a href="/my-account" class="header-admin">{{ t('{name} 的帳號', name=session.customer_name) }}</a>
         <a href="/customer/logout" class="header-admin">{{ t('登出') }}</a>
       {% else %}
         <a href="/customer/login" class="header-admin">{{ t('登入') }}</a>
@@ -469,7 +469,7 @@
     {% for code, label, bg, fg in colors %}
       <a href="/?{% if search %}search={{ search }}&{% endif %}{% if selected_type %}type={{ selected_type }}&{% endif %}color={{ code }}"
          class="cpill {% if selected_color == code %}active{% endif %}"
-         style="background:{{ bg }};color:{{ fg }};{% if selected_color == code %}border-color:{{ fg }};{% endif %}">{{ label }}</a>
+         style="background:{{ bg }};color:{{ fg }};{% if selected_color == code %}border-color:{{ fg }};{% endif %}">{{ t(label) }}</a>
     {% endfor %}
   </div>
 </div>
@@ -480,9 +480,10 @@
   <div class="results-bar">
     <div class="results-count">
       {% if search or selected_type %}
-        搜尋「{% if search %}{{ search }}{% endif %}{% if selected_type %} · {{ selected_type }}{% endif %}」：<strong>{{ stones|length }} 筆結果</strong>
+        {% set q = (search or '') ~ ((' · ' ~ t(selected_type)) if selected_type else '') %}
+        {{ t('搜尋「{q}」：', q=q) }}<strong>{{ t('{n} 筆結果', n=stones|length) }}</strong>
       {% else %}
-        顯示全部 <strong>{{ stones|length }}</strong> 筆石材
+        {{ t('顯示全部') }} <strong>{{ stones|length }}</strong> {{ t('筆石材') }}
       {% endif %}
     </div>
   </div>
@@ -493,7 +494,7 @@
         <a href="/stone/{{ s.id }}" class="stone-card">
           <div class="card-img-wrap">
             {% if s.photo %}
-              <img class="card-img" src="/static/uploads/{{ s.photo }}" alt="{{ s.stone_name or s.stone_type }}" loading="lazy" />
+              <img class="card-img" src="/static/uploads/{{ s.photo }}" alt="{{ loc(s,'stone_name') or t(s.stone_type) }}" loading="lazy" />
             {% else %}
               <div class="card-img-placeholder">
                 <div class="ph-icon">◈</div>
@@ -526,20 +527,20 @@
             {% set _c = calc_carbon(s.stone_type, s.width, s.height, s.thickness, s.quantity) %}
             {% if _c > 0 %}
               <div style="margin-top:0.6rem;padding:5px 10px;background:#ECFDF5;border-radius:6px;font-size:0.72rem;font-weight:700;color:#065F46;display:inline-flex;align-items:center;gap:4px">
-減碳 {{ fmt_carbon(_c) }} CO₂e
+{{ t('減碳 {v} CO₂e', v=fmt_carbon(_c)) }}
               </div>
             {% endif %}
             <div class="card-footer">
               <div class="card-price">
                 {% if s.price %}
-                  NT${{ "{:,.0f}".format(s.price) }}<small> / {{ s.unit or '片' }}</small>
+                  NT${{ "{:,.0f}".format(s.price) }}<small> / {{ t(s.unit or '片') }}</small>
                 {% else %}
                   <span style="font-size:0.8rem;color:var(--text-muted);font-weight:500">{{ t('價格洽詢') }}</span>
                 {% endif %}
               </div>
               <div class="card-stock">
                 <span class="stock-num">{{ s.quantity or '—' }}</span>
-                <span class="stock-label">{{ s.unit or '片' }} 庫存</span>
+                <span class="stock-label">{{ t('{unit} 庫存', unit=t(s.unit or '片')) }}</span>
               </div>
             </div>
           </div>
@@ -550,8 +551,8 @@
   {% else %}
     <div class="empty">
       <div class="empty-icon">◈</div>
-      <h3>{% if search or selected_type %}找不到符合的石材{% else %}尚無石材資料{% endif %}</h3>
-      <p>{% if search or selected_type %}請嘗試其他搜尋條件{% else %}請等待管理員新增庫存{% endif %}</p>
+      <h3>{% if search or selected_type %}{{ t('找不到符合的石材') }}{% else %}{{ t('尚無石材資料') }}{% endif %}</h3>
+      <p>{% if search or selected_type %}{{ t('請嘗試其他搜尋條件') }}{% else %}{{ t('請等待管理員新增庫存') }}{% endif %}</p>
     </div>
   {% endif %}
 </main>

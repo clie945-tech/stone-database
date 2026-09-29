@@ -79,6 +79,7 @@
   <script src="/static/motion.js?v=1" defer></script>
   <link rel="stylesheet" href="/static/mobile-nav.css?v=2">
   <script src="/static/mobile-nav.js?v=1" defer></script>
+  {% include '_i18n_js.html' %}
 </head>
 <body>
 <header>
@@ -127,8 +128,8 @@
         {% for s in stones %}
         <div class="stone-card" data-id="{{ s.id }}">
           <div class="stone-thumb"><img src="/static/uploads/{{ s.photo }}" alt="" loading="lazy"></div>
-          <div class="stone-name">{{ s.stone_name or s.stone_type }}</div>
-          <div class="stone-dim">{% if s.width and s.height %}{{ '%g'|format(s.width) }}×{{ '%g'|format(s.height) }}cm{% else %}尺寸未填{% endif %}</div>
+          <div class="stone-name">{{ loc(s,'stone_name') or t(s.stone_type) }}</div>
+          <div class="stone-dim">{% if s.width and s.height %}{{ '%g'|format(s.width) }}×{{ '%g'|format(s.height) }}cm{% else %}{{ t('尺寸未填') }}{% endif %}</div>
         </div>
         {% endfor %}
       </div>
@@ -174,7 +175,7 @@ let uploadBlob = null;   // 要送出的檔案（HEIC 已轉 JPG）
 let corners = [];        // [{x,y}] canvas 座標，順序：左上→右上→右下→左下
 let dragIdx = -1;
 let selectedStoneId = null;
-const LABELS = ['① 左上', '② 右上', '③ 右下', '④ 左下'];
+const LABELS = [T('① 左上'), T('② 右上'), T('③ 右下'), T('④ 左下')];
 const COLORS = ['#EF4444', '#F59E0B', '#16A34A', '#2563EB'];
 
 // ── 上傳（含 HEIC 轉檔）──
@@ -282,10 +283,10 @@ function redraw() {
   });
   if (corners.length < 4) {
     guide.classList.remove('done');
-    guide.innerHTML = '請點選牆面的 <b>' + LABELS[corners.length] + '</b>';
+    guide.innerHTML = T('請點選牆面的') + ' <b>' + LABELS[corners.length] + '</b>';
   } else {
     guide.classList.add('done');
-    guide.innerHTML = '✓ 四角完成（可直接拖曳圓點微調）';
+    guide.innerHTML = T('✓ 四角完成（可直接拖曳圓點微調）');
   }
 }
 
@@ -307,7 +308,7 @@ btnGo.addEventListener('click', async () => {
   errorBox.classList.remove('active'); errorBox.textContent = '';
   btnGo.disabled = true;
   resultPanel.classList.add('active');
-  resultBox.innerHTML = '<div class="loading"><div class="spinner"></div>計算透視與拼貼中… 數秒內完成</div>';
+  resultBox.innerHTML = '<div class="loading"><div class="spinner"></div>' + T('計算透視與拼貼中… 數秒內完成') + '</div>';
   resultPanel.scrollIntoView({behavior:'smooth', block:'center'});
   try {
     const fd = new FormData();
@@ -320,7 +321,7 @@ btnGo.addEventListener('click', async () => {
     const r = await fetch('/api/simulate-wall', { method:'POST', body: fd });
     const raw = await r.text().catch(()=> '');
     let data; try { data = JSON.parse(raw); } catch(e){
-      throw new Error('伺服器回應異常（HTTP '+r.status+'）：'+raw.replace(/<[^>]*>/g,' ').slice(0,140));
+      throw new Error(T('伺服器回應異常（HTTP {status}）：', {status: r.status})+raw.replace(/<[^>]*>/g,' ').slice(0,140));
     }
     if (!r.ok || !data.success) throw new Error(data.error || ('HTTP '+r.status));
     lastDesignId = data.design_id;
@@ -334,7 +335,7 @@ btnGo.addEventListener('click', async () => {
 
 function renderResult(url, stats, stoneName) {
   resultBox.innerHTML = '';
-  const im = document.createElement('img'); im.src = url; im.alt = '牆面模擬結果';
+  const im = document.createElement('img'); im.src = url; im.alt = T('牆面模擬結果');
   resultBox.appendChild(im);
 
   if (stats) {
@@ -345,29 +346,29 @@ function renderResult(url, stats, stoneName) {
       const vv = document.createElement('div'); vv.className = 'v'; vv.textContent = v;
       d.appendChild(vv); return d;
     };
-    grid.appendChild(mk('拼貼計畫', `橫 ${stats.tiles_x} × 直 ${stats.tiles_y} ＝ ${stats.tiles_total} 片`));
-    grid.appendChild(mk('石材規格', stats.tile_size));
+    grid.appendChild(mk(T('拼貼計畫'), T('橫 {x} × 直 {y} ＝ {n} 片', {x: stats.tiles_x, y: stats.tiles_y, n: stats.tiles_total})));
+    grid.appendChild(mk(T('石材規格'), stats.tile_size));
     if (stats.stock_qty) {
       grid.appendChild(stats.stock_ok
-        ? mk('庫存檢查', `${stats.stock_qty} 片 ✓ 足夠`, 'ok')
-        : mk('庫存檢查', `${stats.stock_qty} 片 ⚠ 不足（差 ${stats.tiles_total - stats.stock_qty} 片）`, 'bad'));
+        ? mk(T('庫存檢查'), T('{n} 片 ✓ 足夠', {n: stats.stock_qty}), 'ok')
+        : mk(T('庫存檢查'), T('{n} 片 ⚠ 不足（差 {short} 片）', {n: stats.stock_qty, short: stats.tiles_total - stats.stock_qty}), 'bad'));
     }
-    if (stats.carbon) grid.appendChild(mk('減碳效益', `${stats.carbon} CO₂e ≈ ${stats.trees} 棵樹年吸碳`, 'ok'));
+    if (stats.carbon) grid.appendChild(mk(T('減碳效益'), T('{c} CO₂e ≈ {trees} 棵樹年吸碳', {c: stats.carbon, trees: stats.trees}), 'ok'));
     resultBox.appendChild(grid);
   }
 
   const acts = document.createElement('div'); acts.className = 'result-actions';
-  const a1 = document.createElement('a'); a1.href = url; a1.target='_blank'; a1.textContent = '開啟原圖';
-  const a2 = document.createElement('a'); a2.href = url; a2.setAttribute('download','restone-wall.jpg'); a2.textContent = '↓ 下載圖片';
+  const a1 = document.createElement('a'); a1.href = url; a1.target='_blank'; a1.dataset.role = 'open'; a1.textContent = T('開啟原圖');
+  const a2 = document.createElement('a'); a2.href = url; a2.setAttribute('download','restone-wall.jpg'); a2.textContent = T('↓ 下載圖片');
   acts.appendChild(a1); acts.appendChild(a2);
   if (lastDesignId) {
-    const a3 = document.createElement('a'); a3.href = '/my-designs/'+lastDesignId+'/proposal.pdf'; a3.textContent = '設計提案 PDF';
+    const a3 = document.createElement('a'); a3.href = '/my-designs/'+lastDesignId+'/proposal.pdf'; a3.dataset.role = 'pdf'; a3.textContent = T('設計提案 PDF');
     acts.appendChild(a3);
   }
-  const a4 = document.createElement('a'); a4.href = '/my-designs'; a4.textContent = '我的設計';
+  const a4 = document.createElement('a'); a4.href = '/my-designs'; a4.textContent = T('我的設計');
   acts.appendChild(a4);
   {% if gemini_enabled %}
-  const eb = document.createElement('button'); eb.className = 'enhance'; eb.textContent = 'AI 擬真強化';
+  const eb = document.createElement('button'); eb.className = 'enhance'; eb.textContent = T('AI 擬真強化');
   eb.addEventListener('click', () => enhance(eb));
   acts.appendChild(eb);
   {% endif %}
@@ -375,13 +376,13 @@ function renderResult(url, stats, stoneName) {
 
   const note = document.createElement('div');
   note.style.cssText = 'margin-top:.6rem;font-size:.76rem;color:#16a34a;font-weight:600';
-  note.textContent = '✓ 已自動存入「我的設計」（'+(stoneName||'')+'）· 引擎：本地透視貼合（免費・即時）';
+  note.textContent = T('✓ 已自動存入「我的設計」（{stone}）· 引擎：本地透視貼合（免費・即時）', {stone: stoneName || ''});
   resultBox.appendChild(note);
 }
 
 async function enhance(btn) {
   if (!lastDesignId) return;
-  btn.disabled = true; const orig = btn.textContent; btn.textContent = 'AI 強化中… 15–40 秒';
+  btn.disabled = true; const orig = btn.textContent; btn.textContent = T('AI 強化中… 15–40 秒');
   try {
     const fd = new FormData();
     fd.append('design_id', String(lastDesignId));
@@ -389,21 +390,21 @@ async function enhance(btn) {
     const r = await fetch('/api/enhance-wall', { method:'POST', body: fd });
     const raw = await r.text().catch(()=> '');
     let data; try { data = JSON.parse(raw); } catch(e){
-      throw new Error('伺服器回應異常（HTTP '+r.status+'）');
+      throw new Error(T('伺服器回應異常（HTTP {status}）', {status: r.status}));
     }
     if (!r.ok || !data.success) throw new Error(data.error || ('HTTP '+r.status));
     lastDesignId = data.design_id;
     const im = resultBox.querySelector('img');
     im.src = data.local_url;
-    const pdfA = Array.from(resultBox.querySelectorAll('a')).find(a => a.textContent.includes('PDF'));
+    const pdfA = resultBox.querySelector('a[data-role="pdf"]');
     if (pdfA) pdfA.href = '/my-designs/'+data.design_id+'/proposal.pdf';
     const dlA = Array.from(resultBox.querySelectorAll('a')).find(a => a.hasAttribute('download'));
     if (dlA) dlA.href = data.local_url;
-    const opA = Array.from(resultBox.querySelectorAll('a')).find(a => a.textContent.includes('開啟'));
+    const opA = resultBox.querySelector('a[data-role="open"]');
     if (opA) opA.href = data.local_url;
-    btn.textContent = '✓ 已強化';
+    btn.textContent = T('✓ 已強化');
   } catch(e){
-    alert('AI 強化失敗：' + (e.message || e));
+    alert(T('AI 強化失敗：') + (e.message || e));
     btn.textContent = orig; btn.disabled = false;
   }
 }

@@ -128,6 +128,7 @@
   </style>
   <link rel="stylesheet" href="/static/mobile-nav.css?v=2">
   <script src="/static/mobile-nav.js?v=1" defer></script>
+  {% include '_i18n_js.html' %}
 </head>
 <body>
 
@@ -144,7 +145,7 @@
     <a href="/admin" class="nav-item active"><span class="icon">▦</span> {{ t('石材管理') }}</a>
     <a href="/admin/add" class="nav-item"><span class="icon">＋</span> {{ t('新增石材') }}</a>
     <a href="/admin/inquiries" class="nav-item">
-      <span class="icon">✉</span> 詢問管理
+      <span class="icon">✉</span> {{ t('詢問管理') }}
       {% if new_inquiries > 0 %}<span style="margin-left:auto;background:var(--blue);color:white;font-size:0.65rem;padding:1px 7px;border-radius:10px;font-weight:700">{{ new_inquiries }}</span>{% endif %}
     </a>
     <a href="/admin/customers" class="nav-item">{{ t('會員管理') }}</a>
@@ -163,7 +164,7 @@
   <div class="topbar">
     <div class="topbar-title">{{ t('石材庫存管理') }}</div>
     <div class="topbar-actions">
-      <form method="post" action="/admin/reindex-images" style="display:inline" onsubmit="return confirm('將為所有現有石材重新計算 AI 圖片索引（顏色與相似度比對用），可能需要幾秒鐘。是否繼續？')">
+      <form method="post" action="/admin/reindex-images" style="display:inline" onsubmit="return confirm({{ t('將為所有現有石材重新計算 AI 圖片索引（顏色與相似度比對用），可能需要幾秒鐘。是否繼續？')|tojson|forceescape }})">
         <button type="submit" class="btn btn-secondary" title="{{ t('為現有照片建立 AI 索引') }}">{{ t('重新索引照片') }}</button>
       </form>
       <button type="button" id="btn-reanalyze" class="btn btn-secondary" title="{{ t('用視覺 AI 逐張重寫所有石材的 Prompt') }}">{{ t('重新分析 Prompt') }}</button>
@@ -196,7 +197,7 @@
       <div class="stat-card" style="background:linear-gradient(135deg,#ECFDF5,#D1FAE5);border:1px solid #10B981">
         <div class="stat-label" style="color:#065F46">{{ t('累積減碳 CO₂e') }}</div>
         <div class="stat-value" style="color:#065F46">{{ fmt_carbon(total_carbon_kg) }}</div>
-        <div style="font-size:0.7rem;color:#047857;margin-top:4px">≈ {{ "{:.1f}".format(total_carbon_kg / 21) }} 棵樹一年吸收量</div>
+        <div style="font-size:0.7rem;color:#047857;margin-top:4px">{{ t('≈ {n} 棵樹一年吸收量', n="{:.1f}".format(total_carbon_kg / 21)) }}</div>
       </div>
       {% endif %}
     </div>
@@ -204,7 +205,7 @@
     <div class="table-card">
       <div class="table-header">
         <h3>{{ t('所有石材庫存') }}</h3>
-        <span>共 {{ total }} 筆</span>
+        <span>{{ t('共 {n} 筆', n=total) }}</span>
       </div>
       <table>
         <thead>
@@ -241,7 +242,7 @@
                   {% else %}<span style="color:var(--text-light)">—</span>{% endif %}
                 </td>
                 <td>
-                  {% if s.quantity %}<span class="qty-val">{{ s.quantity }}</span> <span style="color:var(--text-muted);font-size:0.8rem">{{ s.unit or '片' }}</span>
+                  {% if s.quantity %}<span class="qty-val">{{ s.quantity }}</span> <span style="color:var(--text-muted);font-size:0.8rem">{{ t(s.unit or '片') }}</span>
                   {% else %}<span style="color:var(--text-light)">—</span>{% endif %}
                 </td>
                 <td>
@@ -252,7 +253,7 @@
                 <td>
                   <div class="actions">
                     <a href="/admin/edit/{{ s.id }}" class="btn btn-secondary btn-sm">{{ t('編輯') }}</a>
-                    <button onclick="confirmDelete({{ s.id }}, '{{ s.stone_name or s.stone_type }}')" class="btn btn-danger btn-sm">{{ t('刪除') }}</button>
+                    <button onclick="confirmDelete({{ s.id }}, {{ (s.stone_name or s.stone_type)|tojson|forceescape }})" class="btn btn-danger btn-sm">{{ t('刪除') }}</button>
                   </div>
                 </td>
               </tr>
@@ -272,12 +273,12 @@
       </div>
       <div class="test-actions">
         <form method="post" action="/admin/test-data/seed"
-              onsubmit="this.querySelector('button').disabled=true;this.querySelector('button').textContent='{{ t('產生中…') }}';{% if test_count %}return confirm('{{ t('將以新的 20 筆替換現有測試資料，確定？') }}'){% else %}return true{% endif %}">
+              onsubmit="this.querySelector('button').disabled=true;this.querySelector('button').textContent={{ t('產生中…')|tojson|forceescape }};{% if test_count %}return confirm({{ t('將以新的 20 筆替換現有測試資料，確定？')|tojson|forceescape }}){% else %}return true{% endif %}">
           <button type="submit" class="btn btn-secondary">{{ t('產生 20 筆測試資料') }}</button>
         </form>
         {% if test_count %}
         <form method="post" action="/admin/test-data/clear"
-              onsubmit="return confirm('{{ t('確定清除所有測試資料？照片也會一併刪除，無法復原。') }}')">
+              onsubmit="return confirm({{ t('確定清除所有測試資料？照片也會一併刪除，無法復原。')|tojson|forceescape }})">
           <button type="submit" class="btn btn-danger">{{ t('清除測試資料') }}</button>
         </form>
         {% endif %}
@@ -301,7 +302,7 @@
 
 <script>
   function confirmDelete(id, name) {
-    document.getElementById('deleteMsg').textContent = `確定要刪除「${name}」嗎？此操作無法復原。`;
+    document.getElementById('deleteMsg').textContent = T('確定要刪除「{name}」嗎？此操作無法復原。', {name: name});
     document.getElementById('deleteForm').action = `/admin/delete/${id}`;
     document.getElementById('deleteModal').classList.add('show');
   }
@@ -323,20 +324,20 @@
       try {
         r = await fetch('/admin/api/reanalyze-one', { method: 'POST', body: fd });
       } catch (e) {
-        return { ok: false, reason: '網路錯誤：' + (e.message || e) };
+        return { ok: false, reason: T('網路錯誤：') + (e.message || e) };
       }
       if (r.status === 429) {
         let wait = SPACING_MS;
         try { const j = await r.json(); if (j.retry_after) wait = j.retry_after * 1000; } catch (e) {}
         if (attempt < MAX_RETRY) { await sleep(wait); continue; }
-        return { ok: false, reason: '限速重試多次仍失敗（請考慮為 Replicate 儲值到 $5 以上）' };
+        return { ok: false, reason: T('限速重試多次仍失敗（請考慮為 Replicate 儲值到 $5 以上）') };
       }
       let data = {};
       try { data = await r.json(); } catch (e) {}
       if (r.ok && data.success) return { ok: true, prompt: data.prompt };
       return { ok: false, reason: data.error || ('HTTP ' + r.status) };
     }
-    return { ok: false, reason: '未知錯誤' };
+    return { ok: false, reason: T('未知錯誤') };
   }
 
   const btnReanalyze = document.getElementById('btn-reanalyze');
@@ -344,8 +345,8 @@
 
   btnReanalyze.addEventListener('click', async () => {
     const total = REANALYZE_IDS.length;
-    if (!total) { alert('沒有可分析的石材（需有照片）'); return; }
-    if (!confirm(`將用視覺 AI 逐張重新分析 ${total} 張石材照片，每張間隔約 12 秒以符合 Replicate 限速，預計約 ${Math.ceil(total * 13 / 60)} 分鐘。期間請勿關閉此頁。是否繼續？`)) return;
+    if (!total) { alert(T('沒有可分析的石材（需有照片）')); return; }
+    if (!confirm(T('將用視覺 AI 逐張重新分析 {n} 張石材照片，每張間隔約 12 秒以符合 Replicate 限速，預計約 {min} 分鐘。期間請勿關閉此頁。是否繼續？', {n: total, min: Math.ceil(total * 13 / 60)}))) return;
 
     btnReanalyze.disabled = true;
     const origText = btnReanalyze.textContent;
@@ -355,11 +356,11 @@
     let success = 0, failed = 0, firstError = '';
     for (let i = 0; i < total; i++) {
       const id = REANALYZE_IDS[i];
-      btnReanalyze.textContent = `分析中… ${i + 1}/${total}`;
-      statusBox.textContent = `重新分析中：${i + 1}/${total}（成功 ${success}、失敗 ${failed}）…`;
+      btnReanalyze.textContent = T('分析中… {i}/{n}', {i: i + 1, n: total});
+      statusBox.textContent = T('重新分析中：{i}/{n}（成功 {ok}、失敗 {fail}）…', {i: i + 1, n: total, ok: success, fail: failed});
       const res = await reanalyzeOne(id);
       if (res.ok) success++;
-      else { failed++; if (!firstError) firstError = `石材 #${id}：${res.reason}`; }
+      else { failed++; if (!firstError) firstError = T('石材 #{id}：{reason}', {id: id, reason: res.reason}); }
       if (i < total - 1) await sleep(SPACING_MS);   // 間隔以符合限速
     }
 
@@ -367,9 +368,9 @@
     btnReanalyze.disabled = false;
     statusBox.className = 'flash ' + (failed ? 'flash-error' : 'flash-success');
     statusBox.textContent = (failed ? '⚠' : '✓') +
-      ` 重新分析完成：${success} 成功 / ${failed} 失敗` +
-      (failed && firstError ? `　｜ 失敗原因：${firstError}` : '') +
-      '（重新整理頁面即可在各石材看到新描述）';
+      T(' 重新分析完成：{ok} 成功 / {fail} 失敗', {ok: success, fail: failed}) +
+      (failed && firstError ? T('　｜ 失敗原因：{e}', {e: firstError}) : '') +
+      T('（重新整理頁面即可在各石材看到新描述）');
   });
 </script>
 </body>

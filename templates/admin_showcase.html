@@ -47,6 +47,7 @@
   </style>
   <link rel="stylesheet" href="/static/mobile-nav.css?v=2">
   <script src="/static/mobile-nav.js?v=1" defer></script>
+  {% include '_i18n_js.html' %}
 </head>
 <body>
 <header>
@@ -76,7 +77,7 @@
       <tbody>
         {% for p in plan %}
         <tr data-scene="{{ p.scene_index }}">
-          <td>{{ p.label }}</td>
+          <td>{{ t(p.label) }}</td>
           <td>
             <select class="stone-pick">
               {% for s in stones %}
@@ -106,9 +107,9 @@
           <img src="{{ url_for('static', filename='uploads/' + im.image_file) }}" alt="{{ t('展覽圖') }}" loading="lazy">
         </a>
         <div class="meta">
-          <div class="scene">{{ im.scene_label }}</div>
+          <div class="scene">{{ t(im.scene_label) }}</div>
           <div class="stone">{{ im.stone_name }} · {{ im.created_at[:16] }}</div>
-          <form method="POST" action="/admin/showcase/{{ im.id }}/delete" onsubmit="return confirm('刪除這張展覽圖？')">
+          <form method="POST" action="/admin/showcase/{{ im.id }}/delete" onsubmit="return confirm({{ t('刪除這張展覽圖？')|tojson|forceescape }})">
             <button class="del" type="submit">{{ t('刪除') }}</button>
           </form>
         </div>
@@ -133,27 +134,27 @@ async function genOne(sceneIndex, stoneId, statusCell) {
     fd.append('stone_id', String(stoneId));
     let r;
     try { r = await fetch('/admin/api/generate-showcase', { method:'POST', body:fd }); }
-    catch(e){ return { ok:false, reason:'網路錯誤' }; }
+    catch(e){ return { ok:false, reason:T('網路錯誤') }; }
     if (r.status === 429) {
       let wait = SPACING;
       try { const j = await r.json(); if (j.retry_after) wait = j.retry_after*1000; } catch(e){}
-      if (statusCell) statusCell.textContent = `限速，等待重試…`;
+      if (statusCell) statusCell.textContent = T('限速，等待重試…');
       if (attempt < MAX_RETRY) { await sleep(wait); continue; }
-      return { ok:false, reason:'限速重試多次仍失敗' };
+      return { ok:false, reason:T('限速重試多次仍失敗') };
     }
     let data={}; try { data = await r.json(); } catch(e){}
     if (r.ok && data.success) return { ok:true, data };
     return { ok:false, reason: data.error || ('HTTP '+r.status) };
   }
-  return { ok:false, reason:'未知錯誤' };
+  return { ok:false, reason:T('未知錯誤') };
 }
 
 function addToGallery(d) {
   const hint = document.getElementById('empty-hint'); if (hint) hint.remove();
   const div = document.createElement('div');
   div.className = 'shot';
-  div.innerHTML = `<a class="img" href="${d.image_url}" target="_blank"><img src="${d.image_url}" alt="展覽圖"></a>`
-    + `<div class="meta"><div class="scene">${d.scene_label}</div><div class="stone">${d.stone_name} · 剛生成</div></div>`;
+  div.innerHTML = `<a class="img" href="${d.image_url}" target="_blank"><img src="${d.image_url}" alt="${T('展覽圖')}"></a>`
+    + `<div class="meta"><div class="scene">${d.scene_label}</div><div class="stone">${d.stone_name} · ${T('剛生成')}</div></div>`;
   gallery.prepend(div);
   countEl.textContent = parseInt(countEl.textContent || '0') + 1;
 }
@@ -162,9 +163,9 @@ async function runRow(tr) {
   const sceneIndex = parseInt(tr.dataset.scene);
   const stoneId = tr.querySelector('.stone-pick').value;
   const cell = tr.querySelector('.row-status');
-  cell.textContent = '生成中…';
+  cell.textContent = T('生成中…');
   const res = await genOne(sceneIndex, stoneId, cell);
-  if (res.ok) { cell.textContent = '✓ 完成'; addToGallery(res.data); }
+  if (res.ok) { cell.textContent = T('✓ 完成'); addToGallery(res.data); }
   else cell.textContent = '✗ ' + res.reason;
   return res.ok;
 }
@@ -184,12 +185,12 @@ document.getElementById('gen-all').addEventListener('click', async () => {
   document.querySelectorAll('.gen-one').forEach(b => b.disabled = true);
   let ok = 0, fail = 0;
   for (let i = 0; i < rows.length; i++) {
-    statusEl.textContent = `生成中… ${i+1}/${rows.length}（成功 ${ok}、失敗 ${fail}）`;
+    statusEl.textContent = T('生成中… {i}/{n}（成功 {ok}、失敗 {fail}）', {i: i+1, n: rows.length, ok: ok, fail: fail});
     const good = await runRow(rows[i]);
     good ? ok++ : fail++;
     if (i < rows.length - 1) await sleep(SPACING);
   }
-  statusEl.textContent = `完成：${ok} 成功 / ${fail} 失敗`;
+  statusEl.textContent = T('完成：{ok} 成功 / {fail} 失敗', {ok: ok, fail: fail});
   allBtn.disabled = false;
   document.querySelectorAll('.gen-one').forEach(b => b.disabled = false);
 });

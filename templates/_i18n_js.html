@@ -1,0 +1,9 @@
+{# 前端 JS 翻譯：T('原文') 或 T('共 {n} 筆', {n: 3})。中文模式翻譯表為空，直接顯示原文。 #}
+<script>
+  window.I18N = {{ i18n_js|tojson }};
+  window.T = function (s, v) {
+    var r = Object.prototype.hasOwnProperty.call(window.I18N, s) ? window.I18N[s] : s;
+    if (v) for (var k in v) r = r.split('{' + k + '}').join(v[k]);
+    return r;
+  };
+</script>

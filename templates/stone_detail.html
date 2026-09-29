@@ -143,6 +143,7 @@
   <script src="/static/motion.js?v=1" defer></script>
   <link rel="stylesheet" href="/static/mobile-nav.css?v=2">
   <script src="/static/mobile-nav.js?v=1" defer></script>
+  {% include '_i18n_js.html' %}
 </head>
 <body>
 
@@ -186,7 +187,7 @@
 
       <div class="main-img-wrap">
         {% if photos %}
-          <img class="main-img" id="mainImg" src="/static/uploads/{{ photos[0] }}" alt="{{ stone.stone_name or stone.stone_type }}" onclick="openLightbox(this.src)" title="{{ t('點擊放大') }}" />
+          <img class="main-img" id="mainImg" src="/static/uploads/{{ photos[0] }}" alt="{{ loc(stone,'stone_name') or t(stone.stone_type) }}" onclick="openLightbox(this.src)" title="{{ t('點擊放大') }}" />
         {% else %}
           <div class="img-placeholder"><div class="ph">◈</div><span>{{ t('暫無照片') }}</span></div>
         {% endif %}
@@ -196,7 +197,7 @@
         <div class="thumbnails">
           {% for p in photos %}
             <div class="thumb-item {% if loop.first %}active{% endif %}" onclick="switchImg(this, '/static/uploads/{{ p }}')">
-              <img src="/static/uploads/{{ p }}" alt="照片{{ loop.index }}" />
+              <img src="/static/uploads/{{ p }}" alt="{{ t('照片 {n}', n=loop.index) }}" />
             </div>
           {% endfor %}
         </div>
@@ -247,14 +248,14 @@
       <div class="price-card">
         <div class="price-label">{{ t('單價') }}</div>
         {% if stone.price %}
-          <div><span class="price-main">NT${{ "{:,.0f}".format(stone.price) }}</span><span class="price-unit">/ {{ stone.unit or '片' }}</span></div>
+          <div><span class="price-main">NT${{ "{:,.0f}".format(stone.price) }}</span><span class="price-unit">/ {{ t(stone.unit or '片') }}</span></div>
         {% else %}
           <div class="price-main" style="font-size:1.5rem;opacity:0.8">{{ t('價格洽詢') }}</div>
         {% endif %}
         <div class="price-divider"></div>
         <div class="price-stock">
           <span class="price-stock-label">{{ t('目前庫存') }}</span>
-          <span class="price-stock-value">{{ stone.quantity or '—' }} {{ stone.unit or '片' }}</span>
+          <span class="price-stock-value">{{ stone.quantity or '—' }} {{ t(stone.unit or '片') }}</span>
         </div>
       </div>
 
@@ -273,7 +274,7 @@
     {% if session.customer_id %}
       <div class="inquiry-card" style="display:flex;align-items:center;gap:1.2rem;flex-wrap:wrap;background:linear-gradient(135deg,#EFF6FF,#E0E7FF);border-color:#BFDBFE">
         <div style="flex:1;min-width:240px">
-          <div style="font-size:0.95rem;font-weight:700;margin-bottom:0.3rem">將「{{ stone.stone_name or stone.stone_type }}」套用到你的設計圖</div>
+          <div style="font-size:0.95rem;font-weight:700;margin-bottom:0.3rem">{{ t('將「{name}」套用到你的設計圖', name=loc(stone,'stone_name') or t(stone.stone_type)) }}</div>
           <div style="font-size:0.82rem;color:var(--text-muted);line-height:1.6">{{ t('上傳室內 / 家具 / 產品設計圖，用筆刷圈選牆面、桌面或表面區域，AI 會用此石材紋理自動合成新圖。') }}</div>
         </div>
         <a href="/design-tool?stone_id={{ stone.id }}"
@@ -337,7 +338,7 @@
           </div>
           <div>
             <div style="font-size:1.8rem;font-weight:800;color:var(--blue)" id="resQty">—</div>
-            <div style="font-size:0.7rem;color:var(--text-muted);margin-top:4px">需要數量（{{ stone.unit or '片' }}）</div>
+            <div style="font-size:0.7rem;color:var(--text-muted);margin-top:4px">{{ t('需要數量（{unit}）', unit=t(stone.unit or '片')) }}</div>
           </div>
           <div>
             <div style="font-size:1.8rem;font-weight:800;color:var(--blue)" id="resPrice">—</div>
@@ -363,7 +364,7 @@
 
         <div style="display:flex;align-items:baseline;gap:0.6rem;margin-bottom:0.4rem">
           <div style="font-size:2.6rem;font-weight:900;color:#065F46;line-height:1;letter-spacing:-0.02em">
-            減少 {{ fmt_carbon(_carbon) }}
+            {{ t('減少 {v}', v=fmt_carbon(_carbon)) }}
           </div>
           <div style="font-size:1rem;color:#065F46;font-weight:600">CO₂e</div>
         </div>
@@ -468,7 +469,7 @@
       {% for r in recommendations %}
         <a href="/stone/{{ r.id }}" class="rec" style="background:var(--white);border-radius:14px;border:1px solid var(--border);overflow:hidden;text-decoration:none;color:inherit;transition:all 0.2s;display:block" onmouseover="this.style.transform='translateY(-3px)'" onmouseout="this.style.transform=''">
           {% if r.photo %}
-            <img src="/static/uploads/{{ r.photo }}" alt="{{ r.stone_name or r.stone_type }}" style="width:100%;height:150px;object-fit:cover;display:block" />
+            <img src="/static/uploads/{{ r.photo }}" alt="{{ loc(r,'stone_name') or t(r.stone_type) }}" style="width:100%;height:150px;object-fit:cover;display:block" />
           {% else %}
             <div style="width:100%;height:150px;background:linear-gradient(135deg,#F1F5F9,#E2E8F0);display:flex;align-items:center;justify-content:center;color:#C8D5E8;font-size:2.5rem">◈</div>
           {% endif %}
@@ -477,9 +478,9 @@
             <div style="font-size:0.92rem;font-weight:700;margin-bottom:0.3rem">{{ loc(r,'stone_name') or t(r.stone_type) }}</div>
             <div style="display:flex;justify-content:space-between;align-items:center;margin-top:0.6rem;padding-top:0.6rem;border-top:1px solid var(--border)">
               <span style="font-size:0.9rem;font-weight:700;color:var(--blue)">
-                {% if r.price %}NT${{ "{:,.0f}".format(r.price) }}{% else %}洽詢{% endif %}
+                {% if r.price %}NT${{ "{:,.0f}".format(r.price) }}{% else %}{{ t('洽詢') }}{% endif %}
               </span>
-              <span style="font-size:0.75rem;color:var(--text-muted)">庫存 {{ r.quantity or '—' }}</span>
+              <span style="font-size:0.75rem;color:var(--text-muted)">{{ t('庫存 {n}', n=r.quantity or '—') }}</span>
             </div>
           </div>
         </a>
@@ -546,9 +547,11 @@
 
     document.getElementById('resArea').textContent = area.toFixed(1);
     document.getElementById('resQty').textContent = qty.toLocaleString();
-    document.getElementById('resPrice').textContent = totalPrice > 0 ? totalPrice.toLocaleString() : '洽詢';
+    document.getElementById('resPrice').textContent = totalPrice > 0 ? totalPrice.toLocaleString() : T('洽詢');
     document.getElementById('resNote').textContent =
-      `石材尺寸 ${(stoneW*100).toFixed(0)}×${(stoneH*100).toFixed(0)} cm，含 ${Math.round(wasteRate*100)}% 損耗，共需 ${qty} {{ stone.unit or '片' }}`;
+      T('石材尺寸 {w}×{h} cm，含 {waste}% 損耗，共需 {qty} {unit}', {
+        w: (stoneW*100).toFixed(0), h: (stoneH*100).toFixed(0),
+        waste: Math.round(wasteRate*100), qty: qty, unit: {{ t(stone.unit or '片')|tojson }} });
     document.getElementById('calcResult').style.display = 'block';
   }
 </script>
