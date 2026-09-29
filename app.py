@@ -1163,6 +1163,13 @@ def init_db():
         except Exception:
             pass
 
+    # 測試資料標記（is_test = 1 的石材可由後台一鍵清除）
+    try:
+        conn.execute("ALTER TABLE stones ADD COLUMN is_test INTEGER DEFAULT 0")
+        conn.commit()
+    except Exception:
+        pass
+
     # 多語系內容欄位：石材品名／描述／廠商 的英日文版本（留空則顯示中文原文）
     for col in ['stone_name_en', 'stone_name_ja', 'description_en', 'description_ja',
                 'vendor_en', 'vendor_ja']:
@@ -1989,9 +1996,45 @@ def admin_dashboard():
         calculate_carbon_saved(s['stone_type'], s['width'], s['height'], s['thickness'], s['quantity'])
         for s in stones
     )
+    test_count = sum(1 for s in stones if s['is_test'])
     return render_template('admin.html', stones=stones, total=total,
                            new_inquiries=new_inquiries,
-                           total_carbon_kg=total_carbon_kg)
+                           total_carbon_kg=total_carbon_kg,
+                           test_count=test_count)
+
+
+# ─── 測試資料（20 筆循環石材，照片本機生成，不呼叫任何 AI）──────────
+@app.route('/admin/test-data/seed', methods=['POST'])
+@admin_required
+def admin_seed_test_data():
+    import seed_data
+    conn = get_db()
+    try:
+        replaced = seed_data.clear(conn, delete_photo)      # 重複按下時先替換舊的測試資料
+        created = seed_data.seed(conn, app.config['UPLOAD_FOLDER'],
+                                 analyze_image_full, generate_ai_prompt)
+    except Exception as e:
+        import traceback; traceback.print_exc()
+        conn.close()
+        flash(_('產生測試資料失敗') + f'：{str(e)[:120]}', 'error')
+        return redirect(url_for('admin_dashboard'))
+    conn.close()
+    msg = _('已產生 {n} 筆測試資料').format(n=created)
+    if replaced:
+        msg += _('（已替換先前的 {n} 筆）').format(n=replaced)
+    flash(msg, 'success')
+    return redirect(url_for('admin_dashboard'))
+
+
+@app.route('/admin/test-data/clear', methods=['POST'])
+@admin_required
+def admin_clear_test_data():
+    import seed_data
+    conn = get_db()
+    n = seed_data.clear(conn, delete_photo)
+    conn.close()
+    flash(_('已清除 {n} 筆測試資料（含照片）').format(n=n), 'success')
+    return redirect(url_for('admin_dashboard'))
 
 
 # ─── 內容多語翻譯（AI 產草稿，後台可再編輯）─────────────────────

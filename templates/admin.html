@@ -102,6 +102,15 @@
     .name-sub { font-size: 0.75rem; color: var(--text-muted); margin-top: 2px; }
     .actions { display: flex; gap: 0.4rem; }
     .empty-row td { text-align: center; padding: 3rem; color: var(--text-muted); }
+    .test-badge { display: inline-block; margin-left: 6px; padding: 1px 7px; border-radius: 99px;
+                  font-size: 0.66rem; font-weight: 700; background: #FEF3C7; color: #92400E; vertical-align: middle; }
+    .test-card { margin-top: 1.5rem; padding: 1.1rem 1.4rem; border: 1px dashed #FCD34D; border-radius: 12px;
+                 background: #FFFBEB; display: flex; gap: 1.5rem; align-items: center; justify-content: space-between; flex-wrap: wrap; }
+    .test-title { font-size: 0.9rem; font-weight: 700; color: #92400E; }
+    .test-count { margin-left: .5rem; font-size: 0.78rem; font-weight: 600; color: #B45309; }
+    .test-desc { margin-top: .3rem; font-size: 0.78rem; color: #A16207; line-height: 1.6; max-width: 640px; }
+    .test-actions { display: flex; gap: .6rem; }
+    .test-actions form { display: inline; }
 
     /* ── Modal ── */
     .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 1000; align-items: center; justify-content: center; }
@@ -219,7 +228,7 @@
                   {% endif %}
                 </td>
                 <td>
-                  <div class="name-strong">{{ s.stone_name or t(s.stone_type) }}</div>
+                  <div class="name-strong">{{ s.stone_name or t(s.stone_type) }}{% if s.is_test %} <span class="test-badge">{{ t('測試') }}</span>{% endif %}</div>
                   <div class="name-sub" style="color:var(--text-muted);font-size:0.75rem;margin-top:2px">
                     {{ t(s.stone_type) }}{% if s.description %} · {{ s.description[:30] }}{% if s.description|length > 30 %}...{% endif %}{% endif %}
                   </div>
@@ -252,6 +261,26 @@
         </tbody>
       </table>
     </div>
+
+    <div class="test-card">
+      <div>
+        <div class="test-title">{{ t('測試資料') }}
+          <span class="test-count">{{ t('目前') }} {{ test_count }} {{ t('筆') }}</span></div>
+        <div class="test-desc">{{ t('一鍵產生 20 筆循環石材（含照片、英日文翻譯、以圖搜圖索引），涵蓋 4 種石材與 8 個色系。照片由程式生成，不呼叫 AI、不產生費用。') }}</div>
+      </div>
+      <div class="test-actions">
+        <form method="post" action="/admin/test-data/seed"
+              onsubmit="this.querySelector('button').disabled=true;this.querySelector('button').textContent='{{ t('產生中…') }}';{% if test_count %}return confirm('{{ t('將以新的 20 筆替換現有測試資料，確定？') }}'){% else %}return true{% endif %}">
+          <button type="submit" class="btn btn-secondary">{{ t('產生 20 筆測試資料') }}</button>
+        </form>
+        {% if test_count %}
+        <form method="post" action="/admin/test-data/clear"
+              onsubmit="return confirm('{{ t('確定清除所有測試資料？照片也會一併刪除，無法復原。') }}')">
+          <button type="submit" class="btn btn-danger">{{ t('清除測試資料') }}</button>
+        </form>
+        {% endif %}
+      </div>
+    </div>
   </div>
 </div>
 
@@ -278,7 +307,7 @@
   document.getElementById('deleteModal').addEventListener('click', function(e) { if (e.target === this) closeModal(); });
 
   // ── 逐張重新分析 Prompt（避開 Replicate 限速與伺服器逾時）──
-  const REANALYZE_IDS = [{% for s in stones %}{% if s.photo %}{{ s.id }},{% endif %}{% endfor %}];
+  const REANALYZE_IDS = [{% for s in stones %}{% if s.photo and not s.is_test %}{{ s.id }},{% endif %}{% endfor %}];
   const SPACING_MS = 12000;   // 每張間隔，符合「每分鐘 6 次」限速
   const MAX_RETRY  = 3;       // 遇到 429 限速時的重試次數
 
