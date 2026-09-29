@@ -8,7 +8,15 @@
          {'zh':'中','en':'EN','ja':'日'}[code] }}</a>
   {% endfor %}
 </div>
+{# 手機版漢堡選單按鈕：預設隱藏，只在前台 header 放不下時由 mobile-nav.css 顯示 #}
+<button type="button" class="mnav-toggle" aria-expanded="false" aria-label="{{ t('選單') }}">
+  <svg class="ic-menu" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor"
+       stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+  <svg class="ic-close" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor"
+       stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+</button>
 <style>
+  .mnav-toggle{display:none}
   .langsw{display:inline-flex;align-items:center;gap:2px;padding:2px;border-radius:9px;
           border:1px solid var(--border,#E2E8F0);background:var(--white,#fff);vertical-align:middle}
   .langsw-btn{display:inline-block;padding:.24rem .5rem;border-radius:7px;font-size:.74rem;

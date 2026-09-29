@@ -346,10 +346,21 @@
       .search-inner { flex-direction: column; }
       .search-field, .filter-sel { width: 100%; }
       .hero-stat { padding: 0.8rem 1.4rem; }
+      /* 介紹文：取消強制換行，避免「供應／商，」單字落到下一行 */
+      .hero-desc br { display: none; }
+      .hero-desc { text-wrap: balance; }
+      /* 統計卡片：撐滿寬度、數字與標籤不斷行（避免「石材項／目」「108.8／kg」）*/
+      .hero-stats { display: flex; width: 100%; }
+      .hero-stat { flex: 1; min-width: 0; padding: 0.8rem 0.45rem !important; }
+      .hero-stat:last-child { flex: 1.5; }
+      .stat-num { font-size: 1.45rem; white-space: nowrap; }
+      .stat-lbl { font-size: 0.58rem; letter-spacing: 0.03em; white-space: nowrap; }
     }
   </style>
-  <link rel="stylesheet" href="/static/theme-tech.css?v=10">
+  <link rel="stylesheet" href="/static/theme-tech.css?v=11">
   <script src="/static/motion.js?v=1" defer></script>
+  <link rel="stylesheet" href="/static/mobile-nav.css?v=2">
+  <script src="/static/mobile-nav.js?v=1" defer></script>
 </head>
 <body>
 
@@ -365,7 +376,7 @@
     <div class="header-right">
       {% include '_langswitch.html' %}
       {% if session.customer_id %}
-        <a href="/my-account" class="header-admin">{{ session.customer_name }} 的帳號</a>
+        <a href="/my-account" class="header-admin">{{ t('{name} 的帳號').replace('{name}', session.customer_name) }}</a>
         <a href="/customer/logout" class="header-admin">{{ t('登出') }}</a>
       {% else %}
         <a href="/customer/login" class="header-admin">{{ t('登入') }}</a>

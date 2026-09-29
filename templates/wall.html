@@ -75,17 +75,19 @@
     .result-actions .enhance{color:#fff;background:linear-gradient(135deg,var(--blue),var(--purple));border:none}
     footer{margin-top:3rem;padding:1.5rem;text-align:center;font-size:.75rem;color:var(--text-light);border-top:1px solid var(--border);background:#fff}
   </style>
-  <link rel="stylesheet" href="/static/theme-tech.css?v=10">
+  <link rel="stylesheet" href="/static/theme-tech.css?v=11">
   <script src="/static/motion.js?v=1" defer></script>
+  <link rel="stylesheet" href="/static/mobile-nav.css?v=2">
+  <script src="/static/mobile-nav.js?v=1" defer></script>
 </head>
 <body>
 <header>
   <div class="header-inner">
     <a href="/" class="logo">
       <span class="logo-icon">{% with size=32, sfx='wlhdr' %}{% include '_logo.html' %}{% endwith %}</span>
-      <div class="logo-text">{{ t('ReStone 循環石材服務平台') }}</div>
+      <div class="logo-text">ReStone <span class="logo-tag">{{ t('循環石材服務平台') }}</span></div>
     </a>
-    <div>
+    <div style="display:flex;align-items:center;gap:.5rem">
       {% include '_langswitch.html' %}
       <a href="/studio" class="hbtn">{{ t('← 設計工具') }}</a>
       <a href="/design-tool" class="hbtn">{{ t('材質模擬') }}</a>

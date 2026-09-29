@@ -162,8 +162,10 @@
   </style>
   <!-- HEIC 客戶端轉檔（Safari 原生支援，給 Chrome / Firefox 用戶）-->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/heic2any/0.0.4/heic2any.min.js" defer></script>
-  <link rel="stylesheet" href="/static/theme-tech.css?v=10">
+  <link rel="stylesheet" href="/static/theme-tech.css?v=11">
   <script src="/static/motion.js?v=1" defer></script>
+  <link rel="stylesheet" href="/static/mobile-nav.css?v=2">
+  <script src="/static/mobile-nav.js?v=1" defer></script>
 </head>
 <body>
 
@@ -171,10 +173,12 @@
   <div class="header-inner">
     <a href="/" class="logo">
       <span class="logo-icon">{% with size=32, sfx='hdr' %}{% include '_logo.html' %}{% endwith %}</span>
-      <div class="logo-text">{{ t('ReStone 循環石材服務平台') }}</div>
+      <div class="logo-text">ReStone <span class="logo-tag">{{ t('循環石材服務平台') }}</span></div>
     </a>
-    {% include '_langswitch.html' %}
-    <a href="/" class="hbtn">{{ t('← 返回首頁') }}</a>
+    <div style="display:flex;align-items:center;gap:.5rem">
+      {% include '_langswitch.html' %}
+      <a href="/" class="hbtn">{{ t('← 返回首頁') }}</a>
+    </div>
   </div>
 </header>
 

@@ -64,7 +64,8 @@ _T = {
     # ══ 首頁 ══
     '即時庫存系統 · LIVE INVENTORY': ('LIVE INVENTORY', 'リアルタイム在庫 · LIVE INVENTORY'),
     '探索可再利用的優質石材，連結設計師與供應商，':
-        ('Discover reusable premium stone. Connecting designers and suppliers',
+        # 結尾空格：手機版取消 <br> 換行後，英文兩段才不會黏成 "suppliersfor"（桌機的行尾空白會被忽略）
+        ('Discover reusable premium stone. Connecting designers and suppliers ',
          '再利用できる上質な石材を探す。デザイナーとサプライヤーをつなぎ、'),
     '共同支持循環經濟與永續設計':
         ('for a circular economy and sustainable design.',
@@ -546,6 +547,10 @@ _T = {
          'click “Re-index photos” in the admin area to process all existing data at once.',
          '件の石材が未インデックスです（検索結果に表示されません）。管理画面の「写真を再インデックス」で'
          '既存データを一括処理できます。'),
+    # ══ 手機版導覽 ══
+    '選單': ('Menu', 'メニュー'),
+    '{name} 的帳號': ('{name}’s account', '{name} さんのアカウント'),
+
     # ══ 測試資料 ══
     '測試': ('Test', 'テスト'),
     '測試資料': ('Test data', 'テストデータ'),

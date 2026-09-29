@@ -1,0 +1,80 @@
+/* ═══════════════════════════════════════════════════════════════
+   ReStone — 手機版導覽
+   前台：header 放不下時收合成漢堡選單（手機一律收合；平板或英日文較長時由 JS 偵測）
+   後台：窄螢幕時左側選單改為抽屜，從上方按鈕開啟
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ── 前台 header ── */
+/* 導覽按鈕一律不斷行：放不下就交給漢堡選單，不再把字擠成直排 */
+header a.hbtn, header a.btn-link, header a.header-admin { white-space: nowrap; }
+header .logo { flex-shrink: 0; }
+header .logo-text { white-space: nowrap; }
+
+.mnav-toggle {
+  align-items: center; justify-content: center; flex-shrink: 0;
+  width: 40px; height: 36px; padding: 0; border-radius: 10px; cursor: pointer;
+  border: 1px solid var(--border, #E2E8F0); background: var(--white, #fff); color: var(--text, #0F172A);
+}
+.mnav-toggle .ic-close { display: none; }
+header.mnav-open .mnav-toggle .ic-menu { display: none; }
+header.mnav-open .mnav-toggle .ic-close { display: block; }
+.mnav-panel { display: none; }
+
+/* 收合狀態：手機一律收合 */
+@media (max-width: 640px) {
+  header { padding-left: 1rem !important; padding-right: 1rem !important; }
+  header .header-inner { gap: .75rem; }
+  header a.hbtn, header a.btn-link, header a.header-admin { display: none !important; }
+  header .logo-sub, header .logo-tag { display: none !important; }
+  header .mnav-toggle { display: inline-flex; }
+}
+/* 收合狀態：更寬的螢幕由 JS 偵測到放不下時加上 .mnav-collapsed */
+header.mnav-collapsed a.hbtn, header.mnav-collapsed a.btn-link, header.mnav-collapsed a.header-admin { display: none !important; }
+header.mnav-collapsed .logo-sub, header.mnav-collapsed .logo-tag { display: none !important; }
+header.mnav-collapsed .mnav-toggle { display: inline-flex; }
+
+/* 展開的下拉面板 */
+header.mnav-open .mnav-panel {
+  display: flex; flex-direction: column; gap: .5rem;
+  position: absolute; left: 0; right: 0; top: 100%; z-index: 300;
+  padding: .75rem 1rem 1rem;
+  background: var(--bg, #F8FAFC);
+  border-bottom: 1px solid var(--border, #E2E8F0);
+  box-shadow: 0 18px 36px rgba(0, 0, 0, .28);
+}
+.mnav-item {
+  display: block; padding: .8rem 1rem; border-radius: 11px; text-decoration: none;
+  font-size: .95rem; font-weight: 600; color: var(--text, #0F172A);
+  background: var(--white, #fff); border: 1px solid var(--border, #E2E8F0);
+}
+.mnav-item.primary { background: var(--blue, #2563EB); border-color: var(--blue, #2563EB); color: #fff; }
+
+/* ── 後台（.sidebar / .main-wrap / .topbar 只存在於後台頁面）── */
+/* 上方列：主區變窄時（iPad 直式側欄仍在、或手機）改兩列 —— 標題＋語言在上，操作按鈕在下 */
+@media (max-width: 1180px) {
+  .topbar { height: auto !important; min-height: 56px; flex-wrap: wrap; gap: .5rem .6rem; padding-top: .55rem !important; padding-bottom: .55rem !important; }
+  .topbar-title { order: 1; flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .topbar .langsw { order: 2; }
+  .topbar-actions, .topbar > a.btn { order: 3; }
+  .topbar-actions { flex-basis: 100%; flex-wrap: wrap; gap: .4rem !important; }
+  .topbar .btn { white-space: nowrap; }
+}
+.sb-toggle, .sb-backdrop { display: none; }
+@media (max-width: 768px) {
+  .sidebar { transform: translateX(-100%) !important; transition: transform .25s ease; }
+  body.sb-open .sidebar { transform: none !important; box-shadow: 10px 0 36px rgba(15, 23, 42, .22); }
+  .main-wrap { margin-left: 0 !important; }
+  .sb-backdrop {
+    display: block; position: fixed; inset: 0; z-index: 150;
+    background: rgba(15, 23, 42, .45); opacity: 0; pointer-events: none; transition: opacity .25s;
+  }
+  body.sb-open .sb-backdrop { opacity: 1; pointer-events: auto; }
+  .sb-toggle {
+    display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;
+    width: 38px; height: 36px; padding: 0; border-radius: 9px; cursor: pointer;
+    border: 1px solid var(--border, #E2E8F0); background: var(--white, #fff); color: var(--text, #0F172A);
+  }
+  .topbar { padding: .55rem 1rem !important; }
+  .main-wrap .content { padding: 1rem !important; }
+  .main-wrap .table-card, .main-wrap .card { overflow-x: auto !important; }
+}

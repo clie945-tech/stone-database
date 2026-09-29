@@ -98,15 +98,17 @@
 
     footer { margin-top: 4rem; padding: 1.5rem; text-align: center; font-size: 0.75rem; color: var(--text-light); border-top: 1px solid var(--border); background: var(--white); }
   </style>
-  <link rel="stylesheet" href="/static/theme-tech.css?v=10">
+  <link rel="stylesheet" href="/static/theme-tech.css?v=11">
   <script src="/static/motion.js?v=1" defer></script>
+  <link rel="stylesheet" href="/static/mobile-nav.css?v=2">
+  <script src="/static/mobile-nav.js?v=1" defer></script>
 </head>
 <body>
 <header>
   <div class="header-inner">
     <a href="/" class="logo">
       <span class="logo-icon">{% with size=32, sfx='hdr' %}{% include '_logo.html' %}{% endwith %}</span>
-      <div class="logo-text">{{ t('ReStone 循環石材服務平台') }}</div>
+      <div class="logo-text">ReStone <span class="logo-tag">{{ t('循環石材服務平台') }}</span></div>
     </a>
     <div class="header-right">
       {% include '_langswitch.html' %}

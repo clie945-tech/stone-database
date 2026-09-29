@@ -304,3 +304,13 @@ input, select, textarea {
 .langsw-btn { color: var(--text-muted) !important; }
 .langsw-btn:hover { color: #07131D !important; background: rgba(34,211,238,.75) !important; }
 .langsw-btn.on { color: #07131D !important; background: linear-gradient(135deg,#22D3EE,#8B5CF6) !important; }
+
+/* ── 手機版漢堡選單（深色主題）── */
+.mnav-toggle { background: rgba(255,255,255,.07) !important; border-color: rgba(255,255,255,.14) !important;
+               color: var(--text) !important; }
+header.mnav-open .mnav-panel { background: rgba(12,18,31,.97) !important;
+                               border-bottom-color: rgba(34,211,238,.18) !important; }
+.mnav-item { background: rgba(255,255,255,.06) !important; border-color: rgba(255,255,255,.12) !important;
+             color: var(--text) !important; }
+.mnav-item.primary { background: linear-gradient(135deg, #22D3EE, #8B5CF6) !important; border: none !important;
+                     color: #07131D !important; }
