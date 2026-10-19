@@ -871,6 +871,152 @@ _T = {
     '請先登入會員': ('Please sign in first', 'まずログインしてください'),
     'HEIC 轉檔模組載入中，請稍候再試': ('HEIC converter is loading, please try again shortly',
                                         'HEIC 変換モジュールを読み込み中です。少々お待ちください'),
+    # ══ 知識庫 ＆ AI 石材顧問 ══
+    '石材顧問': ('Stone Advisor', '石材アドバイザー'),
+    'AI 石材顧問': ('AI Stone Advisor', 'AI 石材アドバイザー'),
+    'AI 石材顧問 — ReStone': ('AI Stone Advisor — ReStone', 'AI 石材アドバイザー — ReStone'),
+    '問 AI：石材知識與選材建議': ('Ask AI about stone and material choices', 'AI に質問：石材の知識と選び方'),
+    '免登入可試用': ('Try without signing in', 'ログイン不要で試せます'),
+    '用聊天的方式詢問石材特性、保養、施工與循環減碳；AI 依平台知識庫回答並標示出處，需要選材時直接推薦庫存中的循環石材。':
+        ('Ask about stone properties, care, installation and carbon savings in a chat. Answers come from the platform '
+         'knowledge base with sources cited, and when you are choosing a material the AI recommends circular stone in stock.',
+         'チャットで石材の特性、メンテナンス、施工、循環・CO₂ 削減について質問できます。AI はプラットフォームの'
+         'ナレッジベースに基づき出典付きで回答し、素材選びの際は在庫の循環石材をおすすめします。'),
+    '開始提問 →': ('Start asking →', '質問する →'),
+    '石材特性、保養、施工、循環與減碳問題都可以問我；需要選材時，我會直接推薦平台上的循環石材。':
+        ('Ask me about stone properties, care, installation, circularity or carbon savings. If you are choosing a '
+         'material, I will recommend circular stone listed on the platform.',
+         '石材の特性、メンテナンス、施工、循環や CO₂ 削減について何でも聞いてください。素材選びの際は、'
+         'プラットフォームに掲載中の循環石材をおすすめします。'),
+    '哪些石材適合戶外使用？': ('Which stones are suitable for outdoor use?', '屋外に向いている石材は？'),
+    '大理石檯面要怎麼保養？': ('How should I care for a marble countertop?', '大理石のカウンターはどう手入れすればいい？'),
+    '循環石材和全新石材有什麼差別？': ('How does circular stone differ from newly quarried stone?',
+                                       '循環石材と新しく採掘した石材の違いは？'),
+    '我想做浴室檯面，有推薦的石材嗎？': ('Which stone would you recommend for a bathroom vanity top?',
+                                         '洗面カウンターにおすすめの石材は？'),
+    '新對話': ('New chat', '新しいチャット'),
+    '對話紀錄': ('Chat history', 'チャット履歴'),
+    '還沒有對話紀錄': ('No chats yet', 'まだチャットはありません'),
+    '對話紀錄保存在你的會員帳號中。': ('Your chats are saved to your account.', 'チャットはアカウントに保存されます。'),
+    '訪客的對話紀錄只保存在這個瀏覽器，關閉後就會清除。':
+        ('As a guest, your chats are kept only in this browser and are cleared when you close it.',
+         'ゲストのチャットはこのブラウザにのみ保存され、閉じると消去されます。'),
+    '登入會員': ('Sign in', 'ログイン'),
+    '知識庫目前還沒有文件，回答會以平台石材資料為主。':
+        ('The knowledge base has no documents yet, so answers will draw mainly on the platform’s stone listings.',
+         'ナレッジベースにはまだ資料がないため、回答は主に掲載中の石材データに基づきます。'),
+    'AI 石材顧問尚未啟用（未設定 GEMINI_API_KEY）': ('The AI Stone Advisor is not enabled (GEMINI_API_KEY is not set)',
+                                                    'AI 石材アドバイザーは有効ではありません（GEMINI_API_KEY が未設定です）'),
+    '輸入你的問題…': ('Type your question…', '質問を入力…'),
+    '送出': ('Send', '送信'),
+    'AI 回答僅供參考，規格與價格請以廠商確認為準': ('AI answers are for reference only; confirm specifications and prices with the supplier.',
+                                                  'AI の回答は参考情報です。仕様と価格は業者にご確認ください。'),
+    'VIP 會員：不限提問次數': ('VIP member: unlimited questions', 'VIP 会員：質問回数無制限'),
+    '不限提問次數': ('Unlimited questions', '質問回数無制限'),
+    '今日還可提問 {n} 次': ('{n} questions left today', '本日あと {n} 回質問できます'),
+    '登入會員每天可問 {n} 次': ('Sign in to ask {n} a day', 'ログインすると 1 日 {n} 回まで'),
+    '推薦石材': ('Recommended stones', 'おすすめの石材'),
+    '庫存': ('In stock', '在庫'),
+    '參考來源': ('Sources', '出典'),
+    '第 {n} 頁': ('p. {n}', '{n} ページ'),
+    '正在查詢知識庫與石材庫存…': ('Searching the knowledge base and stone inventory…', 'ナレッジベースと石材在庫を検索中…'),
+    '網路連線失敗，請再試一次': ('Network error, please try again', '通信に失敗しました。もう一度お試しください'),
+    '要刪除這段對話嗎？': ('Delete this chat?', 'このチャットを削除しますか？'),
+    '請輸入問題': ('Please enter a question', '質問を入力してください'),
+    '問題太長了，請精簡到 {n} 字以內': ('Your question is too long; please keep it under {n} characters',
+                                        '質問が長すぎます。{n} 文字以内にしてください'),
+    'AI 暫時無法回答，請稍後再試': ('The AI can’t answer right now, please try again later',
+                                   'AI が一時的に回答できません。しばらくしてからお試しください'),
+    '找不到這段對話': ('Chat not found', 'チャットが見つかりません'),
+    '今日提問已達上限（每人每日 {n} 次），請明天再試。':
+        ('You have reached today’s limit ({n} questions per person per day). Please try again tomorrow.',
+         '本日の質問上限（1 人 1 日 {n} 回）に達しました。明日またお試しください。'),
+    '訪客每天可提問 {n} 次，今天已用完。登入會員每天可問 {m} 次。':
+        ('Guests can ask {n} questions a day and you have used them all. Sign in to ask {m} a day.',
+         'ゲストの質問は 1 日 {n} 回までで、本日分を使い切りました。ログインすると 1 日 {m} 回まで質問できます。'),
+    '訪客每天可提問 {n} 次，今天已用完。登入會員可繼續提問。':
+        ('Guests can ask {n} questions a day and you have used them all. Sign in to keep asking.',
+         'ゲストの質問は 1 日 {n} 回までで、本日分を使い切りました。ログインすると引き続き質問できます。'),
+    '今日開放給訪客的提問次數已用完，請登入會員後繼續使用。':
+        ('Today’s questions for guests have run out. Please sign in to continue.',
+         '本日のゲスト向け質問枠がなくなりました。ログインしてご利用ください。'),
+    '訪客': ('Guest', 'ゲスト'),
+
+    # 後台：知識庫管理
+    '知識庫': ('Knowledge base', 'ナレッジベース'),
+    '知識庫 — ReStone 管理後台': ('Knowledge base — ReStone Admin', 'ナレッジベース — ReStone 管理画面'),
+    '尚未設定 GEMINI_API_KEY：文件仍可上傳並以關鍵字檢索，但前台「AI 石材顧問」無法回答問題。':
+        ('GEMINI_API_KEY is not set: documents can still be uploaded and keyword-searched, but the AI Stone Advisor '
+         'cannot answer questions.',
+         'GEMINI_API_KEY が未設定です：資料のアップロードとキーワード検索はできますが、AI 石材アドバイザーは回答できません。'),
+    '文件': ('Documents', '資料'),
+    '知識段落': ('Passages', 'パッセージ'),
+    '今日提問': ('Questions today', '本日の質問'),
+    '累計提問': ('Total questions', '累計質問数'),
+    '上傳知識文件': ('Upload documents', '資料をアップロード'),
+    '開啟 AI 石材顧問 ↗': ('Open AI Stone Advisor ↗', 'AI 石材アドバイザーを開く ↗'),
+    '拖曳檔案到這裡，或點擊選擇檔案': ('Drag files here, or click to choose', 'ここにファイルをドラッグ、またはクリックして選択'),
+    '支援 PDF、Word（.docx）、TXT、Markdown，可一次選多個；單次上傳上限 32 MB':
+        ('PDF, Word (.docx), TXT and Markdown; you can select several at once (up to 32 MB per upload)',
+         'PDF、Word（.docx）、TXT、Markdown に対応。複数選択可（1 回のアップロードは 32 MB まで）'),
+    '上傳並建立索引': ('Upload and index', 'アップロードしてインデックス作成'),
+    '上傳中…': ('Uploading…', 'アップロード中…'),
+    '適合放：石材特性與保養手冊、施工規範、碳排與循環資料、廠商介紹、展覽常見問題。掃描成圖片的 PDF 無法讀取文字。':
+        ('Good candidates: stone property and care guides, installation specs, carbon and circularity data, supplier '
+         'profiles and exhibition FAQs. Text cannot be read from scanned (image-only) PDFs.',
+         '向いている資料：石材の特性・メンテナンスガイド、施工仕様、CO₂・循環データ、業者紹介、展示会の FAQ。'
+         'スキャン画像だけの PDF は文字を読み取れません。'),
+    '已上傳文件': ('Uploaded documents', 'アップロード済みの資料'),
+    '共 {n} 份': ('{n} in total', '全 {n} 件'),
+    '類型': ('Type', '形式'),
+    '大小': ('Size', 'サイズ'),
+    '段落': ('Passages', 'パッセージ'),
+    '上傳時間': ('Uploaded', 'アップロード日時'),
+    '已建立索引': ('Indexed', 'インデックス済み'),
+    '僅關鍵字檢索': ('Keyword search only', 'キーワード検索のみ'),
+    '建立索引中': ('Indexing', 'インデックス作成中'),
+    '無法使用': ('Unavailable', '利用不可'),
+    '下載原始檔': ('Download original', '元ファイルをダウンロード'),
+    '重建索引': ('Re-index', '再インデックス'),
+    '確定刪除「{title}」？此動作無法復原。': ('Delete “{title}”? This cannot be undone.',
+                                         '「{title}」を削除しますか？この操作は元に戻せません。'),
+    '還沒有任何文件。上傳第一份文件後，AI 石材顧問就能依內容回答。':
+        ('No documents yet. Once you upload the first one, the AI Stone Advisor can answer from it.',
+         'まだ資料がありません。最初の資料をアップロードすると、AI 石材アドバイザーがその内容に基づいて回答します。'),
+    '有 {n} 頁沒有文字（可能是掃描圖片），這些頁面查詢不到。':
+        ('{n} pages have no text (probably scanned images) and cannot be searched.',
+         '{n} ページに文字がありません（スキャン画像の可能性）。これらのページは検索できません。'),
+    '最近的提問': ('Recent questions', '最近の質問'),
+    '看看使用者想知道什麼，作為補充文件的參考': ('See what people want to know, to guide which documents to add next',
+                                              '利用者が知りたいことを確認し、追加する資料の参考にできます'),
+    '還沒有人提問': ('No questions yet', 'まだ質問はありません'),
+    '每日提問上限：一般會員 {m} 次、訪客每個瀏覽器 {g} 次、全站訪客合計 {c} 次；VIP 會員不限。可在 Railway 以環境變數 KB_DAILY_LIMIT、KB_GUEST_LIMIT、KB_GUEST_DAILY_CAP 調整。':
+        ('Daily question limits: {m} per standard member, {g} per guest browser, {c} for all guests combined; VIP members '
+         'are unlimited. Adjust them on Railway with the KB_DAILY_LIMIT, KB_GUEST_LIMIT and KB_GUEST_DAILY_CAP environment variables.',
+         '1 日の質問上限：一般会員 {m} 回、ゲストはブラウザごとに {g} 回、ゲスト全体で合計 {c} 回。VIP 会員は無制限です。'
+         'Railway の環境変数 KB_DAILY_LIMIT、KB_GUEST_LIMIT、KB_GUEST_DAILY_CAP で変更できます。'),
+    '請選擇要上傳的文件': ('Please choose files to upload', 'アップロードするファイルを選択してください'),
+    '已上傳 {n} 份文件，正在建立索引…': ('Uploaded {n} documents, now indexing…', '{n} 件の資料をアップロードしました。インデックス作成中…'),
+    '不支援的檔案格式：{names}（僅限 PDF、Word .docx、TXT、Markdown）':
+        ('Unsupported file type: {names} (PDF, Word .docx, TXT and Markdown only)',
+         '対応していない形式です：{names}（PDF、Word .docx、TXT、Markdown のみ）'),
+    '正在重新建立索引：{title}': ('Re-indexing: {title}', '再インデックス中：{title}'),
+    '已刪除「{title}」': ('Deleted “{title}”', '「{title}」を削除しました'),
+    '找不到原始檔案': ('Original file not found', '元ファイルが見つかりません'),
+    # 索引狀態訊息（存在資料庫，顯示時翻譯）
+    '不支援的檔案格式': ('Unsupported file type', '対応していない形式です'),
+    'PDF 有密碼保護，無法讀取': ('This PDF is password-protected and cannot be read', 'この PDF はパスワード保護されているため読み取れません'),
+    'PDF 讀取失敗，檔案可能已損毀': ('Could not read this PDF; the file may be damaged', 'PDF を読み取れません。ファイルが破損している可能性があります'),
+    'Word 檔讀取失敗，請確認是 .docx 格式': ('Could not read this Word file; make sure it is .docx', 'Word ファイルを読み取れません。.docx 形式かご確認ください'),
+    '找不到可讀取的文字（可能是掃描圖片檔）': ('No readable text found (it may be a scanned image)', '読み取れる文字がありません（スキャン画像の可能性）'),
+    '文件沒有文字內容': ('The document contains no text', '資料に文字が含まれていません'),
+    '未設定 GEMINI_API_KEY，目前只能用關鍵字檢索': ('GEMINI_API_KEY is not set, so only keyword search is available',
+                                                 'GEMINI_API_KEY が未設定のため、キーワード検索のみ利用できます'),
+    '語意索引建立失敗，目前只能用關鍵字檢索（可稍後按「重建索引」）':
+        ('Semantic indexing failed, so only keyword search is available for now (try Re-index later)',
+         'セマンティックインデックスの作成に失敗したため、現在はキーワード検索のみです（後で「再インデックス」をお試しください）'),
+    '索引建立失敗，請按「重建索引」再試一次': ('Indexing failed; click Re-index to try again', 'インデックス作成に失敗しました。「再インデックス」で再試行してください'),
+    '索引建立中斷，請按「重建索引」': ('Indexing was interrupted; click Re-index', 'インデックス作成が中断されました。「再インデックス」を押してください'),
 }
 
 # 兩段式：完整表 + 忽略空白差異的索引（模板換行縮排不影響命中）

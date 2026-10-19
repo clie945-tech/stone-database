@@ -7,3 +7,6 @@ static/uploads/*
 
 .DS_Store
 **/.DS_Store
+
+# 知識庫上傳的原始文件（本機開發）
+kb_files/

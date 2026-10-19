@@ -213,6 +213,8 @@
       padding: 1px 6px; border-radius: 4px; letter-spacing: 0.05em;
     }
     .btn-ai-search:hover .ai-tag { background: white; color: var(--blue); }
+    /* 三個 AI 按鈕放不下時一起換到下一列，不會只剩一顆落單 */
+    .ai-actions { display: flex; gap: 0.7rem; flex-wrap: wrap; }
 
     /* ── 顏色篩選 ── */
     .color-filter {
@@ -345,6 +347,7 @@
       .stone-grid { grid-template-columns: 1fr; }
       .search-inner { flex-direction: column; }
       .search-field, .filter-sel { width: 100%; }
+      .ai-actions { justify-content: center; }
       .hero-stat { padding: 0.8rem 1.4rem; }
       /* 介紹文：取消強制換行，避免「供應／商，」單字落到下一行 */
       .hero-desc br { display: none; }
@@ -451,8 +454,11 @@
       {% endfor %}
     </select>
     <button type="submit" class="btn-search">{{ t('搜尋') }}</button>
-    <a href="/search/by-image" class="btn-ai-search" title="{{ t('上傳圖片找相似石材') }}">{{ t('以圖搜圖') }}<span class="ai-tag">AI</span></a>
-    <a href="/studio" class="btn-ai-search" title="{{ t('AI 設計工具：材質模擬、草圖渲染') }}" style="background:linear-gradient(135deg,#2563EB,#7C3AED);color:white;border-color:transparent">{{ t('設計工具') }}<span class="ai-tag" style="background:rgba(255,255,255,0.25);color:white">AI</span></a>
+    <div class="ai-actions">
+      <a href="/search/by-image" class="btn-ai-search" title="{{ t('上傳圖片找相似石材') }}">{{ t('以圖搜圖') }}<span class="ai-tag">AI</span></a>
+      <a href="/studio" class="btn-ai-search" title="{{ t('AI 設計工具：材質模擬、草圖渲染') }}" style="background:linear-gradient(135deg,#2563EB,#7C3AED);color:white;border-color:transparent">{{ t('設計工具') }}<span class="ai-tag" style="background:rgba(255,255,255,0.25);color:white">AI</span></a>
+      <a href="/advisor" class="btn-ai-search" title="{{ t('問 AI：石材知識與選材建議') }}">{{ t('石材顧問') }}<span class="ai-tag">AI</span></a>
+    </div>
     {% if search or selected_type %}
       <a href="/" class="btn-clear">{{ t('× 清除篩選') }}</a>
     {% endif %}
